@@ -12,8 +12,8 @@
 </template>
 
 <script setup lang="ts">
-import { QPage } from 'quasar';
-import { onMounted, ref } from 'vue';
+import type { QPage } from 'quasar';
+import { ref } from 'vue';
 const test = () => {
   // runCmd 最終依賴於原生的 execCommand，如果您需要一些不常見的命令，您可以參考完整的 document.execCommand() 參考手冊
   // 以 Range 取代 https://claude.ai/chat/cf715ff7-1a22-48eb-b698-2269c748796f
