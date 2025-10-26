@@ -21,7 +21,7 @@
 
 <!-- eslint-disable-next-line vue/block-lang -->
 <script setup>
-import { useWordStore } from './store';
+import { useWordStore } from './wordStore';
 const store = useWordStore();
 const words = store.words;
 </script>

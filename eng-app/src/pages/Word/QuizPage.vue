@@ -2,6 +2,7 @@
 <template>
   <q-page class="q-pa-lg text-center bg-gradient-to-br from-purple-400 to-blue-500">
     <!-- Progress Section -->
+    {{ store.words }}
     <q-card class="q-mb-lg" flat>
       <q-card-section>
         <q-linear-progress
@@ -45,27 +46,26 @@
                 class="rounded-borders mx-auto"
               />
             </div>
-            <!-- <div v-else class="text-h1 q-mb-lg">
-              {{ getWordEmoji(currentWord.english) }}
-            </div> -->
-
-            <!-- Chinese Text -->
             <div class="text-h4 text-weight-bold text-grey-8 q-mb-md">
               {{ currentWord.chinese }}
             </div>
-
-            <!-- Hint Button -->
-            <q-btn
+            <my-btn
+              @click="WordPronunciation(currentWord.english)"
+              color="info"
+              size="lg"
+              class="q-px-lg"
+            >
+              🔊 發音
+            </my-btn>
+            <my-btn
               v-if="!showHint && !result"
               @click="showHint = true"
               color="orange"
               size="lg"
-              rounded
-              unelevated
-              class="q-mt-md"
+              class="q-px-lg q-ml-sm"
             >
               💡 提示
-            </q-btn>
+            </my-btn>
 
             <!-- Hint Display -->
             <q-banner v-if="showHint && !result" class="bg-orange-1 text-orange-9 q-mt-md" rounded>
@@ -99,24 +99,13 @@
                 @click="checkAnswer"
                 :disable="!answer.trim() || isChecking"
                 color="positive"
-                size="xl"
+                size="lg"
                 rounded
                 unelevated
                 class="q-px-xl"
                 :loading="isChecking"
               >
                 ✓ 確認答案
-              </q-btn>
-
-              <q-btn
-                @click="playPronunciation"
-                color="info"
-                size="xl"
-                rounded
-                unelevated
-                class="q-px-lg"
-              >
-                🔊 發音
               </q-btn>
             </div>
           </q-card-section>
@@ -143,7 +132,7 @@
               <!-- Pronunciation for incorrect answers -->
               <q-btn
                 v-if="!result.correct"
-                @click="playCorrectPronunciation"
+                @click="WordPronunciation(currentWord.english)"
                 color="purple"
                 size="lg"
                 rounded
@@ -192,23 +181,25 @@
   </q-page>
 </template>
 
-<!-- eslint-disable-next-line vue/block-lang -->
-<script setup>
-import { useWordStore } from './store';
+<script setup lang="ts">
+import { useWordStore } from './wordStore';
 import { ref, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { WordPronunciation, type Result, type Word } from './model';
+import { QInput } from 'quasar';
+import MyBtn from 'src/components/MyBtn.vue';
 
 const store = useWordStore();
 const router = useRouter();
 
 // Quiz state
-const currentWord = ref(store.getWeightedRandomWord());
-const answer = ref('');
-const result = ref(null);
-const showHint = ref(false);
-const isChecking = ref(false);
-const isWrong = ref(false);
-const isCorrect = ref(false);
+const currentWord = ref<Word>(store.getWeightedRandomWord());
+const answer = ref<string>('');
+const result = ref<Result>(null);
+const showHint = ref<boolean>(false);
+const isChecking = ref<boolean>(false);
+const isWrong = ref<boolean>(false);
+const isCorrect = ref<boolean>(false);
 
 // Progress tracking
 const score = ref(0);
@@ -216,23 +207,22 @@ const questionsAnswered = ref(0);
 const totalQuestions = ref(10);
 
 // References
-const answerInput = ref(null);
+const answerInput = ref<QInput>();
 
 onMounted(() => {
-  store.load();
   resetQuiz();
 });
 
-function resetQuiz() {
+const resetQuiz = () => {
   currentWord.value = store.getWeightedRandomWord();
   answer.value = '';
   result.value = null;
   showHint.value = false;
   score.value = 0;
   questionsAnswered.value = 0;
-}
+};
 
-async function checkAnswer() {
+const checkAnswer = async () => {
   if (!currentWord.value || !answer.value.trim()) return;
 
   isChecking.value = true;
@@ -259,9 +249,9 @@ async function checkAnswer() {
   questionsAnswered.value++;
   result.value = { correct };
   isChecking.value = false;
-}
+};
 
-function nextQuestion() {
+const nextQuestion = async () => {
   if (questionsAnswered.value >= totalQuestions.value) {
     return; // Quiz is complete
   }
@@ -271,40 +261,20 @@ function nextQuestion() {
   answer.value = '';
   showHint.value = false;
 
-  nextTick(() => {
+  await nextTick(() => {
     answerInput.value?.focus();
   });
-}
+};
 
-function restartQuiz() {
+const restartQuiz = async () => {
   resetQuiz();
-  nextTick(() => {
-    answerInput.value?.focus();
-  });
-}
+  await nextTick(() => answerInput.value?.focus());
+};
 
-function goToReview() {
-  router.push('/review');
-}
-
-function playPronunciation() {
-  if (currentWord.value) {
-    const utterance = new SpeechSynthesisUtterance(currentWord.value.chinese);
-    utterance.lang = 'zh-TW';
-    speechSynthesis.speak(utterance);
-  }
-}
-
-function playCorrectPronunciation() {
-  if (currentWord.value) {
-    const utterance = new SpeechSynthesisUtterance(currentWord.value.english);
-    utterance.lang = 'en-US';
-    speechSynthesis.speak(utterance);
-  }
-}
+const goToReview = async () => await router.push('/review');
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 /* Minimal CSS using Quasar utilities - only custom animations */
 .bg-gradient-to-br {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
