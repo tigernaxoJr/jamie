@@ -5,10 +5,19 @@
       <img v-if="word.image" :src="word.image" class="w-32 h-32 object-cover mb-2" />
       <div class="text-lg font-semibold">{{ word.english }}</div>
       <div class="text-gray-600">{{ word.chinese }}</div>
-      <audio
+      <a
+        :href="`https://translate.google.com/translate_tts?ie=UTF-8&q=${word.english}&tl=en&client=tw-ob`"
+        target="_blank"
+        >google 發音</a
+      >
+      <!-- <iframe
         :src="`https://translate.google.com/translate_tts?ie=UTF-8&q=${word.english}&tl=en&client=tw-ob`"
-        controls
-      ></audio>
+      ></iframe> -->
+      <!-- <iframe src="https://translate.google.com/?sl=en&tl=zh-TW&text=apple&op=translate"></iframe> -->
+      <!-- {{
+        `https://translate.google.com/translate_tts?ie=UTF-8&q=${word.english}&tl=en&client=tw-ob`
+      }} -->
+      1<audio :src="'data:audio/mp3;base64,' + sound">test</audio>1
       <a
         :href="`https://translate.google.com/?sl=en&tl=zh-TW&text=${word.english}`"
         target="_blank"
@@ -21,6 +30,7 @@
 
 <!-- eslint-disable-next-line vue/block-lang -->
 <script setup>
+import { sound } from './tmp';
 import { useWordStore } from './wordStore';
 const store = useWordStore();
 const words = store.words;

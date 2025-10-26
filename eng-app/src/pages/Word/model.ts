@@ -3,6 +3,7 @@ export type Word = {
   english: string;
   chinese: string;
   image: string;
+  audio: string;
   error_rec: AnswerRecord;
   correct_rec: AnswerRecord;
 };
@@ -11,12 +12,19 @@ export type AnswerRecord = {
   lastTime: number;
 };
 
-export function CreateWord(id: number, english: string, chinese: string, image?: string): Word {
+export function CreateWord(
+  id: number,
+  english: string,
+  chinese: string,
+  image?: string,
+  audio?: string,
+): Word {
   return {
     id,
     english,
     chinese,
     image: image || '',
+    audio: audio || '',
     error_rec: { count: 0, lastTime: 0 },
     correct_rec: { count: 0, lastTime: 0 },
   };
