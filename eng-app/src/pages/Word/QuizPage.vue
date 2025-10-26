@@ -194,7 +194,7 @@
 
 <!-- eslint-disable-next-line vue/block-lang -->
 <script setup>
-import { useWordStore } from 'src/stores/wordStore';
+import { useWordStore } from './store';
 import { ref, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -302,27 +302,6 @@ function playCorrectPronunciation() {
     speechSynthesis.speak(utterance);
   }
 }
-
-// function getWordEmoji(word) {
-//   const emojiMap = {
-//     apple: '🍎',
-//     banana: '🍌',
-//     juice: '🧃',
-//     all: '🌍',
-//     cat: '🐱',
-//     dog: '🐶',
-//     book: '📚',
-//     car: '🚗',
-//     house: '🏠',
-//     tree: '🌳',
-//     water: '💧',
-//     sun: '☀️',
-//     moon: '🌙',
-//     star: '⭐',
-//     flower: '🌸',
-//   };
-//   return emojiMap[word.toLowerCase()] || '📝';
-// }
 </script>
 
 <style scoped>

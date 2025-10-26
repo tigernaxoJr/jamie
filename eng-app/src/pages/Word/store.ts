@@ -1,42 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import type { Word } from './model';
 
 export const useWordStore = defineStore('wordStore', () => {
-  const words = ref([
-    {
-      id: 1,
-      english: 'apple',
-      chinese: '蘋果',
-      image: '',
-      errorCount: 0,
-    },
-    {
-      id: 2,
-      english: 'banana',
-      chinese: '香蕉',
-      image: '',
-      errorCount: 0,
-    },
-    {
-      id: 3,
-      english: 'juice',
-      chinese: '果汁',
-      image: '',
-      errorCount: 0,
-    },
-    {
-      id: 4,
-      english: 'all',
-      chinese: '全部',
-      image: '',
-      errorCount: 0,
-    },
+  const words = ref<Array<Word>>([
+    { id: 1, english: 'apple', chinese: '蘋果', image: '', errorCount: 0 },
+    { id: 2, english: 'banana', chinese: '香蕉', image: '', errorCount: 0 },
+    { id: 3, english: 'juice', chinese: '果汁', image: '', errorCount: 0 },
+    { id: 4, english: 'all', chinese: '全部', image: '', errorCount: 0 },
   ]);
-  const addWord = (word) => {
+  const addWord = (word: Word) => {
     words.value.push({ ...word, errorCount: 0 });
     save();
   };
-  const recordError = (wordId) => {
+  const recordError = (wordId: number) => {
     const word = words.value.find((w) => w.id === wordId);
     if (word) {
       word.errorCount++;

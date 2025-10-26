@@ -6,7 +6,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import { Chart } from 'chart.js/auto';
-import { useWordStore } from 'src/stores/wordStore';
+import { useWordStore } from 'src/pages/Word/store';
 const store = useWordStore();
 
 onMounted(() => {
