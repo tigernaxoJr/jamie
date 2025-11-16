@@ -2,8 +2,8 @@
 <template>
   <q-page class="q-pa-lg text-center bg-gradient-to-br from-purple-400 to-blue-500">
     <!-- Progress Section -->
-    {{ store.words }}
-    <q-card class="q-mb-lg" flat>
+    <!-- {{ store.words }} -->
+    <!-- <q-card class="q-mb-lg" flat>
       <q-card-section>
         <q-linear-progress
           :value="questionsAnswered / totalQuestions"
@@ -17,14 +17,14 @@
           <span>第 {{ questionsAnswered + 1 }} 題</span>
         </div>
       </q-card-section>
-    </q-card>
+    </q-card> -->
 
     <!-- Quiz Title -->
-    <div
+    <!-- <div
       class="text-h3 text-white text-weight-bold q-mb-xl animate__animated animate__bounce animate__infinite animate__slow"
     >
       🌟 英文小測驗 🌟
-    </div>
+    </div> -->
 
     <div v-if="currentWord" class="row justify-center">
       <div class="col-12 col-md-8 col-lg-6">
