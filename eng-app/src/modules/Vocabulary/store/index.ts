@@ -1,10 +1,50 @@
 import { defineStore } from 'pinia';
-// import { ref } from 'vue';
-// import { Word } from '../domain/Word';
-import { words } from '../domain/v2_1_5';
+import { GetWords } from '../domain/v2_1_5';
+import { useLocalStorage } from '@vueuse/core';
+import { ref } from 'vue';
+import type { Word } from '../domain';
 
 export const useWordStore = defineStore('wordStore', () => {
-  return {
-    words,
+  const words = useLocalStorage<Word[]>('words', ref(GetWords()));
+  const resetQuiz = () => {
+    words.value.splice(0);
+    console.log('resetQuiz', GetWords());
+    words.value.push(...GetWords());
   };
+  const recordCorrectAns = (id: number) => {
+    const w = words.value.find((word) => word.id === id);
+    if (!w) return;
+    w.correctRec.count += 1;
+    w.correctRec.lastTime = Date.now(); // 註：我們不需要判斷上次是答對還是答錯，只需要知道上次答題和本次答題的時間差
+    // 這裡的邏輯是基於「本次作答」與「上次的作答類型」的比較
+    // 判斷上次是哪種作答 (使用 lastTime 判斷哪個記錄是最近的)
+    // 判斷：如果上次是答對，連續次數遞增；否則，重置為 1
+    if (w.correctRec.lastTime > w.errorRec.lastTime) {
+      // 這是連續答對
+      w.correctRec.consecutiveCount += 1; // 對方的連續次數必須重置
+      w.errorRec.consecutiveCount = 0;
+    } else {
+      // 上次是答錯 (或兩者時間相同/皆為 0)，新的連續答對從 1 開始
+      w.correctRec.consecutiveCount = 1;
+      w.errorRec.consecutiveCount = 0;
+    }
+  };
+  const recordErrorAns = (id: number) => {
+    const w = words.value.find((word) => word.id === id);
+    if (!w) return;
+    w.errorRec.count += 1;
+    w.errorRec.lastTime = Date.now();
+    // 判斷：如果上次是答錯，連續次數遞增；否則，重置為 1
+    if (w.errorRec.lastTime > w.correctRec.lastTime) {
+      // 這是連續答錯
+      w.errorRec.consecutiveCount += 1; // 對方的連續次數必須重置
+      w.correctRec.consecutiveCount = 0;
+    } else {
+      // 上次是答對，新的連續答錯從 1 開始
+      w.errorRec.consecutiveCount = 1;
+      w.correctRec.consecutiveCount = 0;
+    }
+  };
+
+  return { words, resetQuiz, recordCorrectAns, recordErrorAns };
 });

@@ -11,12 +11,12 @@
 //   }
 // }
 
-import { ref } from 'vue';
 import { Word } from './Word';
 
-export const words = ref<Array<Word>>([
+export const GetWords = (): Array<Word> => [
   // 1. 數量 (Quantity)
-  new Word(1, 'a (an)', '一個'),
+  new Word(0, 'a', '一個'),
+  new Word(1, 'an', '一個(用於母音開頭)'),
   new Word(2, 'all', '全部'),
   new Word(3, 'many', '多 (可數)'),
   new Word(4, 'much', '多 (不可數)'),
@@ -73,4 +73,4 @@ export const words = ref<Array<Word>>([
   new Word(47, 'mailman', '郵差'),
   new Word(48, 'police', '警察'),
   new Word(49, 'worker', '工人'),
-]);
+];

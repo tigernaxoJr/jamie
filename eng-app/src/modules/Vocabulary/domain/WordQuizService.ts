@@ -35,9 +35,17 @@ export class WordQuizService {
       P1_New === 0 && P2_FreshError === 0 && lastAnswerTime < now - RECENT_THRESHOLD_MS ? 1 : 0;
     // P3: 連續答錯懲罰 (新增)
     // 只有在 P1/P2/P4 都不滿足，且有連續答錯時才作為排序依據
-    const C_Error_Consecutive = word.consecutiveErrorCount;
+    const C_Error_Consecutive = word.errorRec.consecutiveCount;
     // P5: 總答錯次數
-    const C_Error_Total = word.errorCount;
+    const C_Error_Total = word.errorRec.count;
+
+    // console.log('all unit:', {
+    //   P1_New,
+    //   P2_FreshError,
+    //   P4_Stale,
+    //   C_Error_Consecutive,
+    //   C_Error_Total,
+    // });
 
     // --- 2. 應用加權公式 ---
     let score = 0;
@@ -56,49 +64,7 @@ export class WordQuizService {
 
     return score;
   }
-  /**
-   * 核心演算法：計算單詞的優先級分數。
-   * 根據預設的優先級規則，計算單詞的優先級分數 (Priority Score)。
-   * 分數越高，越應該被選為下一道考題。
-   * 保持為私有方法，專注於服務內部計算邏輯。
-   *
-   * @param word 要計算的單詞實體。
-   * @param now 當前時間戳 (ms)。
-   * @returns 優先級分數 (number)。
-   */
-  /**
-   * 服務公開方法：從詞彙列表中選出下一個優先級最高的考題。
-   *
-   * @param words 所有的單詞列表。
-   * @returns 優先級最高的單詞 (Word) 或 undefined。
-   */
-  // public getNextQuizWord(words: Word[]): Word | undefined {
-  //   if (words.length < 1) throw new Error('words is empty');
-  //   const now = Date.now();
-  //   // 1. 計算所有單詞的優先級分數
-  //   const scoredWords = words.map((word) => ({
-  //     word,
-  //     score: this.calculatePriorityScore(word, now),
-  //   }));
 
-  //   // 2. 根據分數從高到低排序
-  //   // a. 優先級高的排在前面 (score - b.score > a.score)
-  //   scoredWords.sort((a, b) => b.score - a.score);
-
-  //   // 3. (可選) 處理分數相同的情況：引入隨機性，防止出現僵局
-  //   // 如果最高分數有多個單詞，從中隨機選一個，避免學習路徑過於固定。
-  //   const maxScore = scoredWords[0]?.score || -1;
-  //   const topScoredWords = scoredWords.filter((sw) => sw.score === maxScore);
-
-  //   if (topScoredWords.length > 0) {
-  //     // 從最高分詞彙中隨機選取一個
-  //     const randomIndex = Math.floor(Math.random() * topScoredWords.length);
-  //     if (!topScoredWords[randomIndex]) throw new Error('topScoredWords[randomIndex] is undefined');
-  //     return topScoredWords[randomIndex]?.word;
-  //   }
-  //   throw new Error('topScoredWords[randomIndex] is undefined');
-  //   // 列表為空
-  // }
   /**
    * 服務公開方法：從詞彙列表中選出下一個優先級最高的考題。
    *
@@ -120,6 +86,7 @@ export class WordQuizService {
       score: this.calculatePriorityScore(word, now),
     }));
 
+    console.log('scoredWords', scoredWords);
     // 2. 根據分數從高到低排序
     scoredWords.sort((a, b) => b.score - a.score);
 

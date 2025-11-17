@@ -1,20 +1,29 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hHh Lpr lFf">
+    <q-header bordered>
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
         <q-toolbar-title> Jamie's English App </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div>Jamie App 0.0.1 alpha</div>
       </q-toolbar>
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
+        <template v-for="(x, idx) in linksList" :key="idx">
+          <q-item clickable tag="a" :to="x.to">
+            <q-item-section v-if="x.icon" avatar>
+              <q-icon :name="x.icon" />
+            </q-item-section>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+            <q-item-section>
+              <q-item-label>{{ x.title }}</q-item-label>
+              <q-item-label caption>{{ x.caption }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
       </q-list>
     </q-drawer>
 
@@ -26,28 +35,26 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
 
-const linksList: EssentialLinkProps[] = [
+const linksList = [
   {
     title: '英文測驗',
     caption: '開始英文單字測驗',
     icon: 'quiz',
-    link: '/quiz',
-  },
-  {
-    title: '單字複習',
-    caption: '複習所有單字',
-    icon: 'book',
-    link: '/review',
+    to: '/quiz',
   },
   {
     title: '首頁',
     caption: '回到首頁',
     icon: 'home',
-    link: '/',
+    to: '/',
   },
-];
+] as {
+  title: string;
+  caption: string;
+  icon: string;
+  to: string;
+}[];
 
 const leftDrawerOpen = ref(false);
 
