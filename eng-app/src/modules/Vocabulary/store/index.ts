@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { GetWords } from '../domain/v2_1_5';
 import { useLocalStorage } from '@vueuse/core';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { Word } from '../domain';
 
 export const useWordStore = defineStore('wordStore', () => {
@@ -45,6 +45,20 @@ export const useWordStore = defineStore('wordStore', () => {
       w.correctRec.consecutiveCount = 0;
     }
   };
-
-  return { words, resetQuiz, recordCorrectAns, recordErrorAns };
+  const meta = computed(() => {
+    const _words = words.value.slice();
+    const d = _words.map((x) => ({
+      consecutiveCorrectCount: x.correctRec.count,
+      consecutiveErrorCount: x.errorRec.count,
+    }));
+    const count = words.value.length;
+    const e1 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount === 1).length;
+    const e2 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount === 2).length;
+    const e3 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount >= 3).length;
+    const c1 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount === 1).length;
+    const c2 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount === 2).length;
+    const c3 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount >= 3).length;
+    return { count, e1, e2, e3, c1, c2, c3 };
+  });
+  return { words, resetQuiz, recordCorrectAns, recordErrorAns, meta };
 });

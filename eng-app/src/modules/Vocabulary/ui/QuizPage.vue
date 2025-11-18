@@ -1,151 +1,81 @@
 <template>
-  <!-- <div>題目:{{ currentWord?.chinese || '取得題目失敗' }}</div>
-  <q-input @keyup.enter="checkAnswer" v-model="answer" />
-
-  <q-btn @click="checkAnswer">checkAnswer</q-btn>
-  <q-btn @click="resetQuiz">開始/重新開始</q-btn>
-  {{ meta }}
-  <div>連續答錯1次的單字: {{ meta.e1 }} 個</div>
-  <div>連續答錯2次的單字: {{ meta.e3 }} 個</div>
-  <div>連續答錯3次以上的單字: {{ meta.e3 }} 個</div>
-  <div>連續答對3次的單字: {{ meta.c3 }} 個</div>
-  <div>所有單字: {{ meta.count }} 個</div> -->
   <q-page padding class="flex flex-center">
-    <!-- {{ currentWord }} -->
     <q-card flat bordered style="width: 100%; max-width: 400px" class="q-pa-lg">
       <q-card-section class="q-pa-none" v-if="currentWord">
         <div class="text-h5 text-weight-bold text-center">
           {{ currentWord?.chinese || '取得題目失敗' }}
         </div>
-        <div class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm">
+        <div
+          v-if="!anserChecked"
+          class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm"
+        >
           <span v-if="showLength"> ( {{ currentWord.english.length }} 字 ) </span>
-          <q-btn
-            v-else
-            :color="showLength ? 'secondary' : 'grey-5'"
-            :text-color="showLength ? 'white' : 'grey-8'"
-            label="字數: 開"
-            @click="showLength = true"
-            :disable="showLength"
-            size="sm"
-          />
-          <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
-          <q-btn
-            v-else
-            :color="showHint ? 'secondary' : 'grey-5'"
-            :text-color="showHint ? 'white' : 'grey-8'"
-            label="首字: 開"
-            @click="showHint = true"
-            :disable="showHint"
-            size="sm"
-          />
-          <span v-if="showAnswer">
-            [ {{ currentWord.english }} ]
-            <q-btn
-              round
-              icon="volume_up"
-              color="primary"
-              size="sm"
-              @click="WordPronunciation(currentWord.english)"
-              title="內建發音 (瀏覽器 TTS)"
-              class="q-ml-xs"
-            />
+          <BtnHint v-else label="字數: 開" @click="showAnswer = true" />
 
-            <q-btn
-              round
-              icon="headphones"
-              color="secondary"
-              size="sm"
-              @click="openGoogleTranslateTTS(currentWord.english)"
-              title="Google 翻譯發音 (新分頁)"
-              class="q-ml-xs"
-            />
+          <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
+          <BtnHint v-else label="首字: 開" @click="showAnswer = true" />
+
+          <span v-if="showAnswer || anserChecked">
+            [ {{ currentWord.english }} ]
+            <SpeechStrip :word="currentWord.english" />
           </span>
-          <q-btn
-            v-else
-            :color="showAnswer ? 'secondary' : 'grey-5'"
-            :text-color="showAnswer ? 'white' : 'grey-8'"
-            label="答案"
-            @click="showAnswer = true"
-            :disable="showAnswer"
-            size="sm"
-          />
+          <BtnHint v-else label="答案" @click="showAnswer = true" />
         </div>
 
+        <div v-if="anserChecked" class="q-my-md text-center">
+          <q-chip
+            v-if="correctAns"
+            color="green"
+            text-color="white"
+            icon="check_circle"
+            label="答案正確！"
+            class="q-pa-sm"
+          />
+
+          <div v-else-if="errorAns">
+            <q-chip
+              color="red"
+              text-color="white"
+              icon="cancel"
+              label="答案錯誤"
+              class="q-pa-sm q-mb-sm"
+            />
+            <div class="text-subtitle1 text-red-8">
+              正確答案為：
+              <span class="text-weight-bold q-ml-xs">
+                {{ currentWord.english }}
+              </span>
+              <SpeechStrip :word="currentWord.english" />
+            </div>
+          </div>
+        </div>
         <q-input
           v-model="answer"
           placeholder="請輸入答案"
-          @keyup.enter="checkAnswer"
+          @keyup.enter="() => (anserChecked ? nextQuestion() : checkAnswer())"
           class="q-mb-sm"
         />
         <q-btn
-          :label="showAnswer || !answer ? '下一題' : '檢查答案'"
-          @click="checkAnswer"
+          :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
+          @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
           class="full-width q-mb-md"
         />
       </q-card-section>
-
-      <q-btn
-        flat
-        color="grey-7"
-        label="重新開始"
-        @click="resetQuiz"
-        size="sm"
-        icon="refresh"
-        class="col"
-      />
+      <q-card-actions>
+        <q-btn flat color="grey-7" label="重新開始" @click="resetQuiz" size="md" icon="refresh" />
+      </q-card-actions>
     </q-card>
-
-    <div class="absolute-bottom q-pa-md full-width">
-      <q-separator inset class="q-my-md" />
-      <div class="text-subtitle1 q-mb-sm text-grey-8 text-center">測驗進度</div>
-
-      <div class="row q-col-gutter-sm justify-center">
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">總單字數</div>
-          <div class="text-body1 text-weight-medium">{{ meta.count }}</div>
-        </div>
-
-        <q-separator vertical spaced inset class="gt-sm" />
-
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">連答錯 1 次</div>
-          <div class="text-body1 text-negative text-weight-medium">{{ meta.e1 }}</div>
-        </div>
-
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">連答錯 2 次</div>
-          <div class="text-body1 text-negative text-weight-medium">{{ meta.e2 }}</div>
-        </div>
-
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">連答錯 3+ 次</div>
-          <div class="text-body1 text-negative text-weight-medium">{{ meta.e3 }}</div>
-        </div>
-
-        <q-separator vertical spaced inset class="gt-sm" />
-
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">連答對 1 次</div>
-          <div class="text-body1 text-positive text-weight-medium">{{ meta.c1 }}</div>
-        </div>
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">連答對 2 次</div>
-          <div class="text-body1 text-positive text-weight-medium">{{ meta.c2 }}</div>
-        </div>
-        <div class="col-6 col-md-auto text-center">
-          <div class="text-caption text-grey-7">連答對 3 次</div>
-          <div class="text-body1 text-positive text-weight-medium">{{ meta.c3 }}</div>
-        </div>
-      </div>
-    </div>
+    <InfoStrip :meta="store.meta" />
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useWordStore } from '../store';
 import { type Word, WordQuizService } from '../domain';
-import { WordPronunciation } from '../utils';
+import BtnHint from './QuizPage/BtnHint.vue';
+import InfoStrip from './QuizPage/InfoStrip.vue';
+import SpeechStrip from './QuizPage/SpeechStrip.vue';
 const wordQuizeService = new WordQuizService();
 const answer = ref<string>('');
 const store = useWordStore();
@@ -154,19 +84,17 @@ const showHint = ref<boolean>(false);
 const showLength = ref<boolean>(false);
 const showAnswer = ref<boolean>(false);
 const questionsAnswered = ref(0);
-// ⭐ 新增功能：另開分頁到 Google 翻譯 TTS
-const openGoogleTranslateTTS = (word: string) => {
-  if (!word) return;
-  // 構造 Google 翻譯 TTS 連結
-  const url = `https://translate.google.com.tw/?sl=en&tl=zh-TW&text=${word}&op=translate`;
-  // 另開一個新的瀏覽器分頁 (tab)
-  window.open(url, '_blank');
-};
+
 // next
-onMounted(() => {
-  nextQuestion();
-});
+onMounted(() => nextQuestion());
 const nextQuestion = () => {
+  if (anserChecked.value && currentWord.value) {
+    if (correctAns.value) store.recordCorrectAns(currentWord.value.id);
+    if (errorAns.value) store.recordErrorAns(currentWord.value.id);
+    anserChecked.value = false;
+    correctAns.value = false;
+    errorAns.value = false;
+  }
   currentWord.value = wordQuizeService.getNextQuizWord(store.words);
   console.log('nextQuestion', currentWord.value);
   answer.value = '';
@@ -174,47 +102,32 @@ const nextQuestion = () => {
   showLength.value = false;
   showAnswer.value = false;
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).test = () => nextQuestion();
 const resetQuiz = () => {
   store.resetQuiz();
   nextQuestion();
   questionsAnswered.value = 0;
 };
+const anserChecked = ref<boolean>(false);
+const correctAns = ref<boolean>(false);
+const errorAns = ref<boolean>(false);
+//
 const checkAnswer = () => {
+  console.log('checkAnswer', answer.value);
   // 沒有輸入答案就下一題
   if (!answer.value.trim()) return nextQuestion();
-  // 沒有題目就略過動作，照理說不應該出現
+  // 沒有題目就略過動作，照理說不會出現這個情況
   if (!currentWord.value) return;
+
+  // 計算答案是否正確
   const correct = answer.value.trim().toLowerCase() === currentWord.value.english.toLowerCase();
   questionsAnswered.value++;
   if (showAnswer.value) return nextQuestion();
-  if (correct) {
-    // 有顯示提示就不計算
-    if (!showHint.value && !showLength.value) {
-      store.recordCorrectAns(currentWord.value.id);
-    }
-  } else {
-    store.recordErrorAns(currentWord.value.id);
-    // currentWord.value.recordErrorAnswer();
-  }
-  nextQuestion();
+
+  // 有顯示提示就不計算
+  anserChecked.value = true;
+  correctAns.value = correct && !showHint.value && !showLength.value;
+  errorAns.value = !correct;
 };
-const meta = computed(() => {
-  const words = store.words.slice();
-  const d = words.map((x) => ({
-    consecutiveCorrectCount: x.correctRec.count,
-    consecutiveErrorCount: x.errorRec.count,
-  }));
-  const count = store.words.length;
-  const e1 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount === 1).length;
-  const e2 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount === 2).length;
-  const e3 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount >= 3).length;
-  const c1 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount === 1).length;
-  const c2 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount === 2).length;
-  const c3 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount >= 3).length;
-  return { count, e1, e2, e3, c1, c2, c3 };
-});
 </script>
 
 <style scoped></style>
