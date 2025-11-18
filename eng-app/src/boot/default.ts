@@ -17,10 +17,10 @@ const hideBottomSpace = true;
 const color = 'primary';
 const unelevated = true;
 const animated = true;
-const outline = true;
+// const outline = true;
 export default boot(() => {
   SetComponentDefaults<QStepper>(QStepper, { animated, headerNav: true });
-  SetComponentDefaults<QBtn>(QBtn, { dense, outline, color, unelevated });
+  SetComponentDefaults<QBtn>(QBtn, { dense, color, unelevated });
   SetComponentDefaults<QSelect>(QSelect, { dense, outlined, hideBottomSpace });
   SetComponentDefaults<QDate>(QDate, { flat });
   SetComponentDefaults<QInput>(QInput, {
@@ -46,17 +46,13 @@ type Default = Record<string, any>;
 /**
  * Set some default properties on a component
  */
-const SetComponentDefaults = <T>(
-  component: any,
-  defaults: Partial<T>
-): void => {
+const SetComponentDefaults = <T>(component: any, defaults: Partial<T>): void => {
   const props = component.props;
   Object.keys(defaults).forEach((prop: string) => {
     const p = props[prop];
     const d = (defaults as Default)[prop];
     const isArray = Array.isArray(p);
     const isFunction = typeof p === 'function';
-    props[prop] =
-      isArray || isFunction ? { type: p, default: d } : { ...p, default: d };
+    props[prop] = isArray || isFunction ? { type: p, default: d } : { ...p, default: d };
   });
 };

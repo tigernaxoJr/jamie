@@ -17,19 +17,30 @@
         <div class="text-h5 text-weight-bold text-center">
           {{ currentWord?.chinese || '取得題目失敗' }}
         </div>
-        <div class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm">
-          <span v-if="showLength && currentWord?.english">
-            ( {{ currentWord.english.length }} 字 )
-          </span>
-          <span v-if="showHint && currentWord?.english">
-            [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ]
-          </span>
-          <!-- todo 加入連結讓使用者除了聆聽SpeechSynthesisUtterance 的聲音之外，可以點選另開tab 到 google 翻譯葉面：`https://translate.google.com/translate_tts?ie=UTF-8&q=${currentWord.english}&tl=en&client=tw-ob`聽更準確的發音 -->
-          <span v-if="showAnswer && currentWord?.english">
+        <div class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm">
+          <span v-if="showLength"> ( {{ currentWord.english.length }} 字 ) </span>
+          <q-btn
+            v-else
+            :color="showLength ? 'secondary' : 'grey-5'"
+            :text-color="showLength ? 'white' : 'grey-8'"
+            label="字數: 開"
+            @click="showLength = true"
+            :disable="showLength"
+            size="sm"
+          />
+          <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
+          <q-btn
+            v-else
+            :color="showHint ? 'secondary' : 'grey-5'"
+            :text-color="showHint ? 'white' : 'grey-8'"
+            label="首字: 開"
+            @click="showHint = true"
+            :disable="showHint"
+            size="sm"
+          />
+          <span v-if="showAnswer">
             [ {{ currentWord.english }} ]
             <q-btn
-              v-if="currentWord?.english"
-              flat
               round
               icon="volume_up"
               color="primary"
@@ -40,8 +51,6 @@
             />
 
             <q-btn
-              v-if="currentWord?.english"
-              flat
               round
               icon="headphones"
               color="secondary"
@@ -51,47 +60,24 @@
               class="q-ml-xs"
             />
           </span>
-        </div>
-
-        <div class="row justify-center items-center q-gutter-x-sm">
-          <q-btn-group flat class="q-my-sm">
-            <q-btn
-              :color="showLength ? 'secondary' : 'grey-5'"
-              :text-color="showLength ? 'white' : 'grey-8'"
-              label="字數: 開"
-              @click="showLength = true"
-              :disable="showLength"
-              size="sm"
-            />
-            <q-btn
-              :color="showHint ? 'secondary' : 'grey-5'"
-              :text-color="showHint ? 'white' : 'grey-8'"
-              label="首字: 開"
-              @click="showHint = true"
-              :disable="showHint"
-              size="sm"
-            />
-            <q-btn
-              :color="showAnswer ? 'secondary' : 'grey-5'"
-              :text-color="showAnswer ? 'white' : 'grey-8'"
-              label="答案"
-              @click="showAnswer = true"
-              :disable="showAnswer"
-              size="sm"
-            />
-          </q-btn-group>
+          <q-btn
+            v-else
+            :color="showAnswer ? 'secondary' : 'grey-5'"
+            :text-color="showAnswer ? 'white' : 'grey-8'"
+            label="答案"
+            @click="showAnswer = true"
+            :disable="showAnswer"
+            size="sm"
+          />
         </div>
 
         <q-input
-          outlined
           v-model="answer"
           placeholder="請輸入答案"
           @keyup.enter="checkAnswer"
           class="q-mb-sm"
         />
         <q-btn
-          color="primary"
-          unelevated
           :label="showAnswer || !answer ? '下一題' : '檢查答案'"
           @click="checkAnswer"
           class="full-width q-mb-md"
