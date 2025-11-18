@@ -1,3 +1,5 @@
+import { Word } from './Word';
+
 /**
  * AnswerRecord: 值物件 (Value Object) - 代表單次答題記錄的統計。
  * (DDD 概念：描述性值物件，沒有唯一識別碼)
@@ -15,18 +17,7 @@ export type AnswerRecord = {
  * Word: 領域實體 (Domain Entity) - 代表單個單詞。
  * (DDD 概念：具有唯一識別碼 (id) 和生命週期)
  */
-export class QuizWord {
-  /** 唯一識別碼 */
-  public readonly id: number;
-  /** 英文單詞 */
-  public readonly english: string;
-  /** 中文解釋 */
-  public readonly chinese: string;
-  /** 圖片 URL */
-  public readonly image: string;
-  /** 音訊 URL */
-  public readonly audio: string;
-
+export class QuizWord extends Word {
   /** 答錯記錄 */
   public errorRec: AnswerRecord;
   /** 答對記錄 */
@@ -52,12 +43,7 @@ export class QuizWord {
     errorRec?: AnswerRecord,
     correctRec?: AnswerRecord,
   ) {
-    this.id = id;
-    this.english = english;
-    this.chinese = chinese;
-    this.image = image || '';
-    this.audio = audio || '';
-
+    super(id, english, chinese, image, audio);
     // 初始化記錄或使用傳入的記錄 (常用於從 API 或本地儲存載入資料)
     const initialRecord: AnswerRecord = { count: 0, lastTime: 0, consecutive: 0 };
 
