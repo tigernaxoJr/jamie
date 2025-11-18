@@ -35,7 +35,7 @@ export class WordQuizService {
       P1_New === 0 && P2_FreshError === 0 && lastAnswerTime < now - RECENT_THRESHOLD_MS ? 1 : 0;
     // P3: 連續答錯懲罰 (新增)
     // 只有在 P1/P2/P4 都不滿足，且有連續答錯時才作為排序依據
-    const C_Error_Consecutive = word.errorRec.consecutiveCount;
+    const C_Error_Consecutive = word.errorRec.consecutive;
     // P5: 總答錯次數
     const C_Error_Total = word.errorRec.count;
 

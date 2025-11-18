@@ -8,7 +8,7 @@ export type AnswerRecord = {
   /** 上一次答題的時間戳 (Unix Time) */
   lastTime: number;
   /** 連續答錯/答對的次數 (如果上一次答題類型不同，會重置為 1) */
-  consecutiveCount: number;
+  consecutive: number;
 };
 
 /**
@@ -59,7 +59,7 @@ export class Word {
     this.audio = audio || '';
 
     // 初始化記錄或使用傳入的記錄 (常用於從 API 或本地儲存載入資料)
-    const initialRecord: AnswerRecord = { count: 0, lastTime: 0, consecutiveCount: 0 };
+    const initialRecord: AnswerRecord = { count: 0, lastTime: 0, consecutive: 0 };
 
     this.errorRec = errorRec || { ...initialRecord };
     this.correctRec = correctRec || { ...initialRecord };

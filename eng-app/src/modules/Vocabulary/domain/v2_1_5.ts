@@ -1,16 +1,3 @@
-// 假設 Word 類別的定義如下：
-// class Word {
-//   id: number;
-//   english: string;
-//   chinese: string;
-//
-//   constructor(id: number, english: string, chinese: string) {
-//     this.id = id;
-//     this.english = english;
-//     this.chinese = chinese;
-//   }
-// }
-
 import { Word } from './Word';
 
 export const GetWords = (): Array<Word> => [

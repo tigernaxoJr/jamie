@@ -1,21 +1,6 @@
-// 假設 Word 類別的定義如下：
-// class Word {
-//   id: number;
-//   english: string;
-//   chinese: string;
-//
-//   constructor(id: number, english: string, chinese: string) {
-//     this.id = id;
-//     this.english = english;
-//     this.chinese = chinese;
-//   }
-
-import { ref } from 'vue';
 import { Word } from './Word';
 
-// }
-
-export const words = ref<Array<Word>>([
+export const words: Array<Word> = [
   // 1. 數字 (Numbers)
   new Word(1, 'one', '一'),
   new Word(2, 'two', '二'),
@@ -67,4 +52,4 @@ export const words = ref<Array<Word>>([
   new Word(40, 'bus', '公車'),
   new Word(41, 'train', '火車'),
   new Word(42, 'ship', '船'),
-]);
+];

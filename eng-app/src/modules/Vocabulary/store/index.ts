@@ -21,12 +21,12 @@ export const useWordStore = defineStore('wordStore', () => {
     // 判斷：如果上次是答對，連續次數遞增；否則，重置為 1
     if (w.correctRec.lastTime > w.errorRec.lastTime) {
       // 這是連續答對
-      w.correctRec.consecutiveCount += 1; // 對方的連續次數必須重置
-      w.errorRec.consecutiveCount = 0;
+      w.correctRec.consecutive += 1; // 對方的連續次數必須重置
+      w.errorRec.consecutive = 0;
     } else {
       // 上次是答錯 (或兩者時間相同/皆為 0)，新的連續答對從 1 開始
-      w.correctRec.consecutiveCount = 1;
-      w.errorRec.consecutiveCount = 0;
+      w.correctRec.consecutive = 1;
+      w.errorRec.consecutive = 0;
     }
   };
   const recordErrorAns = (id: number) => {
@@ -37,27 +37,27 @@ export const useWordStore = defineStore('wordStore', () => {
     // 判斷：如果上次是答錯，連續次數遞增；否則，重置為 1
     if (w.errorRec.lastTime > w.correctRec.lastTime) {
       // 這是連續答錯
-      w.errorRec.consecutiveCount += 1; // 對方的連續次數必須重置
-      w.correctRec.consecutiveCount = 0;
+      w.errorRec.consecutive += 1; // 對方的連續次數必須重置
+      w.correctRec.consecutive = 0;
     } else {
       // 上次是答對，新的連續答錯從 1 開始
-      w.errorRec.consecutiveCount = 1;
-      w.correctRec.consecutiveCount = 0;
+      w.errorRec.consecutive = 1;
+      w.correctRec.consecutive = 0;
     }
   };
   const meta = computed(() => {
     const _words = words.value.slice();
     const d = _words.map((x) => ({
-      consecutiveCorrectCount: x.correctRec.count,
-      consecutiveErrorCount: x.errorRec.count,
+      consecutiveCorrect: x.correctRec.count,
+      consecutiveError: x.errorRec.count,
     }));
     const count = words.value.length;
-    const e1 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount === 1).length;
-    const e2 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount === 2).length;
-    const e3 = d.filter(({ consecutiveErrorCount }) => consecutiveErrorCount >= 3).length;
-    const c1 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount === 1).length;
-    const c2 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount === 2).length;
-    const c3 = d.filter(({ consecutiveCorrectCount }) => consecutiveCorrectCount >= 3).length;
+    const e1 = d.filter(({ consecutiveError: e }) => e === 1).length;
+    const e2 = d.filter(({ consecutiveError: e }) => e === 2).length;
+    const e3 = d.filter(({ consecutiveError: e }) => e >= 3).length;
+    const c1 = d.filter(({ consecutiveCorrect: c }) => c === 1).length;
+    const c2 = d.filter(({ consecutiveCorrect: c }) => c === 2).length;
+    const c3 = d.filter(({ consecutiveCorrect: c }) => c >= 3).length;
     return { count, e1, e2, e3, c1, c2, c3 };
   });
   return { words, resetQuiz, recordCorrectAns, recordErrorAns, meta };
