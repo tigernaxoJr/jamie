@@ -1,0 +1,27 @@
+import type { Category } from '../../domain';
+
+export const Categories: Array<Category> = [
+  { id: '1', name: '第一級', parentId: null },
+  { id: '1_1', name: '時間', parentId: '1' },
+  { id: '1_2', name: '親屬', parentId: '1' },
+  { id: '1_4', name: '人稱代名詞', parentId: '1' },
+  { id: '1_5', name: '生活', parentId: '1' },
+  { id: '1_6', name: '用品', parentId: '1' },
+  { id: '1_7', name: '人體', parentId: '1' },
+  { id: '1_8', name: '食物', parentId: '1' },
+  { id: '1_9', name: '動物', parentId: '1' },
+  { id: '1_10', name: '形容詞', parentId: '1' },
+  { id: '1_11', name: '動詞', parentId: '1' },
+  { id: '1_12', name: '其他', parentId: '1' },
+  { id: '2', name: '第二級', parentId: null },
+  { id: '2_1', name: '數量', parentId: '2' },
+  { id: '2_2', name: '場所', parentId: '2' },
+  { id: '2_3', name: '人', parentId: '2' },
+  { id: '2_4', name: '親屬', parentId: '2' },
+  { id: '2_5', name: '職業', parentId: '2' },
+  { id: '2_6', name: '生活', parentId: '2' },
+  { id: '2_7', name: '食物', parentId: '2' },
+  { id: '2_8', name: '自然', parentId: '2' },
+  { id: '2_9', name: '動詞', parentId: '2' },
+  { id: '2_10', name: '其他', parentId: '2' },
+];

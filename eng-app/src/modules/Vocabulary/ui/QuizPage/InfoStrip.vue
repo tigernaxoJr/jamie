@@ -45,9 +45,9 @@
 </template>
 
 <script setup lang="ts">
-import type { IQuizMeta } from '../../domain';
+import type { QuizMeta } from '../../domain';
 export interface IProps {
-  meta: IQuizMeta;
+  meta: QuizMeta;
 }
 withDefaults(defineProps<IProps>(), {});
 </script>

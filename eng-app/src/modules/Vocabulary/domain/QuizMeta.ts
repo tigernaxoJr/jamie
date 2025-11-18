@@ -1,4 +1,4 @@
-export interface IQuizMeta {
+export interface QuizMeta {
   count: number;
   e1: number;
   e2: number;

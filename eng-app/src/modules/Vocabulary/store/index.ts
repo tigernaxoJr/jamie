@@ -2,10 +2,10 @@ import { defineStore } from 'pinia';
 import { GetWords } from '../domain/v2_1_5';
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
-import type { Word } from '../domain';
+import type { QuizWord } from '../domain';
 
 export const useWordStore = defineStore('wordStore', () => {
-  const words = useLocalStorage<Word[]>('words', ref(GetWords()));
+  const words = useLocalStorage<QuizWord[]>('words', ref(GetWords()));
   const resetQuiz = () => {
     words.value.splice(0);
     console.log('resetQuiz', GetWords());

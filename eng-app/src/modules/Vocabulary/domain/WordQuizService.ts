@@ -2,7 +2,7 @@
  * WordQuizService：一個領域服務 (Domain Service)，
  * 專門負責處理詞彙集合的複雜運算，如選題排序、難度計算等。
  */
-import type { Word } from './Word';
+import type { QuizWord } from './QuizWord';
 // 最近出錯的定義 24 小時
 const RECENT_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 // 定義緩衝區大小
@@ -18,7 +18,7 @@ export class WordQuizService {
    * P5: 總答錯次數,Cerror,×1
    *
    */
-  private calculatePriorityScore(word: Word, now: number): number {
+  private calculatePriorityScore(word: QuizWord, now: number): number {
     const lastAnswerTime = Math.max(word.errorRec.lastTime, word.correctRec.lastTime);
     const totalCount = word.errorRec.count + word.correctRec.count;
     const isErrorRecently = word.errorRec.lastTime >= now - RECENT_THRESHOLD_MS;
@@ -72,7 +72,7 @@ export class WordQuizService {
    * @param lastWordIds (新增) 最近 N 次考過的單字 ID 清單。
    * @returns 優先級最高的單詞 (Word) 或 undefined。
    */
-  public getNextQuizWord(words: Word[], lastWordIds: number[] = []): Word | undefined {
+  public getNextQuizWord(words: QuizWord[], lastWordIds: number[] = []): QuizWord | undefined {
     if (words.length < 1) {
       // 如果列表為空，則返回 undefined
       return undefined;
@@ -119,8 +119,8 @@ export class WordQuizService {
    * @returns 優先級最高的單詞 (Word) 或 undefined。
    */
   private selectTopWordFromScoredList(
-    scoredWords: { word: Word; score: number }[],
-  ): Word | undefined {
+    scoredWords: { word: QuizWord; score: number }[],
+  ): QuizWord | undefined {
     // 找到最高分數
     const maxScore = scoredWords[0]?.score;
     if (maxScore === undefined) return undefined;

@@ -15,7 +15,7 @@ export type AnswerRecord = {
  * Word: 領域實體 (Domain Entity) - 代表單個單詞。
  * (DDD 概念：具有唯一識別碼 (id) 和生命週期)
  */
-export class Word {
+export class QuizWord {
   /** 唯一識別碼 */
   public readonly id: number;
   /** 英文單詞 */

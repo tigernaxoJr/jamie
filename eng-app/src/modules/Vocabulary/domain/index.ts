@@ -1,4 +1,5 @@
 // todo import and reexport all in Word.ts, WordQuizService
-export * from './Word';
+export * from './QuizWord';
 export * from './WordQuizService';
 export * from './IQuizMeta';
+export * from './Category';
