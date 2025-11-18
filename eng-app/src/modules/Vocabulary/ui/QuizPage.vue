@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useWordStore } from '../store';
+import { useWordStore } from './QuizStore';
 import { type QuizWord, WordQuizService } from '../domain';
 import BtnHint from './QuizPage/BtnHint.vue';
 import InfoStrip from './QuizPage/InfoStrip.vue';
