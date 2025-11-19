@@ -13,7 +13,7 @@
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
         <template v-for="(x, idx) in linksList" :key="idx">
-          <q-item clickable tag="a" :to="x.to">
+          <q-item clickable tag="a" :to="x.to" :active="x.to === $route.path">
             <q-item-section v-if="x.icon" avatar>
               <q-icon :name="x.icon" />
             </q-item-section>

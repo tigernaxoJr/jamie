@@ -1,132 +1,134 @@
 <template>
-  <q-page padding class="flex flex-center">
-    <!-- Category Selection View -->
-    <q-card
-      v-if="isSelectingCategory"
-      flat
-      bordered
-      style="width: 100%; max-width: 600px"
-      class="q-pa-lg"
-    >
-      <div class="text-h5 text-weight-bold text-center q-mb-md">選擇測驗類別</div>
+  <q-page padding class="column no-wrap items-center">
+    <div class="col flex flex-center full-width q-pa-md">
+      <!-- Category Selection View -->
+      <q-card
+        v-if="isSelectingCategory"
+        flat
+        bordered
+        style="width: 100%; max-width: 600px"
+        class="q-pa-lg"
+      >
+        <div class="text-h5 text-weight-bold text-center q-mb-md">選擇測驗類別</div>
 
-      <q-scroll-area style="height: 400px; max-width: 100%">
-        <div v-for="parent in parentCategories" :key="parent.id" class="q-mb-md">
-          <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ parent.name }}</div>
-          <div class="row q-col-gutter-sm">
-            <div v-for="cat in getSubCategories(parent.id)" :key="cat.id" class="col-6 col-sm-4">
-              <q-checkbox
-                :model-value="tempSelectedCategories.includes(cat.id)"
-                @update:model-value="toggleCategory(cat.id)"
-                :label="cat.name"
-                dense
-              />
+        <q-scroll-area style="height: 400px; max-width: 100%">
+          <div v-for="parent in parentCategories" :key="parent.id" class="q-mb-md">
+            <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ parent.name }}</div>
+            <div class="row q-col-gutter-sm">
+              <div v-for="cat in getSubCategories(parent.id)" :key="cat.id" class="col-6 col-sm-4">
+                <q-checkbox
+                  :model-value="tempSelectedCategories.includes(cat.id)"
+                  @update:model-value="toggleCategory(cat.id)"
+                  :label="cat.name"
+                  dense
+                />
+              </div>
             </div>
+            <q-separator class="q-mt-md" />
           </div>
-          <q-separator class="q-mt-md" />
-        </div>
-      </q-scroll-area>
+        </q-scroll-area>
 
-      <q-card-actions align="center" class="q-mt-md">
-        <q-btn
-          color="primary"
-          label="開始測驗"
-          @click="confirmCategorySelection"
-          :disable="tempSelectedCategories.length === 0"
-        />
-      </q-card-actions>
-    </q-card>
-
-    <!-- Quiz View -->
-    <q-card v-else flat bordered style="width: 100%; max-width: 400px" class="q-pa-lg">
-      <q-card-section class="q-pa-none" v-if="currentWord">
-        <div class="text-caption text-grey-6 text-center q-mb-sm" v-if="currentCategoryInfo">
-          {{ currentCategoryInfo }}
-        </div>
-        <div class="text-h5 text-weight-bold text-center">
-          {{ currentWord?.chinese || '取得題目失敗' }}
-        </div>
-        <div
-          v-if="!anserChecked"
-          class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm"
-        >
-          <span v-if="showLength"> ( {{ currentWord.english.length }} 字 ) </span>
-          <BtnHint v-else label="字數: 開" @click="showLength = true" />
-
-          <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
-          <BtnHint v-else label="首字: 開" @click="showHint = true" />
-
-          <span v-if="showAnswer || anserChecked">
-            [ {{ currentWord.english }} ]
-            <SpeechStrip :word="currentWord.english" />
-          </span>
-          <BtnHint v-else label="答案" @click="showAnswer = true" />
-        </div>
-
-        <div v-if="anserChecked" class="q-my-md text-center">
-          <q-chip
-            v-if="correctAns"
-            color="green"
-            text-color="white"
-            icon="check_circle"
-            label="答案正確！"
-            class="q-pa-sm"
+        <q-card-actions align="center" class="q-mt-md">
+          <q-btn
+            color="primary"
+            label="開始測驗"
+            @click="confirmCategorySelection"
+            :disable="tempSelectedCategories.length === 0"
           />
+        </q-card-actions>
+      </q-card>
 
-          <div v-else-if="errorAns">
-            <q-chip
-              color="red"
-              text-color="white"
-              icon="cancel"
-              label="答案錯誤"
-              class="q-pa-sm q-mb-sm"
-            />
-            <div class="text-subtitle1 text-red-8">
-              正確答案為：
-              <span class="text-weight-bold q-ml-xs">
-                {{ currentWord.english }}
-              </span>
+      <!-- Quiz View -->
+      <q-card v-else flat bordered style="width: 100%; max-width: 400px" class="q-pa-lg">
+        <q-card-section class="q-pa-none" v-if="currentWord">
+          <div class="text-caption text-grey-6 text-center q-mb-sm" v-if="currentCategoryInfo">
+            {{ currentCategoryInfo }}
+          </div>
+          <div class="text-h5 text-weight-bold text-center">
+            {{ currentWord?.chinese || '取得題目失敗' }}
+          </div>
+          <div
+            v-if="!anserChecked"
+            class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm"
+          >
+            <span v-if="showLength"> ( {{ currentWord.english.length }} 字 ) </span>
+            <BtnHint v-else label="字數: 開" @click="showLength = true" />
+
+            <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
+            <BtnHint v-else label="首字: 開" @click="showHint = true" />
+
+            <span v-if="showAnswer || anserChecked">
+              [ {{ currentWord.english }} ]
               <SpeechStrip :word="currentWord.english" />
+            </span>
+            <BtnHint v-else label="答案" @click="showAnswer = true" />
+          </div>
+
+          <div v-if="anserChecked" class="q-my-md text-center">
+            <q-chip
+              v-if="correctAns"
+              color="green"
+              text-color="white"
+              icon="check_circle"
+              label="答案正確！"
+              class="q-pa-sm"
+            />
+
+            <div v-else-if="errorAns">
+              <q-chip
+                color="red"
+                text-color="white"
+                icon="cancel"
+                label="答案錯誤"
+                class="q-pa-sm q-mb-sm"
+              />
+              <div class="text-subtitle1 text-red-8">
+                正確答案為：
+                <span class="text-weight-bold q-ml-xs">
+                  {{ currentWord.english }}
+                </span>
+                <SpeechStrip :word="currentWord.english" />
+              </div>
             </div>
           </div>
-        </div>
-        <q-input
-          v-model="answer"
-          placeholder="請輸入答案"
-          @keyup.enter="() => (anserChecked ? nextQuestion() : checkAnswer())"
-          class="q-mb-sm"
-        />
-        <q-btn
-          :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
-          @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
-          class="full-width q-mb-md"
-        />
-      </q-card-section>
-      <q-card-section v-else class="text-center q-pa-lg">
-        <div class="text-h6 text-grey-7">沒有題目</div>
-        <div class="text-caption text-grey-6 q-mt-sm">請嘗試選擇其他類別</div>
-        <q-btn
-          flat
-          color="primary"
-          label="選擇類別"
-          @click="openCategorySelection"
-          class="q-mt-md"
-        />
-      </q-card-section>
+          <q-input
+            v-model="answer"
+            placeholder="請輸入答案"
+            @keyup.enter="() => (anserChecked ? nextQuestion() : checkAnswer())"
+            class="q-mb-sm"
+          />
+          <q-btn
+            :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
+            @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
+            class="full-width q-mb-md"
+          />
+        </q-card-section>
+        <q-card-section v-else class="text-center q-pa-lg">
+          <div class="text-h6 text-grey-7">沒有題目</div>
+          <div class="text-caption text-grey-6 q-mt-sm">請嘗試選擇其他類別</div>
+          <q-btn
+            flat
+            color="primary"
+            label="選擇類別"
+            @click="openCategorySelection"
+            class="q-mt-md"
+          />
+        </q-card-section>
 
-      <q-card-actions align="center">
-        <q-btn flat color="grey-7" label="重新開始" @click="resetQuiz" size="md" icon="refresh" />
-        <q-btn
-          flat
-          color="primary"
-          label="選擇類別"
-          @click="openCategorySelection"
-          size="md"
-          icon="category"
-        />
-      </q-card-actions>
-    </q-card>
-    <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" />
+        <q-card-actions align="center">
+          <q-btn flat color="grey-7" label="重新開始" @click="resetQuiz" size="md" icon="refresh" />
+          <q-btn
+            flat
+            color="primary"
+            label="選擇類別"
+            @click="openCategorySelection"
+            size="md"
+            icon="category"
+          />
+        </q-card-actions>
+      </q-card>
+    </div>
+    <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" class="col-auto" />
   </q-page>
 </template>
 

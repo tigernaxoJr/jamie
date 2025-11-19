@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute-bottom q-pa-md full-width">
+  <div class="q-pa-md full-width">
     <q-separator inset class="q-my-md" />
     <div class="text-subtitle1 q-mb-sm text-grey-8 text-center">測驗進度</div>
 
