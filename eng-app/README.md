@@ -84,3 +84,8 @@ src/
 │
 └── **pages/** # 僅用於存放【通用、極簡或跨模組】的頁面
 ├── Error404.vue # 404 頁面
+
+---
+
+`pnpm add -D push-dir`
+`git remote add gh-pages https://github.com/tigernaxojr/jamie.git`
