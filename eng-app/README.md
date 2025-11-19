@@ -89,3 +89,5 @@ src/
 
 `pnpm add -D push-dir`
 `git remote add gh-pages https://github.com/tigernaxojr/jamie.git`
+`pnpm run build`
+`pnpm run deploy`
