@@ -107,7 +107,7 @@ import SpeechStrip from './QuizPage/SpeechStrip.vue';
 const isReviewing = ref(false);
 const selectedCategories = useLocalStorage<string[]>('review-selected-categories', []);
 const reviewWords = ref<QuizWord[]>([]);
-const reviewMode = ref<'en-ch' | 'ch-en'>('en-ch');
+const reviewMode = ref<'en-ch' | 'ch-en'>('ch-en');
 const revealedWords = ref(new Set<number>());
 
 const parentCategories = computed(() => {
