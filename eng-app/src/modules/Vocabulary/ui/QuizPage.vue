@@ -5,9 +5,8 @@
       <q-card
         v-if="isSelectingCategory"
         flat
-        bordered
+        class="q-pa-lg soft-shadow rounded-borders bg-white"
         style="width: 100%; max-width: 600px"
-        class="q-pa-lg"
       >
         <div class="text-h5 text-weight-bold text-center q-mb-md">選擇測驗類別</div>
 
@@ -30,16 +29,24 @@
 
         <q-card-actions align="center" class="q-mt-md">
           <q-btn
+            unelevated
+            rounded
             color="primary"
             label="開始測驗"
             @click="confirmCategorySelection"
             :disable="tempSelectedCategories.length === 0"
+            class="q-px-xl"
           />
         </q-card-actions>
       </q-card>
 
       <!-- Quiz View -->
-      <q-card v-else flat bordered style="width: 100%; max-width: 400px" class="q-pa-lg">
+      <q-card
+        v-else
+        flat
+        class="q-pa-lg soft-shadow rounded-borders bg-white"
+        style="width: 100%; max-width: 400px"
+      >
         <q-card-section class="q-pa-none" v-if="currentWord">
           <div class="text-caption text-grey-6 text-center q-mb-sm" v-if="currentCategoryInfo">
             {{ currentCategoryInfo }}
@@ -101,13 +108,18 @@
             :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
             @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
             class="full-width q-mb-md"
+            unelevated
+            rounded
+            color="primary"
+            size="lg"
           />
         </q-card-section>
         <q-card-section v-else class="text-center q-pa-lg">
           <div class="text-h6 text-grey-7">沒有題目</div>
           <div class="text-caption text-grey-6 q-mt-sm">請嘗試選擇其他類別</div>
           <q-btn
-            flat
+            unelevated
+            rounded
             color="primary"
             label="選擇類別"
             @click="openCategorySelection"

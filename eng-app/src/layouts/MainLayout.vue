@@ -1,26 +1,43 @@
 <template>
   <q-layout view="hHh Lpr lFf">
-    <q-header bordered>
+    <q-header class="bg-white text-primary" height-hint="58" bordered>
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleLeftDrawer"
+          class="q-mr-sm"
+        />
 
-        <q-toolbar-title> Jamie's English App </q-toolbar-title>
+        <q-toolbar-title class="text-weight-bold"> Jamie's English App </q-toolbar-title>
 
-        <div>Jamie App 0.0.1 alpha</div>
+        <div class="text-caption text-grey-7">v0.0.1 alpha</div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
+    <q-drawer v-model="leftDrawerOpen" show-if-above class="bg-grey-1" bordered>
+      <q-list padding>
         <template v-for="(x, idx) in linksList" :key="idx">
-          <q-item clickable tag="a" :to="x.to" :active="x.to === $route.path">
+          <q-item
+            clickable
+            tag="a"
+            :to="x.to"
+            :active="x.to === $route.path"
+            class="q-mx-md q-my-xs rounded-borders"
+            active-class="bg-primary text-white"
+          >
             <q-item-section v-if="x.icon" avatar>
               <q-icon :name="x.icon" />
             </q-item-section>
 
             <q-item-section>
-              <q-item-label>{{ x.title }}</q-item-label>
-              <q-item-label caption>{{ x.caption }}</q-item-label>
+              <q-item-label class="text-weight-medium">{{ x.title }}</q-item-label>
+              <q-item-label caption :class="x.to === $route.path ? 'text-white' : ''">{{
+                x.caption
+              }}</q-item-label>
             </q-item-section>
           </q-item>
         </template>
