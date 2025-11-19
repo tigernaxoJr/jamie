@@ -1,15 +1,17 @@
 import { defineStore } from 'pinia';
-import { GetWords } from '../domain/v2_1_5';
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
 import type { QuizWord } from '../domain';
+import { GeQuiztWords } from '../infra/WordBank';
 
 export const useQuizStore = defineStore('quizStore', () => {
-  const words = useLocalStorage<QuizWord[]>('words', ref(GetWords()));
+  // const words = useLocalStorage<QuizWord[]>('words', ref(GetWords()));
+  const words = useLocalStorage<QuizWord[]>('words', ref(GeQuiztWords(new Set(['2_1']))));
   const resetQuiz = () => {
+    console.log('resetQuiz', '1', GeQuiztWords(new Set(['2_1'])));
     words.value.splice(0);
-    console.log('resetQuiz', GetWords());
-    words.value.push(...GetWords());
+    // console.log('resetQuiz', GetWords());
+    words.value.push(...GeQuiztWords(new Set(['2_1'])));
   };
   const recordCorrectAns = (id: number) => {
     const w = words.value.find((word) => word.id === id);
