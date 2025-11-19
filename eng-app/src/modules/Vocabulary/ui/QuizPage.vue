@@ -1,7 +1,48 @@
 <template>
   <q-page padding class="flex flex-center">
-    <q-card flat bordered style="width: 100%; max-width: 400px" class="q-pa-lg">
+    <!-- Category Selection View -->
+    <q-card
+      v-if="isSelectingCategory"
+      flat
+      bordered
+      style="width: 100%; max-width: 600px"
+      class="q-pa-lg"
+    >
+      <div class="text-h5 text-weight-bold text-center q-mb-md">選擇測驗類別</div>
+
+      <q-scroll-area style="height: 400px; max-width: 100%">
+        <div v-for="parent in parentCategories" :key="parent.id" class="q-mb-md">
+          <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ parent.name }}</div>
+          <div class="row q-col-gutter-sm">
+            <div v-for="cat in getSubCategories(parent.id)" :key="cat.id" class="col-6 col-sm-4">
+              <q-checkbox
+                :model-value="tempSelectedCategories.includes(cat.id)"
+                @update:model-value="toggleCategory(cat.id)"
+                :label="cat.name"
+                dense
+              />
+            </div>
+          </div>
+          <q-separator class="q-mt-md" />
+        </div>
+      </q-scroll-area>
+
+      <q-card-actions align="center" class="q-mt-md">
+        <q-btn
+          color="primary"
+          label="開始測驗"
+          @click="confirmCategorySelection"
+          :disable="tempSelectedCategories.length === 0"
+        />
+      </q-card-actions>
+    </q-card>
+
+    <!-- Quiz View -->
+    <q-card v-else flat bordered style="width: 100%; max-width: 400px" class="q-pa-lg">
       <q-card-section class="q-pa-none" v-if="currentWord">
+        <div class="text-caption text-grey-6 text-center q-mb-sm" v-if="currentCategoryInfo">
+          {{ currentCategoryInfo }}
+        </div>
         <div class="text-h5 text-weight-bold text-center">
           {{ currentWord?.chinese || '取得題目失敗' }}
         </div>
@@ -61,21 +102,42 @@
           class="full-width q-mb-md"
         />
       </q-card-section>
-      <q-card-actions>
+      <q-card-section v-else class="text-center q-pa-lg">
+        <div class="text-h6 text-grey-7">沒有題目</div>
+        <div class="text-caption text-grey-6 q-mt-sm">請嘗試選擇其他類別</div>
+        <q-btn
+          flat
+          color="primary"
+          label="選擇類別"
+          @click="openCategorySelection"
+          class="q-mt-md"
+        />
+      </q-card-section>
+
+      <q-card-actions align="center">
         <q-btn flat color="grey-7" label="重新開始" @click="resetQuiz" size="md" icon="refresh" />
+        <q-btn
+          flat
+          color="primary"
+          label="選擇類別"
+          @click="openCategorySelection"
+          size="md"
+          icon="category"
+        />
       </q-card-actions>
     </q-card>
-    <InfoStrip :meta="store.meta" />
+    <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" />
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useQuizStore } from './QuizStore';
 import { type QuizWord, WordQuizService } from '../domain';
 import BtnHint from './QuizPage/BtnHint.vue';
 import InfoStrip from './QuizPage/InfoStrip.vue';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
+
 const wordQuizeService = new WordQuizService();
 const answer = ref<string>('');
 const store = useQuizStore();
@@ -84,9 +146,68 @@ const showHint = ref<boolean>(false);
 const showLength = ref<boolean>(false);
 const showAnswer = ref<boolean>(false);
 const questionsAnswered = ref(0);
+const isSelectingCategory = ref(false);
+
+// Category Selection
+const tempSelectedCategories = ref<string[]>([]);
+
+const openCategorySelection = () => {
+  tempSelectedCategories.value = [...store.selectedCategories];
+  isSelectingCategory.value = true;
+};
+
+const confirmCategorySelection = () => {
+  store.setCategories(tempSelectedCategories.value);
+  isSelectingCategory.value = false;
+  nextQuestion();
+};
+
+const toggleCategory = (id: string) => {
+  const index = tempSelectedCategories.value.indexOf(id);
+  if (index === -1) {
+    tempSelectedCategories.value.push(id);
+  } else {
+    tempSelectedCategories.value.splice(index, 1);
+  }
+};
+
+const parentCategories = computed(() => {
+  return store.categoryOptions.filter((c) => !c.parentId);
+});
+
+const getSubCategories = (parentId: string) => {
+  return store.categoryOptions.filter((c) => c.parentId === parentId);
+};
+
+const currentCategoryInfo = computed(() => {
+  if (
+    !currentWord.value ||
+    !currentWord.value.categories ||
+    currentWord.value.categories.length === 0
+  ) {
+    return '';
+  }
+  // Assuming a word belongs to one main category for display purposes, or we pick the first one.
+  const catId = currentWord.value.categories[0];
+  const category = store.categoryOptions.find((c) => c.id === catId);
+  if (!category) return '';
+
+  if (category.parentId) {
+    const parent = store.categoryOptions.find((c) => c.id === category.parentId);
+    return parent ? `${parent.name} > ${category.name}` : category.name;
+  }
+  return category.name;
+});
 
 // next
-onMounted(() => nextQuestion());
+onMounted(() => {
+  if (store.words.length === 0) {
+    openCategorySelection();
+  } else {
+    nextQuestion();
+  }
+});
+
 const nextQuestion = () => {
   if (anserChecked.value && currentWord.value) {
     if (correctAns.value) store.recordCorrectAns(currentWord.value.id);

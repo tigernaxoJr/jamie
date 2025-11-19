@@ -3,16 +3,30 @@ import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
 import type { QuizWord } from '../domain';
 import { GeQuiztWords } from '../infra/WordBank';
+import Categories from '../infra/Category';
 
 export const useQuizStore = defineStore('quizStore', () => {
+  const categoryOptions = ref(Categories);
+  const selectedCategories = useLocalStorage<string[]>('quiz-selected-categories', ['2_1']);
+
   // const words = useLocalStorage<QuizWord[]>('words', ref(GetWords()));
-  const words = useLocalStorage<QuizWord[]>('words', ref(GeQuiztWords(new Set(['2_1']))));
+  const words = useLocalStorage<QuizWord[]>(
+    'words',
+    ref(GeQuiztWords(new Set(selectedCategories.value))),
+  );
+
   const resetQuiz = () => {
-    console.log('resetQuiz', '1', GeQuiztWords(new Set(['2_1'])));
+    console.log('resetQuiz', '1', GeQuiztWords(new Set(selectedCategories.value)));
     words.value.splice(0);
     // console.log('resetQuiz', GetWords());
-    words.value.push(...GeQuiztWords(new Set(['2_1'])));
+    words.value.push(...GeQuiztWords(new Set(selectedCategories.value)));
   };
+
+  const setCategories = (ids: string[]) => {
+    selectedCategories.value = ids;
+    resetQuiz();
+  };
+
   const recordCorrectAns = (id: number) => {
     const w = words.value.find((word) => word.id === id);
     if (!w) return;
@@ -62,5 +76,14 @@ export const useQuizStore = defineStore('quizStore', () => {
     const c3 = d.filter(({ consecutiveCorrect: c }) => c >= 3).length;
     return { count, e1, e2, e3, c1, c2, c3 };
   });
-  return { words, resetQuiz, recordCorrectAns, recordErrorAns, meta };
+  return {
+    words,
+    categoryOptions,
+    selectedCategories,
+    setCategories,
+    resetQuiz,
+    recordCorrectAns,
+    recordErrorAns,
+    meta,
+  };
 });

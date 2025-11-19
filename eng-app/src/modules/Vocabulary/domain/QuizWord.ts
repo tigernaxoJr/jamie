@@ -40,10 +40,11 @@ export class QuizWord extends Word {
     chinese: string,
     image?: string,
     audio?: string,
+    categories?: string[],
     errorRec?: AnswerRecord,
     correctRec?: AnswerRecord,
   ) {
-    super(id, english, chinese, image, audio);
+    super(id, english, chinese, image, audio, categories);
     // 初始化記錄或使用傳入的記錄 (常用於從 API 或本地儲存載入資料)
     const initialRecord: AnswerRecord = { count: 0, lastTime: 0, consecutive: 0 };
 
