@@ -21,12 +21,12 @@ const c2 = [
 ].map((w) => ({ ...w, categories: ['1_2'] })) as Array<NewWord>;
 
 const c3 = [
-  { english: 'father', chinese: '父親' },
-  { english: 'dad', chinese: '爸爸' },
-  { english: 'daddy', chinese: '爹地' },
-  { english: 'mother', chinese: '母親' },
-  { english: 'mom', chinese: '媽媽' },
-  { english: 'mommy', chinese: '媽咪' },
+  { english: 'father', chinese: '父親(正式、書面)' },
+  { english: 'dad', chinese: '爸爸(日常、親近)' },
+  { english: 'daddy', chinese: '爹地(親暱、孩童用語)' },
+  { english: 'mother', chinese: '母親(正式、書面)' },
+  { english: 'mom', chinese: '媽媽(日常、親近)' },
+  { english: 'mommy', chinese: '媽咪(親暱、孩童用語)' },
   { english: 'brother', chinese: '兄弟' },
   { english: 'sister', chinese: '姐妹' },
 ].map((w) => ({ ...w, categories: ['1_3'] })) as Array<NewWord>;
@@ -113,12 +113,22 @@ const c10 = [
   { english: 'small', chinese: '小的' },
 ].map((w) => ({ ...w, categories: ['1_10'] })) as Array<NewWord>;
 const c11 = [
-  { english: 'be (am are is)', chinese: '是' },
+  { english: 'be', chinese: '是(原型)' },
+  { english: 'am', chinese: '是 (I, 現在)' },
+  { english: 'is', chinese: '是 (單數, 現在)' },
+  { english: 'are', chinese: '是 (複數/You, 現在)' },
   { english: 'come', chinese: '來' },
   { english: 'go', chinese: '去' },
-  { english: 'see', chinese: '看' },
+  { english: 'see', chinese: '看 (非主動)' },
+  { english: 'look', chinese: '看 (主動地看)' }, // bonus
+  { english: 'watch', chinese: '觀看 (長時間持續)' }, // bonus
   { english: 'hear', chinese: '聽' },
-  { english: 'speak', chinese: '說' },
+  { english: 'listen', chinese: '聽 (專注地聽)' }, // bonus
+  // { english: 'speak', chinese: '說' },
+  { english: 'speak', chinese: '說話 (正式/單向)' }, // bonus
+  { english: 'say', chinese: '說 (內容)' }, // bonus
+  { english: 'tell', chinese: '告訴 (對象)' }, //bonus
+  { english: 'talk', chinese: '交談 (聊天)' }, // bonus
   { english: 'sing', chinese: '唱' },
   { english: 'eat', chinese: '吃' },
   { english: 'drink', chinese: '喝' },

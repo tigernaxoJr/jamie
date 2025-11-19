@@ -51,10 +51,10 @@
           class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm"
         >
           <span v-if="showLength"> ( {{ currentWord.english.length }} 字 ) </span>
-          <BtnHint v-else label="字數: 開" @click="showAnswer = true" />
+          <BtnHint v-else label="字數: 開" @click="showLength = true" />
 
           <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
-          <BtnHint v-else label="首字: 開" @click="showAnswer = true" />
+          <BtnHint v-else label="首字: 開" @click="showHint = true" />
 
           <span v-if="showAnswer || anserChecked">
             [ {{ currentWord.english }} ]
