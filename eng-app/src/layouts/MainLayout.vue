@@ -44,6 +44,12 @@ const linksList = [
     to: '/quiz',
   },
   {
+    title: '英文複習',
+    caption: '開始英文單字複習',
+    icon: 'book',
+    to: '/review',
+  },
+  {
     title: '首頁',
     caption: '回到首頁',
     icon: 'home',
