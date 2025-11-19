@@ -1,3 +1,158 @@
-import type { QuizWord } from '../../domain/QuizWord';
+import type { NewWord } from '../../domain';
 
-export default [{}, {}, {}] as QuizWord[];
+const c1 = [
+  { english: 'one', chinese: '一' },
+  { english: 'two', chinese: '二' },
+  { english: 'three', chinese: '三' },
+  { english: 'four', chinese: '四' },
+  { english: 'five', chinese: '五' },
+  { english: 'six', chinese: '六' },
+  { english: 'seven', chinese: '七' },
+  { english: 'eight', chinese: '八' },
+  { english: 'nine', chinese: '九' },
+  { english: 'ten', chinese: '十' },
+].map((w) => ({ ...w, categories: ['1_1'] })) as Array<NewWord>;
+const c2 = [
+  { english: 'morning', chinese: '早上' },
+  { english: 'afternoon', chinese: '下午' },
+  { english: 'evening', chinese: '傍晚' },
+  { english: 'night', chinese: '晚上' },
+  { english: 'now', chinese: '現在' },
+].map((w) => ({ ...w, categories: ['1_2'] })) as Array<NewWord>;
+
+const c3 = [
+  { english: 'father', chinese: '父親' },
+  { english: 'dad', chinese: '爸爸' },
+  { english: 'daddy', chinese: '爹地' },
+  { english: 'mother', chinese: '母親' },
+  { english: 'mom', chinese: '媽媽' },
+  { english: 'mommy', chinese: '媽咪' },
+  { english: 'brother', chinese: '兄弟' },
+  { english: 'sister', chinese: '姐妹' },
+].map((w) => ({ ...w, categories: ['1_3'] })) as Array<NewWord>;
+
+const c4 = [
+  { english: 'I', chinese: '我' },
+  { english: 'me', chinese: '我 (受格)' },
+  { english: 'my', chinese: '我的' },
+  { english: 'you', chinese: '你/你們' },
+  { english: 'your', chinese: '你的/你們的' },
+  { english: 'he', chinese: '他' },
+  { english: 'she', chinese: '她' },
+  { english: 'we', chinese: '我們' },
+  { english: 'they', chinese: '他們/她們/牠們' },
+].map((w) => ({ ...w, categories: ['1_4'] })) as Array<NewWord>;
+const c5 = [
+  { english: 'hello', chinese: '哈囉' },
+  { english: 'hi', chinese: '嗨' },
+  { english: 'home', chinese: '家' },
+  { english: 'park', chinese: '公園' },
+  { english: 'zoo', chinese: '動物園' },
+  { english: 'wall', chinese: '牆' },
+  { english: 'car', chinese: '車子' },
+  { english: 'bus', chinese: '公車' },
+  { english: 'train', chinese: '火車' },
+  { english: 'ship', chinese: '船' },
+].map((w) => ({ ...w, categories: ['1_5'] })) as Array<NewWord>;
+const c6 = [
+  { english: 'book', chinese: '書' },
+  { english: 'pen', chinese: '鋼筆' },
+  { english: 'pencil', chinese: '鉛筆' },
+  { english: 'desk', chinese: '書桌' },
+  { english: 'ball', chinese: '球' },
+  { english: 'bag', chinese: '袋子' },
+  { english: 'box', chinese: '盒子' },
+  { english: 'key', chinese: '鑰匙' },
+  { english: 'chair', chinese: '椅子' },
+  { english: 'bed', chinese: '床' },
+  { english: 'door', chinese: '門' },
+  { english: 'window', chinese: '窗戶' },
+].map((w) => ({ ...w, categories: ['1_6'] })) as Array<NewWord>;
+const c7 = [
+  { english: 'head', chinese: '頭' },
+  { english: 'hair', chinese: '頭髮' },
+  { english: 'face', chinese: '臉' },
+  { english: 'eye', chinese: '眼睛' },
+  { english: 'ear', chinese: '耳朵' },
+  { english: 'nose', chinese: '鼻子' },
+  { english: 'mouth', chinese: '嘴' },
+  { english: 'neck', chinese: '脖子' },
+  { english: 'arm', chinese: '手臂' },
+  { english: 'hand', chinese: '手' },
+  { english: 'knee', chinese: '膝蓋' },
+  { english: 'leg', chinese: '腿' },
+  { english: 'foot', chinese: '腳' },
+].map((w) => ({ ...w, categories: ['1_7'] })) as Array<NewWord>;
+const c8 = [
+  { english: 'apple', chinese: '蘋果' },
+  { english: 'banana', chinese: '香蕉' },
+  { english: 'cake', chinese: '蛋糕' },
+  { english: 'candy', chinese: '糖' },
+  { english: 'cookie', chinese: '餅乾' },
+  { english: 'bread', chinese: '麵包' },
+  { english: 'egg', chinese: '蛋' },
+  { english: 'pizza', chinese: '披薩' },
+  { english: 'juice', chinese: '果汁' },
+  { english: 'milk', chinese: '牛奶' },
+  { english: 'tea', chinese: '茶' },
+  { english: 'water', chinese: '水' },
+].map((w) => ({ ...w, categories: ['1_8'] })) as Array<NewWord>;
+const c9 = [
+  { english: 'bee', chinese: '蜜蜂' },
+  { english: 'bird', chinese: '鳥' },
+  { english: 'cat', chinese: '貓' },
+  { english: 'dog', chinese: '狗' },
+  { english: 'horse', chinese: '馬' },
+  { english: 'fish', chinese: '魚' },
+  { english: 'pig', chinese: '豬' },
+].map((w) => ({ ...w, categories: ['1_9'] })) as Array<NewWord>;
+const c10 = [
+  { english: 'good', chinese: '好的' },
+  { english: 'bad', chinese: '壞的' },
+  { english: 'big', chinese: '大的' },
+  { english: 'small', chinese: '小的' },
+].map((w) => ({ ...w, categories: ['1_10'] })) as Array<NewWord>;
+const c11 = [
+  { english: 'be (am are is)', chinese: '是' },
+  { english: 'come', chinese: '來' },
+  { english: 'go', chinese: '去' },
+  { english: 'see', chinese: '看' },
+  { english: 'hear', chinese: '聽' },
+  { english: 'speak', chinese: '說' },
+  { english: 'sing', chinese: '唱' },
+  { english: 'eat', chinese: '吃' },
+  { english: 'drink', chinese: '喝' },
+  { english: 'run', chinese: '跑' },
+  { english: 'jump', chinese: '跳' },
+  { english: 'walk', chinese: '走' },
+  { english: 'sit', chinese: '坐' },
+  { english: 'stand', chinese: '站' },
+  { english: 'read', chinese: '讀' },
+  { english: 'write', chinese: '寫' },
+  { english: 'thank', chinese: '謝謝' },
+].map((w) => ({ ...w, categories: ['1_11'] })) as Array<NewWord>;
+const c12 = [
+  { english: 'can', chinese: '可以' },
+  { english: 'to', chinese: '到' },
+  { english: 'up', chinese: '上' },
+  { english: 'down', chinese: '下' },
+  { english: 'here', chinese: '這裡' },
+  { english: 'there', chinese: '那裡' },
+  { english: 'it', chinese: '它' },
+  { english: 'this', chinese: '這個' },
+  { english: 'that', chinese: '那個' },
+].map((w) => ({ ...w, categories: ['1_12'] })) as Array<NewWord>;
+export default [
+  ...c1,
+  ...c2,
+  ...c3,
+  ...c4,
+  ...c5,
+  ...c6,
+  ...c7,
+  ...c8,
+  ...c9,
+  ...c10,
+  ...c11,
+  ...c12,
+];

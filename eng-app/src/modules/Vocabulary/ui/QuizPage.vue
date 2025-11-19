@@ -71,14 +71,14 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useWordStore } from './QuizStore';
+import { useQuizStore } from './QuizStore';
 import { type QuizWord, WordQuizService } from '../domain';
 import BtnHint from './QuizPage/BtnHint.vue';
 import InfoStrip from './QuizPage/InfoStrip.vue';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
 const wordQuizeService = new WordQuizService();
 const answer = ref<string>('');
-const store = useWordStore();
+const store = useQuizStore();
 const currentWord = ref<QuizWord | undefined>(undefined);
 const showHint = ref<boolean>(false);
 const showLength = ref<boolean>(false);

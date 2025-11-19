@@ -4,7 +4,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
 import type { QuizWord } from '../domain';
 
-export const useWordStore = defineStore('wordStore', () => {
+export const useQuizStore = defineStore('quizStore', () => {
   const words = useLocalStorage<QuizWord[]>('words', ref(GetWords()));
   const resetQuiz = () => {
     words.value.splice(0);

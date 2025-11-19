@@ -1,4 +1,4 @@
-import type { Category } from '.';
+// import type { Category } from '.';
 
 export class Word {
   /** 唯一識別碼 */
@@ -11,7 +11,7 @@ export class Word {
   public readonly image: string;
   /** 音訊 URL */
   public readonly audio: string;
-  public readonly categories: Category[];
+  public readonly categories: string[];
 
   /**
    * 建立一個新的 Word 實體。
@@ -28,7 +28,7 @@ export class Word {
     chinese: string,
     image?: string,
     audio?: string,
-    categories?: Category[],
+    categories?: string[],
   ) {
     this.id = id;
     this.english = english;
@@ -38,3 +38,9 @@ export class Word {
     this.categories = categories || [];
   }
 }
+
+/**
+ * @description 代表一個尚未被儲存、因此沒有 ID 的新單詞資料。
+ * 使用 Omit<Word, 'id'> 從 Word 類別中排除 'id' 屬性。
+ */
+export type NewWord = Omit<Word, 'id'>;
