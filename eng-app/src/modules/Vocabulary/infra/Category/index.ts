@@ -3,8 +3,9 @@ import type { Category } from '../../domain';
 // export const Categories: Array<Category> = [
 export default [
   { id: '1', name: '第一級', parentId: null },
-  { id: '1_1', name: '時間', parentId: '1' },
-  { id: '1_2', name: '親屬', parentId: '1' },
+  { id: '1_1', name: '數字', parentId: '1' },
+  { id: '1_2', name: '時間', parentId: '1' },
+  { id: '1_3', name: '親屬', parentId: '1' },
   { id: '1_4', name: '人稱代名詞', parentId: '1' },
   { id: '1_5', name: '生活', parentId: '1' },
   { id: '1_6', name: '用品', parentId: '1' },

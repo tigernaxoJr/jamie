@@ -72,10 +72,23 @@ export class WordQuizService {
    * @param lastWordIds (新增) 最近 N 次考過的單字 ID 清單。
    * @returns 優先級最高的單詞 (Word) 或 undefined。
    */
-  public getNextQuizWord(words: QuizWord[], lastWordIds: number[] = []): QuizWord | undefined {
-    if (words.length < 1) {
-      // 如果列表為空，則返回 undefined
-      return undefined;
+  public getNextQuizWord(words: QuizWord[]): QuizWord | undefined {
+    if (words.length < 1) return undefined;
+    const lastWordInfo = words.map((word) => ({
+      // id: word.id,
+      ...word,
+      lastTime: Math.max(word.errorRec.lastTime, word.correctRec.lastTime),
+    }));
+    lastWordInfo.sort((a, b) => b.lastTime - a.lastTime);
+    console.log('lastWordInfo', lastWordInfo);
+    // Descending lastTime
+    const lastWordIds = lastWordInfo.map((word) => word.id).slice(0, BUFFER_SIZE);
+    // 最近出現的不要出現，如果少於5個就單純依照上次考試時間最久的先考
+    const isSmallSet = words.length < MIN_WORDS_COUNT_FOR_BUFFER;
+    if (isSmallSet) {
+      // 取得 lastWordIds 中 lastTime 最小的單字
+      const lastWord = words.find((word) => word.id === lastWordIds[lastWordIds.length - 1]);
+      return lastWord;
     }
 
     const now = Date.now();
@@ -89,25 +102,39 @@ export class WordQuizService {
     console.log('scoredWords', scoredWords);
     // 2. 根據分數從高到低排序
     scoredWords.sort((a, b) => b.score - a.score);
+    console.log('scoredWords sorted', scoredWords);
 
-    const isSmallSet = words.length < MIN_WORDS_COUNT_FOR_BUFFER;
+    // 最近出現的不要出現，如果少於5個就單純依照上次考試時間最久的先考
+    // const isSmallSet = words.length < MIN_WORDS_COUNT_FOR_BUFFER;
+    // if (isSmallSet) {
+    //   const eariestWord = words.reduce((eariest, current) => {
+    //     if (
+    //       Math.max(current.errorRec.lastTime, current.correctRec.lastTime) <
+    //       Math.max(eariest.errorRec.lastTime, eariest.correctRec.lastTime)
+    //     ) {
+    //       return current;
+    //     }
+    //     return eariest;
+    //   }, words[0] as QuizWord);
+    //   return eariestWord;
+    // }
 
-    if (isSmallSet) {
-      // 處理小集合邏輯 (少於 5 個單字)
-      const recentlyUsedIds = new Set(lastWordIds.slice(0, BUFFER_SIZE));
+    // if (isSmallSet) {
+    //   // 處理小集合邏輯 (少於 5 個單字)
+    //   const recentlyUsedIds = new Set(lastWordIds.slice(0, BUFFER_SIZE));
 
-      // 過濾掉最近使用過的單字，嘗試選取下一個單字
-      const filteredWords = scoredWords.filter((sw) => !recentlyUsedIds.has(sw.word.id));
+    //   // 過濾掉最近使用過的單字，嘗試選取下一個單字
+    //   const filteredWords = scoredWords.filter((sw) => !recentlyUsedIds.has(sw.word.id));
 
-      if (filteredWords.length > 0) {
-        // 如果排除緩衝區後還有單字可選，就從排除後的單字中選取優先級最高的
-        return this.selectTopWordFromScoredList(filteredWords);
-      }
+    //   if (filteredWords.length > 0) {
+    //     // 如果排除緩衝區後還有單字可選，就從排除後的單字中選取優先級最高的
+    //     return this.selectTopWordFromScoredList(filteredWords);
+    //   }
 
-      // 情況：所有單字都在緩衝區內 (例如只有 2 個單字，但緩衝區大小是 2)
-      // 必須從原始列表中選取（最高優先級）
-      console.warn('所有單字都在緩衝區內，退回到最高優先級選題。');
-    }
+    //   // 情況：所有單字都在緩衝區內 (例如只有 2 個單字，但緩衝區大小是 2)
+    //   // 必須從原始列表中選取（最高優先級）
+    //   console.warn('所有單字都在緩衝區內，退回到最高優先級選題。');
+    // }
 
     // 3. 處理大集合 (>= 5) 或 小集合退回邏輯
     return this.selectTopWordFromScoredList(scoredWords);
