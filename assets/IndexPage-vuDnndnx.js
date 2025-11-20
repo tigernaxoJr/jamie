@@ -1,0 +1,1 @@
+import{_ as a,Q as t}from"./_plugin-vue_export-helper-CM5FZL6o.js";import{a1 as r,a2 as o,aa as s,a5 as n}from"./index-CeHSoIe6.js";import"./render-BvsROKo6.js";const c={};function f(d,e){return s(),r(t,{padding:"",class:"flex flex-center"},{default:o(()=>[...e[0]||(e[0]=[n(" 首頁現在沒有任何東西",-1)])]),_:1})}const l=a(c,[["render",f]]);export{l as default};
