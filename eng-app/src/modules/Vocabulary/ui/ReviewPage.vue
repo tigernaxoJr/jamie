@@ -2,33 +2,14 @@
   <q-page padding class="flex flex-center">
     <!-- Category Selection View -->
     <q-card v-if="!isReviewing" flat bordered style="width: 100%; max-width: 600px" class="q-pa-lg">
-      <div class="text-h5 text-weight-bold text-center q-mb-md">選擇複習類別</div>
-
-      <q-scroll-area style="height: 400px; max-width: 100%">
-        <div v-for="parent in parentCategories" :key="parent.id" class="q-mb-md">
-          <div class="text-subtitle1 text-weight-bold q-mb-sm">{{ parent.name }}</div>
-          <div class="row q-col-gutter-sm">
-            <div v-for="cat in getSubCategories(parent.id)" :key="cat.id" class="col-6 col-sm-4">
-              <q-checkbox
-                :model-value="selectedCategories.includes(cat.id)"
-                @update:model-value="toggleCategory(cat.id)"
-                :label="cat.name"
-                dense
-              />
-            </div>
-          </div>
-          <q-separator class="q-mt-md" />
-        </div>
-      </q-scroll-area>
-
-      <q-card-actions align="center" class="q-mt-md">
-        <q-btn
-          color="primary"
-          label="開始複習"
-          @click="startReview"
-          :disable="selectedCategories.length === 0"
-        />
-      </q-card-actions>
+      <CategorySelector
+        v-model="selectedCategories"
+        :categories="Categories"
+        confirm-label="開始複習"
+        @confirm="startReview"
+      >
+        <template #title>選擇複習類別</template>
+      </CategorySelector>
     </q-card>
 
     <!-- Review View -->
@@ -97,35 +78,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import Categories from '../infra/Category';
 import { GeQuiztWords } from '../infra/WordBank';
 import type { QuizWord } from '../domain';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
+import CategorySelector from './CategorySelector.vue';
 
 const isReviewing = ref(false);
 const selectedCategories = useLocalStorage<string[]>('review-selected-categories', []);
 const reviewWords = ref<QuizWord[]>([]);
 const reviewMode = ref<'en-ch' | 'ch-en'>('ch-en');
 const revealedWords = ref(new Set<number>());
-
-const parentCategories = computed(() => {
-  return Categories.filter((c) => !c.parentId);
-});
-
-const getSubCategories = (parentId: string) => {
-  return Categories.filter((c) => c.parentId === parentId);
-};
-
-const toggleCategory = (id: string) => {
-  const index = selectedCategories.value.indexOf(id);
-  if (index === -1) {
-    selectedCategories.value.push(id);
-  } else {
-    selectedCategories.value.splice(index, 1);
-  }
-};
 
 const startReview = () => {
   reviewWords.value = GeQuiztWords(new Set(selectedCategories.value));
