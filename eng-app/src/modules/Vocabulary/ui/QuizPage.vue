@@ -230,7 +230,10 @@ const nextQuestion = () => {
     correctAns.value = false;
     errorAns.value = false;
   }
-  currentWord.value = wordQuizeService.getNextQuizWord(store.words);
+  currentWord.value = wordQuizeService.getNextQuizWord(store.words, store.lastWordIds);
+  if (currentWord.value) {
+    store.recordLastWord(currentWord.value.id);
+  }
   console.log('nextQuestion', currentWord.value);
   answer.value = '';
   showHint.value = false;

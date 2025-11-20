@@ -6,9 +6,11 @@ import type { QuizWord } from './QuizWord';
 // 最近出錯的定義 24 小時
 const RECENT_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 // 定義緩衝區大小
-const MIN_WORDS_COUNT_FOR_BUFFER = 5;
-const BUFFER_SIZE = 2; // 例如：最近考過的 2 個單字不重複出現
+
 export class WordQuizService {
+  // 定義緩衝區大小
+  private readonly BUFFER_SIZE = 5;
+
   /**
    * 條件 (越高分越優先),判斷依據,權重/細節
    * P1: 未回答過,Total Count=0,×1000
@@ -72,24 +74,8 @@ export class WordQuizService {
    * @param lastWordIds (新增) 最近 N 次考過的單字 ID 清單。
    * @returns 優先級最高的單詞 (Word) 或 undefined。
    */
-  public getNextQuizWord(words: QuizWord[]): QuizWord | undefined {
+  public getNextQuizWord(words: QuizWord[], lastWordIds: number[] = []): QuizWord | undefined {
     if (words.length < 1) return undefined;
-    const lastWordInfo = words.map((word) => ({
-      // id: word.id,
-      ...word,
-      lastTime: Math.max(word.errorRec.lastTime, word.correctRec.lastTime),
-    }));
-    lastWordInfo.sort((a, b) => b.lastTime - a.lastTime);
-    console.log('lastWordInfo', lastWordInfo);
-    // Descending lastTime
-    const lastWordIds = lastWordInfo.map((word) => word.id).slice(0, BUFFER_SIZE);
-    // 最近出現的不要出現，如果少於5個就單純依照上次考試時間最久的先考
-    const isSmallSet = words.length < MIN_WORDS_COUNT_FOR_BUFFER;
-    if (isSmallSet) {
-      // 取得 lastWordIds 中 lastTime 最小的單字
-      const lastWord = words.find((word) => word.id === lastWordIds[lastWordIds.length - 1]);
-      return lastWord;
-    }
 
     const now = Date.now();
 
@@ -99,44 +85,42 @@ export class WordQuizService {
       score: this.calculatePriorityScore(word, now),
     }));
 
-    console.log('scoredWords', scoredWords);
     // 2. 根據分數從高到低排序
     scoredWords.sort((a, b) => b.score - a.score);
-    console.log('scoredWords sorted', scoredWords);
 
-    // 最近出現的不要出現，如果少於5個就單純依照上次考試時間最久的先考
-    // const isSmallSet = words.length < MIN_WORDS_COUNT_FOR_BUFFER;
-    // if (isSmallSet) {
-    //   const eariestWord = words.reduce((eariest, current) => {
-    //     if (
-    //       Math.max(current.errorRec.lastTime, current.correctRec.lastTime) <
-    //       Math.max(eariest.errorRec.lastTime, eariest.correctRec.lastTime)
-    //     ) {
-    //       return current;
-    //     }
-    //     return eariest;
-    //   }, words[0] as QuizWord);
-    //   return eariestWord;
-    // }
+    // 3. 處理緩衝區邏輯
+    // 如果單字總數少於緩衝區大小，則不強制排除，而是盡量選最久沒考過的
+    const isSmallSet = words.length <= this.BUFFER_SIZE;
 
-    // if (isSmallSet) {
-    //   // 處理小集合邏輯 (少於 5 個單字)
-    //   const recentlyUsedIds = new Set(lastWordIds.slice(0, BUFFER_SIZE));
+    if (isSmallSet) {
+      // 小集合策略：
+      // 優先排除最近剛考過的 (lastWordIds 中的最後一個)
+      // 如果只有一個單字，那就沒辦法了
+      if (words.length === 1) return words[0];
 
-    //   // 過濾掉最近使用過的單字，嘗試選取下一個單字
-    //   const filteredWords = scoredWords.filter((sw) => !recentlyUsedIds.has(sw.word.id));
+      // 嘗試排除最近的一個
+      const lastWordId = lastWordIds[lastWordIds.length - 1];
+      console.log(scoredWords);
+      const candidates = scoredWords.filter((sw) => sw.word.id !== lastWordId);
 
-    //   if (filteredWords.length > 0) {
-    //     // 如果排除緩衝區後還有單字可選，就從排除後的單字中選取優先級最高的
-    //     return this.selectTopWordFromScoredList(filteredWords);
-    //   }
+      if (candidates.length > 0) {
+        return this.selectTopWordFromScoredList(candidates);
+      }
+      // 如果排除後沒了 (理論上 words.length > 1 不會發生這種事，除非 lastWordIds 邏輯有誤)，就回傳最高分的
+      return this.selectTopWordFromScoredList(scoredWords);
+    }
 
-    //   // 情況：所有單字都在緩衝區內 (例如只有 2 個單字，但緩衝區大小是 2)
-    //   // 必須從原始列表中選取（最高優先級）
-    //   console.warn('所有單字都在緩衝區內，退回到最高優先級選題。');
-    // }
+    // 大集合策略：
+    // 排除最近考過的 N 個單字 (BUFFER_SIZE)
+    // 注意：lastWordIds 可能包含不在 current words 裡的 ID (例如切換了類別)，這沒關係
+    const recentIds = new Set(lastWordIds.slice(-this.BUFFER_SIZE));
+    const filteredWords = scoredWords.filter((sw) => !recentIds.has(sw.word.id));
 
-    // 3. 處理大集合 (>= 5) 或 小集合退回邏輯
+    if (filteredWords.length > 0) {
+      return this.selectTopWordFromScoredList(filteredWords);
+    }
+
+    // 如果過濾完沒了 (極端情況)，退回使用原始排序
     return this.selectTopWordFromScoredList(scoredWords);
   }
 

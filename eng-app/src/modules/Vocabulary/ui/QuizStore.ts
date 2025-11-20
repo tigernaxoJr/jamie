@@ -7,14 +7,25 @@ import Categories from '../infra/Category';
 
 export const useQuizStore = defineStore('quizStore', () => {
   const categoryOptions = ref(Categories);
-  const selectedCategories = useLocalStorage<string[]>('quiz-selected-categories', ['2_1']);
+  const selectedCategories = useLocalStorage<string[]>('quiz-selected-categories', []);
+  const lastWordIds = useLocalStorage<number[]>('quiz-last-word-ids', []);
 
-  const wordsRaw = GeQuiztWords(new Set(selectedCategories.value));
-  const words = useLocalStorage<QuizWord[]>('words', ref(wordsRaw));
+  const recordLastWord = (id: number) => {
+    // Keep only the last 10 words
+    const MAX_HISTORY = 10;
+    lastWordIds.value.push(id);
+    if (lastWordIds.value.length > MAX_HISTORY) {
+      lastWordIds.value.shift();
+    }
+  };
+
+  const words = useLocalStorage<QuizWord[]>(
+    'words',
+    GeQuiztWords(new Set(selectedCategories.value)),
+  );
 
   const resetQuiz = () => {
-    words.value.splice(0);
-    words.value.push(...wordsRaw);
+    words.value = GeQuiztWords(new Set(selectedCategories.value));
   };
 
   const setCategories = (ids: string[]) => {
@@ -42,8 +53,8 @@ export const useQuizStore = defineStore('quizStore', () => {
   const meta = computed(() => {
     const _words = words.value.slice();
     const d = _words.map((x) => ({
-      consecutiveCorrect: x.correctRec.count,
-      consecutiveError: x.errorRec.count,
+      consecutiveCorrect: x.correctRec.consecutive,
+      consecutiveError: x.errorRec.consecutive,
     }));
     const count = words.value.length;
     const e1 = d.filter(({ consecutiveError: e }) => e === 1).length;
@@ -63,5 +74,7 @@ export const useQuizStore = defineStore('quizStore', () => {
     recordCorrectAns,
     recordErrorAns,
     meta,
+    lastWordIds,
+    recordLastWord,
   };
 });
