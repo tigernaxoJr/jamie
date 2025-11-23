@@ -20,49 +20,45 @@ export class WordQuizService {
    * P5: 總答錯次數,Cerror,×1
    *
    */
+  /**
+   * 優先順序如下：
+   * 1. 最近出現過的優先序扣較多 (Penalty 1)
+   * 2. 連續答對次數多的優先序扣中等 (Penalty 2)
+   * 3. 以上都一樣的話比較最近錯誤的時間，愈久之前錯得愈容易出現 (Bonus 1)
+   * 4. 加入隨機權重 (Bonus 2)
+   */
   private calculatePriorityScore(word: QuizWord, now: number): number {
-    const lastAnswerTime = Math.max(word.errorRec.lastTime, word.correctRec.lastTime);
-    const totalCount = word.errorRec.count + word.correctRec.count;
-    const isErrorRecently = word.errorRec.lastTime >= now - RECENT_THRESHOLD_MS;
-    // const isStale = lastAnswerTime < now - RECENT_THRESHOLD_MS; // P3 的邏輯也需要調整，否則會跟 P2 衝突
-
-    // --- 1. 定義階層式優先級的二元變數 (0 或 1) ---
-    // P1: 未回答過 (最高優先級)
-    const P1_New = totalCount === 0 ? 1 : 0;
-    // P2: 最近有答錯過 (中高優先級)
-    const P2_FreshError = P1_New === 0 && isErrorRecently ? 1 : 0;
-    // P4: 最近沒有回答過 (中低優先級)
-    // 只有在不是新詞彙 (P1=0) 且最近沒有答錯 (P2=0) 的情況下才考慮。
-    const P4_Stale =
-      P1_New === 0 && P2_FreshError === 0 && lastAnswerTime < now - RECENT_THRESHOLD_MS ? 1 : 0;
-    // P3: 連續答錯懲罰 (新增)
-    // 只有在 P1/P2/P4 都不滿足，且有連續答錯時才作為排序依據
-    const C_Error_Consecutive = word.errorRec.consecutive;
-    // P5: 總答錯次數
-    const C_Error_Total = word.errorRec.count;
-
-    // console.log('all unit:', {
-    //   P1_New,
-    //   P2_FreshError,
-    //   P4_Stale,
-    //   C_Error_Consecutive,
-    //   C_Error_Total,
-    // });
-
-    // --- 2. 應用加權公式 ---
     let score = 0;
-    // 優先級權重：P1 (1000) > P2 (100) > P4 (10) > P3 (5) > P5 (1)
-    // 1. P1: 新詞彙
-    score += P1_New * 1000;
-    // 2. P2: 最近錯題複習
-    score += P2_FreshError * 100;
-    // 3. P4: 長時間未複習
-    score += P4_Stale * 10;
-    // 4. P3: 連續答錯懲罰 (乘數 5)
-    // 讓連續答錯的詞彙在同級中脫穎而出
-    score += C_Error_Consecutive * 5;
-    // 5. P5: 總錯誤次數（最細微的調整）
-    score += C_Error_Total;
+
+    const lastAnswerTime = Math.max(word.errorRec.lastTime, word.correctRec.lastTime);
+    const isRecent = lastAnswerTime >= now - RECENT_THRESHOLD_MS;
+
+    // 1. 最近出現過的優先序扣較多
+    // 如果是最近 (24h 內) 出現過，扣 1,000,000 分，確保排在非最近的後面
+    if (isRecent) {
+      score -= 1_000_000;
+    }
+
+    // 2. 連續答對次數多的優先序扣中等
+    // 每個連續答對扣 10,000 分
+    // 例如：連續對 1 次扣 1萬，連續對 5 次扣 5萬
+    // 這樣沒答對過 (consecutive=0) 或答錯 (consecutive 重置) 的會排前面
+    score -= word.correctRec.consecutive * 10_000;
+
+    // 3. 比較最近錯誤的時間，愈久之前錯得愈容易出現
+    // 只有在非最近出現的情況下，這個比較才有意義，但為了統一邏輯，我們總是加上這個分數
+    // 我們希望 "愈久之前" -> 分數愈高
+    // 使用 (now - lastErrorTime) 來計算經過時間
+    // 為了不凌駕前面的規則 (1萬分級距)，我們將這個分數控制在 5,000 以內
+    // 假設 100 天沒錯是個很久的時間： 100 * 24 * 60 * 60 * 1000 ms
+    // 簡單用 hours 來算: 經過 1 小時 +1 分
+    const hoursSinceLastError = (now - word.errorRec.lastTime) / (1000 * 60 * 60);
+    // 上限設為 5000，避免超過連續答對的權重
+    score += Math.min(hoursSinceLastError, 5000);
+
+    // 4. 加入隨機權重
+    // 加 0~1000 分，讓分數相近的單字隨機排序
+    score += Math.random() * 1000;
 
     return score;
   }
