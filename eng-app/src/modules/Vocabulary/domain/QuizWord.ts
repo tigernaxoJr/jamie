@@ -9,7 +9,7 @@ export type AnswerRecord = {
   count: number;
   /** 上一次答題的時間戳 (Unix Time) */
   lastTime: number;
-  /** 連續答錯/答對的次數 (如果上一次答題類型不同，會重置為 1) */
+  /** 連續答錯/答對的次數 (如果上一次答題結果不同，會重置為 1) */
   consecutive: number;
 };
 

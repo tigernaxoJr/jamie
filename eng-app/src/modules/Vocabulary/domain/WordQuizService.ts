@@ -43,7 +43,7 @@ export class WordQuizService {
     // 每個連續答對扣 10,000 分
     // 例如：連續對 1 次扣 1萬，連續對 5 次扣 5萬
     // 這樣沒答對過 (consecutive=0) 或答錯 (consecutive 重置) 的會排前面
-    score -= word.correctRec.consecutive * 10_000;
+    score -= word.correctRec.consecutive * 10000;
 
     // 3. 比較最近錯誤的時間，愈久之前錯得愈容易出現
     // 只有在非最近出現的情況下，這個比較才有意義，但為了統一邏輯，我們總是加上這個分數
