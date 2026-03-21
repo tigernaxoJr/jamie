@@ -118,7 +118,25 @@
         </q-card-actions>
       </q-card>
     </div>
-    <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" class="col-auto" />
+    <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" class="col-auto" @clickStat="showStatWords" />
+
+    <q-dialog v-model="statDialog">
+      <q-card style="width: 90vw; max-width: 900px" class="bg-grey-1">
+        <q-card-section class="row items-center q-pb-none bg-white">
+          <div class="text-h5 text-primary text-weight-bold">{{ statDialogTitle }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+        
+        <q-card-section class="q-pa-none">
+          <StatWordList :words="statWords" />
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-white">
+          <q-btn flat label="關閉" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -130,6 +148,7 @@ import BtnHint from './QuizPage/BtnHint.vue';
 import InfoStrip from './QuizPage/InfoStrip.vue';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
 import CategorySelector from './CategorySelector.vue';
+import StatWordList from './QuizPage/StatWordList.vue';
 
 const wordQuizeService = new WordQuizService();
 const answer = ref<string>('');
@@ -227,6 +246,35 @@ const checkAnswer = () => {
   anserChecked.value = true;
   correctAns.value = correct && !showHint.value && !showLength.value;
   errorAns.value = !correct;
+};
+
+const statDialog = ref(false);
+const statDialogTitle = ref('');
+const statWords = ref<QuizWord[]>([]);
+
+const showStatWords = (type: string) => {
+  statWords.value = store.words.filter(w => {
+    if (type === 'count') return true;
+    if (type === 'e1') return w.errorRec.consecutive === 1;
+    if (type === 'e2') return w.errorRec.consecutive === 2;
+    if (type === 'e3') return w.errorRec.consecutive >= 3;
+    if (type === 'c1') return w.correctRec.consecutive === 1;
+    if (type === 'c2') return w.correctRec.consecutive === 2;
+    if (type === 'c3') return w.correctRec.consecutive >= 3;
+    return false;
+  });
+
+  const map: Record<string, string> = {
+    count: '總單字數',
+    e1: '連答錯 1 次',
+    e2: '連答錯 2 次',
+    e3: '連答錯 3+ 次',
+    c1: '連答對 1 次',
+    c2: '連答對 2 次',
+    c3: '連答對 3+ 次',
+  };
+  statDialogTitle.value = map[type] || '單字清單';
+  statDialog.value = true;
 };
 </script>
 

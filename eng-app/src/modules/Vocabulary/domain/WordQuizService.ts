@@ -1,144 +1,91 @@
-/**
- * WordQuizService：一個領域服務 (Domain Service)，
- * 專門負責處理詞彙集合的複雜運算，如選題排序、難度計算等。
- */
 import type { QuizWord } from './QuizWord';
-// 最近出錯的定義 24 小時
-const RECENT_THRESHOLD_MS = 24 * 60 * 60 * 1000;
-// 定義緩衝區大小
 
 export class WordQuizService {
-  // 定義緩衝區大小
+  // 設置不重複次數的參數
   private readonly BUFFER_SIZE = 5;
-
-  /**
-   * 條件 (越高分越優先),判斷依據,權重/細節
-   * P1: 未回答過,Total Count=0,×1000
-   * P2: 最近有答錯過,Terror 屬 RECENT,×100
-   * P3: 連續答錯懲罰 (New!),Cerror_consecutive,×5
-   * P4: 最近沒有回答過,Tlast 屬 STALE,×10
-   * P5: 總答錯次數,Cerror,×1
-   *
-   */
-  /**
-   * 優先順序如下：
-   * 1. 最近出現過的優先序扣較多 (Penalty 1)
-   * 2. 連續答對次數多的優先序扣中等 (Penalty 2)
-   * 3. 以上都一樣的話比較最近錯誤的時間，愈久之前錯得愈容易出現 (Bonus 1)
-   * 4. 加入隨機權重 (Bonus 2)
-   */
-  private calculatePriorityScore(word: QuizWord, now: number): number {
-    let score = 0;
-
-    const lastAnswerTime = Math.max(word.errorRec.lastTime, word.correctRec.lastTime);
-    const isRecent = lastAnswerTime >= now - RECENT_THRESHOLD_MS;
-
-    // 1. 最近出現過的優先序扣較多
-    // 如果是最近 (24h 內) 出現過，扣 1,000,000 分，確保排在非最近的後面
-    if (isRecent) {
-      score -= 1_000_000;
-    }
-
-    // 2. 連續答對次數多的優先序扣中等
-    // 每個連續答對扣 10,000 分
-    // 例如：連續對 1 次扣 1萬，連續對 5 次扣 5萬
-    // 這樣沒答對過 (consecutive=0) 或答錯 (consecutive 重置) 的會排前面
-    score -= word.correctRec.consecutive * 10000;
-
-    // 3. 比較最近錯誤的時間，愈久之前錯得愈容易出現
-    // 只有在非最近出現的情況下，這個比較才有意義，但為了統一邏輯，我們總是加上這個分數
-    // 我們希望 "愈久之前" -> 分數愈高
-    // 使用 (now - lastErrorTime) 來計算經過時間
-    // 為了不凌駕前面的規則 (1萬分級距)，我們將這個分數控制在 5,000 以內
-    // 假設 100 天沒錯是個很久的時間： 100 * 24 * 60 * 60 * 1000 ms
-    // 簡單用 hours 來算: 經過 1 小時 +1 分
-    const hoursSinceLastError = (now - word.errorRec.lastTime) / (1000 * 60 * 60);
-    // 上限設為 5000，避免超過連續答對的權重
-    score += Math.min(hoursSinceLastError, 5000);
-
-    // 4. 加入隨機權重
-    // 加 0~1000 分，讓分數相近的單字隨機排序
-    score += Math.random() * 1000;
-
-    return score;
-  }
 
   /**
    * 服務公開方法：從詞彙列表中選出下一個優先級最高的考題。
    *
    * @param words 所有的單詞列表。
-   * @param lastWordIds (新增) 最近 N 次考過的單字 ID 清單。
-   * @returns 優先級最高的單詞 (Word) 或 undefined。
+   * @param lastWordIds 最近 N 次考過的單字 ID 清單。
+   * @returns 優先級最高的單詞 (QuizWord) 或 undefined。
    */
   public getNextQuizWord(words: QuizWord[], lastWordIds: number[] = []): QuizWord | undefined {
     if (words.length < 1) return undefined;
 
-    const now = Date.now();
+    // 1. 分出2個 pool，最近一次答錯 (預設未答過歸類)、最近一次答對
+    const incorrectPool = words.filter(
+      (w) => w.errorRec.lastTime >= w.correctRec.lastTime,
+    );
+    const correctPool = words.filter(
+      (w) => w.correctRec.lastTime > w.errorRec.lastTime,
+    );
 
-    // 1. 計算所有單詞的優先級分數
-    const scoredWords = words.map((word) => ({
-      word,
-      score: this.calculatePriorityScore(word, now),
-    }));
-
-    // 2. 根據分數從高到低排序
-    scoredWords.sort((a, b) => b.score - a.score);
-
-    // 3. 處理緩衝區邏輯
-    // 如果單字總數少於緩衝區大小，則不強制排除，而是盡量選最久沒考過的
-    const isSmallSet = words.length <= this.BUFFER_SIZE;
-
-    if (isSmallSet) {
-      // 小集合策略：
-      // 優先排除最近剛考過的 (lastWordIds 中的最後一個)
-      // 如果只有一個單字，那就沒辦法了
-      if (words.length === 1) return words[0];
-
-      // 嘗試排除最近的一個
-      const lastWordId = lastWordIds[lastWordIds.length - 1];
-      console.log(scoredWords);
-      const candidates = scoredWords.filter((sw) => sw.word.id !== lastWordId);
-
-      if (candidates.length > 0) {
-        return this.selectTopWordFromScoredList(candidates);
-      }
-      // 如果排除後沒了 (理論上 words.length > 1 不會發生這種事，除非 lastWordIds 邏輯有誤)，就回傳最高分的
-      return this.selectTopWordFromScoredList(scoredWords);
-    }
-
-    // 大集合策略：
-    // 排除最近考過的 N 個單字 (BUFFER_SIZE)
-    // 注意：lastWordIds 可能包含不在 current words 裡的 ID (例如切換了類別)，這沒關係
+    // 2. 設置不重複次數的參數
+    // 優先取得不熟的作為測驗單字，原則是距離上次出現大於等於不重複次數
     const recentIds = new Set(lastWordIds.slice(-this.BUFFER_SIZE));
-    const filteredWords = scoredWords.filter((sw) => !recentIds.has(sw.word.id));
 
-    if (filteredWords.length > 0) {
-      return this.selectTopWordFromScoredList(filteredWords);
+    const filteredIncorrectPool = incorrectPool.filter((w) => !recentIds.has(w.id));
+    const filteredCorrectPool = correctPool.filter((w) => !recentIds.has(w.id));
+
+    // 3. 從錯誤的 pool 中取得單字
+    if (filteredIncorrectPool.length > 0) {
+      filteredIncorrectPool.sort((a, b) => {
+        // (1) 連續答錯次數由大到小排序
+        if (a.errorRec.consecutive !== b.errorRec.consecutive) {
+          return b.errorRec.consecutive - a.errorRec.consecutive;
+        }
+        // (2) 總答錯次數/總答對次數由小到大排序
+        const ratioA = this.getRatio(a);
+        const ratioB = this.getRatio(b);
+        if (ratioA !== ratioB) {
+          return ratioA - ratioB;
+        }
+        // (3) 以上都相同的話比較上次答錯時間愈接近者優先
+        return b.errorRec.lastTime - a.errorRec.lastTime;
+      });
+      return filteredIncorrectPool[0];
     }
 
-    // 如果過濾完沒了 (極端情況)，退回使用原始排序
-    return this.selectTopWordFromScoredList(scoredWords);
+    // 4. 如果錯誤的 pool 沒有單字，則從正確的 pool 中取得單字
+    if (filteredCorrectPool.length > 0) {
+      filteredCorrectPool.sort((a, b) => {
+        // (1) 連續答對次數由小到大排序
+        if (a.correctRec.consecutive !== b.correctRec.consecutive) {
+          return a.correctRec.consecutive - b.correctRec.consecutive;
+        }
+        // (2) 總答錯次數/總答對次數由小到大排序
+        const ratioA = this.getRatio(a);
+        const ratioB = this.getRatio(b);
+        if (ratioA !== ratioB) {
+          return ratioA - ratioB;
+        }
+        // (3) 以上都相同的話比較上次答對時間愈久者優先
+        return a.correctRec.lastTime - b.correctRec.lastTime;
+      });
+      return filteredCorrectPool[0];
+    }
+
+    // 5. 如果所有單字距離上次出現的間隔都小於不重複次數，則以距離上次出現最遠的單字作為測驗單字
+    const sortedByFurthest = [...words].sort((a, b) => {
+      const lastTimeA = Math.max(a.errorRec.lastTime, a.correctRec.lastTime);
+      const lastTimeB = Math.max(b.errorRec.lastTime, b.correctRec.lastTime);
+      return lastTimeA - lastTimeB;
+    });
+
+    return sortedByFurthest[0];
   }
 
   /**
-   * 輔助方法：從已計算分數的清單中，選出最高分且隨機的單詞。
-   * @param scoredWords 已排序的單詞清單。
-   * @returns 優先級最高的單詞 (Word) 或 undefined。
+   * 計算總答錯次數/總答對次數的比例
    */
-  private selectTopWordFromScoredList(
-    scoredWords: { word: QuizWord; score: number }[],
-  ): QuizWord | undefined {
-    // 找到最高分數
-    const maxScore = scoredWords[0]?.score;
-    if (maxScore === undefined) return undefined;
-
-    // 過濾出所有分數等於最高分數的單詞
-    const topScoredWords = scoredWords.filter((sw) => sw.score === maxScore);
-
-    // 從最高分詞彙中隨機選取一個
-    const randomIndex = Math.floor(Math.random() * topScoredWords.length);
-
-    // 這裡不需要 throw Error，因為我們在開頭檢查過長度
-    return topScoredWords[randomIndex]?.word;
+  private getRatio(word: QuizWord): number {
+    const err = word.errorRec.count;
+    const corr = word.correctRec.count;
+    if (corr === 0) {
+      return err === 0 ? 0 : Infinity;
+    }
+    return err / corr;
   }
 }
