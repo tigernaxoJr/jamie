@@ -105,20 +105,91 @@
           />
         </q-card-section>
 
-        <q-card-actions align="center">
-          <q-btn flat color="grey-7" label="重新開始" @click="resetQuiz" size="md" icon="refresh" />
+        <q-separator class="q-my-sm" />
+
+        <q-card-actions class="column q-gutter-xs q-pa-sm">
+          <!-- 切換類別：無損失 -->
           <q-btn
             flat
+            no-caps
             color="primary"
-            label="選擇類別"
+            label="切換類別"
             @click="openCategorySelection"
-            size="md"
             icon="category"
-          />
+            class="full-width"
+            align="left"
+          >
+            <q-tooltip>僅切換測驗類別，保留所有答題記錄</q-tooltip>
+            <span class="q-ml-sm text-caption text-grey-6">保留記錄</span>
+          </q-btn>
+
+          <!-- 重新開始：清除當前類別 -->
+          <q-btn
+            flat
+            no-caps
+            color="orange-8"
+            label="重新開始"
+            @click="confirmResetDialog = true"
+            icon="restart_alt"
+            class="full-width"
+            align="left"
+          >
+            <q-tooltip>清除當前類別的答題記錄，從頭開始練習</q-tooltip>
+            <span class="q-ml-sm text-caption text-grey-6">清除當前類別記錄</span>
+          </q-btn>
+
+          <!-- 清除所有記憶：全部清空 -->
+          <q-btn
+            flat
+            no-caps
+            color="deep-orange"
+            label="清除所有記憶"
+            @click="confirmClearDialog = true"
+            icon="delete_forever"
+            class="full-width"
+            align="left"
+          >
+            <q-tooltip>清除所有類別的答題記錄，無法復原</q-tooltip>
+            <span class="q-ml-sm text-caption text-grey-6">清除所有類別記錄</span>
+          </q-btn>
         </q-card-actions>
       </q-card>
     </div>
     <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" class="col-auto" @clickStat="showStatWords" />
+
+    <!-- 重新開始確認對話框 -->
+    <q-dialog v-model="confirmResetDialog" persistent>
+      <q-card style="min-width: 320px">
+        <q-card-section class="row items-center">
+          <q-icon name="restart_alt" color="orange-8" size="2rem" class="q-mr-sm" />
+          <span class="text-h6">確認重新開始？</span>
+        </q-card-section>
+        <q-card-section>
+          此操作會清除<strong>當前所選類別</strong>的單字答題記錄（答對次數、答錯次數、連續記錄等），其他類別的記錄不會受影響。
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="取消" color="grey-7" v-close-popup />
+          <q-btn flat label="確認重新開始" color="orange-8" @click="handleResetQuiz" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- 清除所有記憶確認對話框 -->
+    <q-dialog v-model="confirmClearDialog" persistent>
+      <q-card style="min-width: 320px">
+        <q-card-section class="row items-center">
+          <q-icon name="warning" color="deep-orange" size="2rem" class="q-mr-sm" />
+          <span class="text-h6">確認清除所有記憶？</span>
+        </q-card-section>
+        <q-card-section>
+          此操作會清除<strong>所有類別、所有單字</strong>的答題記錄，且無法復原。
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="取消" color="grey-7" v-close-popup />
+          <q-btn flat label="確認清除全部" color="deep-orange" @click="handleClearMemory" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <q-dialog v-model="statDialog">
       <q-card style="width: 90vw; max-width: 900px" class="bg-grey-1">
@@ -221,11 +292,6 @@ const nextQuestion = () => {
   showLength.value = false;
   showAnswer.value = false;
 };
-const resetQuiz = () => {
-  store.resetQuiz();
-  nextQuestion();
-  questionsAnswered.value = 0;
-};
 const anserChecked = ref<boolean>(false);
 const correctAns = ref<boolean>(false);
 const errorAns = ref<boolean>(false);
@@ -275,6 +341,24 @@ const showStatWords = (type: string) => {
   };
   statDialogTitle.value = map[type] || '單字清單';
   statDialog.value = true;
+};
+
+// 重新開始（清除當前類別記錄）
+const confirmResetDialog = ref(false);
+const handleResetQuiz = () => {
+  store.resetQuiz();
+  confirmResetDialog.value = false;
+  nextQuestion();
+  questionsAnswered.value = 0;
+};
+
+// 清除所有記憶
+const confirmClearDialog = ref(false);
+const handleClearMemory = () => {
+  store.clearMemory();
+  confirmClearDialog.value = false;
+  nextQuestion();
+  questionsAnswered.value = 0;
 };
 </script>
 

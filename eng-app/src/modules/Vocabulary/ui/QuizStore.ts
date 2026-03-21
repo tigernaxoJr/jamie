@@ -3,6 +3,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
 import type { QuizWord } from '../domain';
 import { GeQuiztWords } from '../infra/WordBank';
+import { WordMetaStorage } from '../infra/WordMetaStorage';
 import Categories from '../infra/Category';
 
 export const useQuizStore = defineStore('quizStore', () => {
@@ -24,13 +25,23 @@ export const useQuizStore = defineStore('quizStore', () => {
     GeQuiztWords(new Set(selectedCategories.value)),
   );
 
+  /**
+   * 重新開始：清除當前所選類別的單字 metadata，然後重新載入。
+   */
   const resetQuiz = () => {
+    // 清除當前單字的長期記憶
+    const currentEnglishKeys = words.value.map((w) => w.english);
+    WordMetaStorage.removeMany(currentEnglishKeys);
+    lastWordIds.value = [];
     words.value = GeQuiztWords(new Set(selectedCategories.value));
   };
 
+  /**
+   * 切換類別：僅重新載入單字，不清除任何 metadata。
+   */
   const setCategories = (ids: string[]) => {
     selectedCategories.value = ids;
-    resetQuiz();
+    words.value = GeQuiztWords(new Set(selectedCategories.value));
   };
   const recordCorrectAns = (id: number) => {
     const w = words.value.find((word) => word.id === id);
@@ -39,6 +50,11 @@ export const useQuizStore = defineStore('quizStore', () => {
     w.correctRec.consecutive += 1;
     w.correctRec.lastTime = Date.now();
     w.errorRec.consecutive = 0;
+    // 持久化到長期記憶
+    WordMetaStorage.save(w.english, {
+      errorRec: { ...w.errorRec },
+      correctRec: { ...w.correctRec },
+    });
   };
 
   const recordErrorAns = (id: number) => {
@@ -48,6 +64,11 @@ export const useQuizStore = defineStore('quizStore', () => {
     w.errorRec.lastTime = Date.now();
     w.errorRec.consecutive += 1;
     w.correctRec.consecutive = 0;
+    // 持久化到長期記憶
+    WordMetaStorage.save(w.english, {
+      errorRec: { ...w.errorRec },
+      correctRec: { ...w.correctRec },
+    });
   };
 
   const meta = computed(() => {
@@ -65,6 +86,16 @@ export const useQuizStore = defineStore('quizStore', () => {
     const c3 = d.filter(({ consecutiveCorrect: c }) => c >= 3).length;
     return { count, e1, e2, e3, c1, c2, c3 };
   });
+  /**
+   * 清除所有長期記憶（遺忘所有單字的答題記錄）。
+   * 會同時重置當前測驗。
+   */
+  const clearMemory = () => {
+    WordMetaStorage.clearAll();
+    lastWordIds.value = [];
+    words.value = GeQuiztWords(new Set(selectedCategories.value));
+  };
+
   return {
     words,
     categoryOptions,
@@ -76,5 +107,6 @@ export const useQuizStore = defineStore('quizStore', () => {
     meta,
     lastWordIds,
     recordLastWord,
+    clearMemory,
   };
 });
