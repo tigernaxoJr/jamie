@@ -47,7 +47,7 @@ const c4 = [
   { english: 'cousin', chinese: '表兄/弟/姐/妹, 堂兄/弟/姐/妹' },
   { english: 'parent', chinese: '父母' },
   { english: 'son', chinese: '兒子' },
-  { english: 'daughter', chinese: '孫子' },
+  { english: 'daughter', chinese: '女兒' },
   { english: 'husband', chinese: '丈夫' },
   { english: 'wife', chinese: '太太' },
 ].map((w) => ({ ...w, categories: ['2_4'] })) as Array<NewWord>;
