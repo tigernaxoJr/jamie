@@ -128,7 +128,7 @@ const c9 = [
 
 const c10 = [
   { english: 'at', chinese: '在, 裡' },
-  { english: 'in', chinese: '裡, 進入/進去' },
+  { english: 'into', chinese: '裡, 進入/進去' },
   { english: 'on', chinese: '在...上' },
   { english: 'out', chinese: '外/出' },
   { english: 'yes', chinese: '是' },
