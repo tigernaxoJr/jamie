@@ -69,8 +69,18 @@
                 {{ parent.name }}
               </q-item-section>
 
-              <q-item-section side v-if="getSelectedCountText(parent.id)">
-                <q-badge color="secondary" :label="getSelectedCountText(parent.id)" />
+              <q-item-section side class="row no-wrap items-center q-gutter-x-sm">
+                <q-btn
+                  dense
+                  flat
+                  no-caps
+                  size="sm"
+                  :color="isAllSubSelected(parent.id) ? 'negative' : 'primary'"
+                  :icon="isAllSubSelected(parent.id) ? 'deselect' : 'select_all'"
+                  :label="isAllSubSelected(parent.id) ? '取消全選' : '全選'"
+                  @click.stop="toggleParentCategory(parent.id)"
+                />
+                <q-badge v-if="getSelectedCountText(parent.id)" color="secondary" :label="getSelectedCountText(parent.id)" />
               </q-item-section>
             </template>
 
@@ -178,6 +188,29 @@ const toggleCategory = (id: string) => {
 
 const clearAll = () => {
   emit('update:modelValue', []);
+};
+
+const isAllSubSelected = (parentId: string) => {
+  const subCats = getSubCategories(parentId);
+  return subCats.length > 0 && subCats.every((c) => props.modelValue.includes(c.id));
+};
+
+const toggleParentCategory = (parentId: string) => {
+  const subCats = getSubCategories(parentId);
+  const subIds = subCats.map((c) => c.id);
+  if (isAllSubSelected(parentId)) {
+    // Deselect all subs
+    emit('update:modelValue', props.modelValue.filter((id) => !subIds.includes(id)));
+  } else {
+    // Select all subs
+    const newValue = [...props.modelValue];
+    subIds.forEach((id) => {
+      if (!newValue.includes(id)) {
+        newValue.push(id);
+      }
+    });
+    emit('update:modelValue', newValue);
+  }
 };
 
 const getSelectedCountText = (parentId: string) => {

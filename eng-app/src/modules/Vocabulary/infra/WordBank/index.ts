@@ -3,8 +3,9 @@ import { WordMetaStorage } from '../WordMetaStorage';
 import Cat1 from './Cat1';
 import Cat2 from './Cat2';
 import Cat3 from './Cat3';
+import Cat4 from './Cat4';
 
-const allNewWords = [...Cat1, ...Cat2, ...Cat3];
+const allNewWords = [...Cat1, ...Cat2, ...Cat3, ...Cat4];
 
 export const GeQuiztWords = (categories: Set<string>): Array<QuizWord> => {
   const savedMeta = WordMetaStorage.loadAll();

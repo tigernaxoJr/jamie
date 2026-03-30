@@ -37,4 +37,11 @@ export default [
   { id: '3_8', name: '顏色', parentId: '3' },
   { id: '3_9', name: '形容詞', parentId: '3' },
   { id: '3_10', name: '其他', parentId: '3' },
+  { id: '4', name: '第四級', parentId: null },
+  { id: '4_1', name: '生活', parentId: '4' },
+  { id: '4_2', name: '人體', parentId: '4' },
+  { id: '4_3', name: '家居', parentId: '4' },
+  { id: '4_4', name: '場所', parentId: '4' },
+  { id: '4_5', name: '自然', parentId: '4' },
+  { id: '4_6', name: '其他', parentId: '4' },
 ] as Array<Category>;
