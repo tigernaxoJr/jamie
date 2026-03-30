@@ -4,8 +4,25 @@ import Cat1 from './Cat1';
 import Cat2 from './Cat2';
 import Cat3 from './Cat3';
 import Cat4 from './Cat4';
+import Cat5 from './Cat5';
+import Cat6 from './Cat6';
+import Cat7 from './Cat7';
+import Cat8 from './Cat8';
+import Cat9 from './Cat9';
+import Cat10 from './Cat10';
 
-const allNewWords = [...Cat1, ...Cat2, ...Cat3, ...Cat4];
+const allNewWords = [
+  ...Cat1,
+  ...Cat2,
+  ...Cat3,
+  ...Cat4,
+  ...Cat5,
+  ...Cat6,
+  ...Cat7,
+  ...Cat8,
+  ...Cat9,
+  ...Cat10,
+];
 
 export const GeQuiztWords = (categories: Set<string>): Array<QuizWord> => {
   const savedMeta = WordMetaStorage.loadAll();
