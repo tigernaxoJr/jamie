@@ -1,31 +1,28 @@
 <template>
-  <q-page class="flex flex-center bg-grey-2 overflow-hidden">
-    <!-- 
-      這裡的 src 指向部署後的路徑。
-      因為 deploy.yml 會將遊戲放到 dist/spa/games/typing/
-      所以相對路徑是 games/typing/index.html
-    -->
+  <q-page class="bg-black overflow-hidden">
     <iframe
       src="games/typing/index.html"
-      class="full-width full-height no-border"
-      style="height: calc(100vh - 58px); border: none;"
+      class="typing-iframe"
       title="Typing Game"
     ></iframe>
   </q-page>
 </template>
 
 <script setup lang="ts">
-// 不需要額外的邏輯，僅作為容器
 </script>
 
 <style scoped>
-.full-width {
+.q-page {
+  /* 強制移除可能的 min-height 限制，讓 iframe 決定高度 */
+  min-height: unset !important;
+  height: calc(100vh - 58px); /* 預估 Header 高度 */
+  display: flex;
+}
+
+.typing-iframe {
   width: 100%;
-}
-.full-height {
   height: 100%;
-}
-.no-border {
   border: none;
+  flex-grow: 1;
 }
 </style>
