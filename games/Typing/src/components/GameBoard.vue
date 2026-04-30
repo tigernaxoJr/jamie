@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import FallingLetter from './FallingLetter.vue';
 import GameHUD from './GameHUD.vue';
 import GameOverlay from './GameOverlay.vue';
 import { useGameLogic } from '../composables/useGameLogic';
-
-const boardRef = ref<HTMLElement | null>(null);
 
 const {
   gameState,
@@ -16,7 +14,6 @@ const {
   currentLevelConfig,
   resetGame,
   handleKeydown,
-  startGameLoop
 } = useGameLogic();
 
 onMounted(() => {
@@ -44,7 +41,6 @@ const onRestart = () => {
       currentLevelConfig.level === 2 ? 'bg-indigo-50 border-indigo-200' : '',
       currentLevelConfig.level === 3 ? 'bg-rose-50 border-rose-200' : ''
     ]"
-    ref="boardRef"
   >
     <!-- HUD -->
     <div class="absolute top-4 left-4 right-4 z-20">
