@@ -68,7 +68,7 @@ const linksList = [
   },
   {
     title: '打字遊戲',
-    caption: '開始英文打字練習',
+    caption: '英文打字練習 (限電腦版)',
     icon: 'keyboard',
     to: '/typing',
   },
