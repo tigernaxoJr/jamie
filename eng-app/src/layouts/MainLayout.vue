@@ -61,6 +61,12 @@ const linksList = [
     to: '/quiz',
   },
   {
+    title: '打字遊戲',
+    caption: '開始英文打字練習',
+    icon: 'keyboard',
+    to: '/typing',
+  },
+  {
     title: '英文複習',
     caption: '開始英文單字複習',
     icon: 'book',

@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('src/modules/App/ui/IndexPage.vue') },
       { path: 'quiz', component: () => import('src/modules/Vocabulary/ui/QuizPage.vue') },
       { path: 'review', component: () => import('src/modules/Vocabulary/ui/ReviewPage.vue') },
+      { path: 'typing', component: () => import('src/modules/Typing/TypingPage.vue') },
     ],
   },
 

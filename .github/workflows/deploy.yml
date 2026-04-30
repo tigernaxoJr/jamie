@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'eng-app/**'
+      - 'games/Typing/**'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -38,6 +39,17 @@ jobs:
       - name: Build
         run: pnpm build
         working-directory: eng-app
+
+      - name: Build Games - Typing
+        run: |
+          npm install
+          npm run build
+        working-directory: games/Typing
+
+      - name: Move Typing Game to App Dist
+        run: |
+          mkdir -p eng-app/dist/spa/games/typing
+          cp -r games/Typing/dist/* eng-app/dist/spa/games/typing/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
