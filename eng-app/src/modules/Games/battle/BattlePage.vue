@@ -1,6 +1,6 @@
 <template>
   <GameShell :session="session" @quit="battle.quit">
-    <q-card class="arena soft-shadow q-pa-md">
+    <q-card class="arena soft-shadow q-pa-md column no-wrap">
       <!-- 狀態列 -->
       <div class="row items-center no-wrap">
         <LivesBar :lives="state.playerHp" :max="battle.maxHp" />
@@ -17,7 +17,7 @@
       </div>
 
       <!-- 怪物 -->
-      <div class="text-center q-mt-sm">
+      <div class="stage-center text-center">
         <div class="text-caption text-grey-7">第 {{ state.stage + 1 }} 關 · {{ monster.name }}</div>
         <div class="monster" :class="`fx-${state.effect}`">{{ monster.emoji }}</div>
         <div v-if="state.effect === 'crit'" class="crit-text">爆擊！</div>
@@ -36,7 +36,7 @@
     <!-- 題目 -->
     <q-card
       v-if="q"
-      class="soft-shadow q-pa-md q-mt-md"
+      class="question soft-shadow q-pa-md q-mt-sm"
       :class="{ 'fx-hurt': state.effect === 'hurt' }"
     >
       <div class="text-center">
@@ -121,14 +121,29 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 
 <style scoped>
 .arena {
+  flex: 1;
+  min-height: 0;
   background: linear-gradient(180deg, #fff1e6 0%, #fff 100%);
 }
+/* 怪物區置中並佔滿剩餘高度 */
+.stage-center {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.question {
+  flex-shrink: 0;
+}
 .monster {
-  font-size: 6rem;
+  font-size: clamp(4rem, 16vh, 8rem);
   line-height: 1.2;
   display: inline-block;
 }
 .hp-bar {
+  width: 100%;
   max-width: 260px;
 }
 .crit-text {

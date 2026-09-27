@@ -1,85 +1,78 @@
 <template>
   <GameShell :session="session" @quit="snake.quit">
-    <div class="row items-center no-wrap q-mb-sm">
-      <LivesBar :lives="state.lives" :max="3" />
-      <q-space />
-      <div class="text-subtitle1 text-weight-bold">⭐ {{ state.score }}</div>
+    <template #settings>
+      <q-btn-toggle
+        v-model="speed"
+        rounded
+        unelevated
+        no-caps
+        toggle-color="white"
+        toggle-text-color="green-8"
+        color="green-9"
+        text-color="white"
+        :options="speedOptions"
+      />
+    </template>
+
+    <!-- HUD：愛心、題目、分數 -->
+    <div class="hud app-card">
+      <LivesBar :lives="state.lives" :max="3" class="hud__lives" />
+      <div v-if="state.word" class="hud__word">
+        <div class="hud__zh">{{ state.word.chinese }}</div>
+        <div class="spelling">
+          <span
+            v-for="(ch, i) in letters"
+            :key="i"
+            class="slot"
+            :class="{ done: i < state.progress, next: i === state.progress }"
+          >
+            {{ i < state.progress ? ch : '_' }}
+          </span>
+        </div>
+      </div>
+      <div class="hud__score">⭐ {{ state.score }}</div>
     </div>
 
-    <!-- 題目：中文 + 已拼出的字母 -->
-    <q-card v-if="state.word" class="soft-shadow q-pa-sm text-center q-mb-sm">
-      <div class="text-h6 text-weight-bold">{{ state.word.chinese }}</div>
-      <div class="spelling">
-        <span
-          v-for="(ch, i) in letters"
-          :key="i"
-          class="slot"
-          :class="{ done: i < state.progress, next: i === state.progress }"
+    <!-- 棋盤：依剩餘空間自動縮放成正方形 -->
+    <div class="board-wrap">
+      <div
+        class="board"
+        :class="{ flash: state.flash }"
+        @pointerdown="onPointerDown"
+        @pointerup="onPointerUp"
+      >
+        <div
+          v-for="l in state.letters"
+          :key="`${l.x}-${l.y}`"
+          class="cell letter"
+          :style="cellStyle(l)"
         >
-          {{ i < state.progress ? ch : '_' }}
-        </span>
+          {{ l.ch }}
+        </div>
+        <div
+          v-for="(s, i) in state.snake"
+          :key="i"
+          class="cell"
+          :class="i === 0 ? 'head' : 'body'"
+          :style="cellStyle(s)"
+        >
+          <template v-if="i === 0">👀</template>
+        </div>
+        <PauseOverlay v-if="snake.loop.paused.value" @resume="snake.loop.resume" />
       </div>
-    </q-card>
-
-    <div
-      class="board"
-      :class="{ flash: state.flash }"
-      @pointerdown="onPointerDown"
-      @pointerup="onPointerUp"
-    >
-      <div
-        v-for="l in state.letters"
-        :key="`${l.x}-${l.y}`"
-        class="cell letter"
-        :style="cellStyle(l)"
-      >
-        {{ l.ch }}
-      </div>
-      <div
-        v-for="(s, i) in state.snake"
-        :key="i"
-        class="cell"
-        :class="i === 0 ? 'head' : 'body'"
-        :style="cellStyle(s)"
-      >
-        <template v-if="i === 0">👀</template>
-      </div>
-      <PauseOverlay v-if="snake.loop.paused.value" @resume="snake.loop.resume" />
     </div>
 
-    <!-- 手機方向鍵 -->
-    <div class="dpad q-mt-md">
+    <!-- 觸控裝置的方向鍵（也可以直接在棋盤上滑動） -->
+    <div class="dpad">
       <q-btn
-        class="up"
+        v-for="d in DPAD"
+        :key="d.dir"
         round
         size="lg"
         color="green"
-        icon="keyboard_arrow_up"
-        @click="snake.turn('up')"
-      />
-      <q-btn
-        class="left"
-        round
-        size="lg"
-        color="green"
-        icon="keyboard_arrow_left"
-        @click="snake.turn('left')"
-      />
-      <q-btn
-        class="right"
-        round
-        size="lg"
-        color="green"
-        icon="keyboard_arrow_right"
-        @click="snake.turn('right')"
-      />
-      <q-btn
-        class="down"
-        round
-        size="lg"
-        color="green"
-        icon="keyboard_arrow_down"
-        @click="snake.turn('down')"
+        :icon="d.icon"
+        :aria-label="d.label"
+        @click="snake.turn(d.dir)"
       />
     </div>
   </GameShell>
@@ -87,13 +80,32 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useEventListener } from '@vueuse/core';
+import { useEventListener, useLocalStorage } from '@vueuse/core';
 import { GameShell, LivesBar, PauseOverlay, lettersOf, useGameSession } from '../shared';
 import { snakeInfo } from './info';
-import { BOARD_SIZE, type Direction, type Point, useSnake } from './useSnake';
+import {
+  BOARD_SIZE,
+  type Direction,
+  type Point,
+  SNAKE_SPEEDS,
+  type SnakeSpeed,
+  useSnake,
+} from './useSnake';
 
 const session = useGameSession(snakeInfo, (words) => snake.start(words));
-const snake = useSnake(session);
+const speed = useLocalStorage<SnakeSpeed>('snake-speed', 'normal');
+const snake = useSnake(session, speed);
+const speedOptions = (Object.keys(SNAKE_SPEEDS) as SnakeSpeed[]).map((value) => ({
+  value,
+  label: SNAKE_SPEEDS[value].label,
+}));
+
+const DPAD: { dir: Direction; icon: string; label: string }[] = [
+  { dir: 'left', icon: 'arrow_back', label: '向左' },
+  { dir: 'up', icon: 'arrow_upward', label: '向上' },
+  { dir: 'down', icon: 'arrow_downward', label: '向下' },
+  { dir: 'right', icon: 'arrow_forward', label: '向右' },
+];
 const state = snake.state;
 
 const letters = computed(() => (state.word ? [...lettersOf(state.word.answer)] : []));
@@ -139,18 +151,51 @@ const onPointerUp = (e: PointerEvent) => {
 </script>
 
 <style scoped>
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  margin-bottom: 10px;
+}
+.hud__lives {
+  font-size: 1.1rem;
+}
+.hud__word {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  line-height: 1.2;
+}
+.hud__zh {
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+.hud__score {
+  font-weight: 900;
+  white-space: nowrap;
+}
+.board-wrap {
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .board {
   --cell: calc(100% / 12);
   position: relative;
-  width: min(100%, 58vh);
-  aspect-ratio: 1;
-  margin: 0 auto;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px) 0 0 / var(--cell) var(--cell),
     linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px) 0 0 / var(--cell) var(--cell),
     #e8f5e9;
   border: 4px solid #43a047;
-  border-radius: 12px;
+  border-radius: 16px;
+  box-shadow: var(--app-shadow);
   overflow: hidden;
   touch-action: none;
   user-select: none;
@@ -180,7 +225,7 @@ const onPointerUp = (e: PointerEvent) => {
 }
 .letter {
   font-weight: 900;
-  font-size: clamp(0.9rem, 3.5vw, 1.4rem);
+  font-size: clamp(0.9rem, 4cqmin, 1.6rem);
   color: #12335e;
   background: #fff;
   border-radius: 50%;
@@ -189,7 +234,7 @@ const onPointerUp = (e: PointerEvent) => {
 }
 .spelling {
   font-family: monospace;
-  font-size: 1.8rem;
+  font-size: 1.7rem;
   letter-spacing: 4px;
 }
 .slot.done {
@@ -200,24 +245,16 @@ const onPointerUp = (e: PointerEvent) => {
   color: #ff6f00;
 }
 .dpad {
-  display: grid;
-  grid-template-areas:
-    '. up .'
-    'left . right'
-    '. down .';
+  display: none;
+  flex-shrink: 0;
   justify-content: center;
-  gap: 4px 24px;
+  gap: 14px;
+  padding-top: 10px;
 }
-.up {
-  grid-area: up;
-}
-.down {
-  grid-area: down;
-}
-.left {
-  grid-area: left;
-}
-.right {
-  grid-area: right;
+/* 只有觸控裝置需要方向鍵 */
+@media (pointer: coarse) {
+  .dpad {
+    display: flex;
+  }
 }
 </style>

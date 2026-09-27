@@ -11,7 +11,7 @@
       <div class="text-subtitle1 text-weight-bold">⭐ {{ state.score }}</div>
     </div>
 
-    <div class="board relative-position">
+    <div class="board relative-position" :style="{ '--rows': state.cards.length / 4 }">
       <button
         v-for="c in state.cards"
         :key="`${state.round}-${c.id}`"
@@ -49,14 +49,23 @@ const state = memory.state;
 
 <style scoped>
 .board {
+  /* 卡片高度依剩餘空間平均分配，一次看到整個牌桌 */
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 560px;
+  margin: auto;
   display: grid;
   gap: 8px;
   grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  /* 卡片少的時候不要被拉得太長 */
+  max-height: calc(var(--rows) * 170px);
 }
 .card {
-  aspect-ratio: 3 / 4;
-  max-height: 20vh;
   width: 100%;
+  height: 100%;
+  min-height: 0;
   padding: 0;
   border: none;
   background: none;

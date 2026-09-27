@@ -272,7 +272,7 @@ const win = () => {
 <style scoped lang="scss">
 .arena {
   position: relative;
-  height: 280px;
+  height: clamp(230px, 38vh, 280px);
   overflow: hidden;
 }
 .side {

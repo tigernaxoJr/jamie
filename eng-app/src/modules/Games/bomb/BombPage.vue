@@ -6,7 +6,9 @@
       <div class="text-subtitle1 text-weight-bold">⭐ {{ state.score }}</div>
     </div>
 
-    <q-card class="bomb-card soft-shadow q-pa-md text-center relative-position">
+    <q-card
+      class="bomb-card soft-shadow q-pa-md text-center relative-position column no-wrap justify-center"
+    >
       <!-- 炸彈 + 引信 -->
       <div class="bomb" :class="state.status">
         {{ state.status === 'exploded' ? '💥' : state.status === 'defused' ? '✅' : '💣' }}
@@ -63,7 +65,7 @@
     </q-card>
 
     <LetterKeyboard
-      class="q-mt-md"
+      class="q-mt-sm keyboard-dock"
       :status="bomb.letterStatus"
       :disabled="state.status !== 'playing'"
       @press="bomb.guess"
@@ -95,8 +97,12 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 </script>
 
 <style scoped>
+.bomb-card {
+  flex: 1;
+  min-height: 0;
+}
 .bomb {
-  font-size: 5rem;
+  font-size: clamp(3rem, 11vh, 5rem);
   line-height: 1.2;
   display: inline-block;
 }
@@ -150,6 +156,9 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   font-size: 1.6rem;
   font-weight: 900;
   margin-top: 8px;
+}
+.keyboard-dock {
+  flex-shrink: 0;
 }
 @keyframes tick {
   50% {

@@ -79,8 +79,8 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 <style scoped>
 .field {
   position: relative;
-  height: 52vh;
-  min-height: 300px;
+  flex: 1;
+  min-height: 240px;
   border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(180deg, #081628 0%, #0f2a4d 60%, #174077 100%);
@@ -153,6 +153,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   font-size: 2.2rem;
 }
 .options {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 8px;
