@@ -22,8 +22,11 @@
             <div class="text-muted">{{ card.description }}</div>
             <div class="row items-center q-mt-sm text-caption text-weight-bold">
               <span v-if="card.desktopOnly" class="text-orange-9">💻 限電腦版</span>
+              <span v-else-if="progress[card.id]" class="progress">{{ progress[card.id] }}</span>
               <q-space />
-              <span v-if="best[card.id]">🏅 最高分 {{ best[card.id] }}</span>
+              <span v-if="best[card.id]"
+                >🏅 {{ card.stageBased ? '無盡 ' : '' }}{{ best[card.id] }}</span
+              >
             </div>
           </div>
         </router-link>
@@ -35,16 +38,20 @@
 <script setup lang="ts">
 import PageTitle from 'src/components/PageTitle.vue';
 import { gameEntries } from '../registry';
+import type { GameCard } from '../shared/types';
 import { bestScoreKey } from '../shared/useGameSession';
 
-const readBest = (id: string): number => {
+const readBest = (card: GameCard): number => {
   try {
-    return Number(localStorage.getItem(bestScoreKey(id))) || 0;
+    return Number(localStorage.getItem(bestScoreKey(card))) || 0;
   } catch {
     return 0;
   }
 };
-const best = Object.fromEntries(gameEntries.map((e) => [e.card.id, readBest(e.card.id)]));
+const best = Object.fromEntries(gameEntries.map((e) => [e.card.id, readBest(e.card)]));
+const progress = Object.fromEntries(
+  gameEntries.map((e) => [e.card.id, e.card.progress?.() ?? null]),
+);
 </script>
 
 <style scoped>
@@ -75,6 +82,9 @@ const best = Object.fromEntries(gameEntries.map((e) => [e.card.id, readBest(e.ca
 }
 .game:hover .game__icon {
   transform: scale(1.12) rotate(-6deg);
+}
+.progress {
+  color: #b45309;
 }
 .skill {
   font-size: 0.8rem;

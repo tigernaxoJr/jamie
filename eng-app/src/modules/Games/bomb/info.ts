@@ -1,4 +1,5 @@
-import { type GameInfo, lettersOf } from '../shared';
+import { type GameInfo, lettersOf, starsProgress } from '../shared';
+import { ROOMS } from './rooms';
 
 export const bombInfo: GameInfo = {
   id: 'bomb',
@@ -8,6 +9,8 @@ export const bombInfo: GameInfo = {
   skill: '拼字',
   color: 'blue-grey-9',
   minWords: 3,
+  stageBased: true,
+  progress: starsProgress('bomb-rooms', ROOMS.length),
   recordsProgress: true,
   wordFilter: (w) => lettersOf(w.answer).length >= 3,
   rules: [

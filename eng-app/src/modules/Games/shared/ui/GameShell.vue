@@ -13,7 +13,7 @@
           aria-label="回遊戲中心"
         />
         <span v-if="session.bestScore > 0" class="hero__best"
-          >🏅 最高分 {{ session.bestScore }}</span
+          >🏅 {{ info.stageBased ? '無盡模式' : '' }}最高分 {{ session.bestScore }}</span
         >
 
         <div class="hero__icon">{{ info.icon }}</div>

@@ -167,6 +167,7 @@ export function useSpace(session: GameSession) {
     }
     session.finish({
       won,
+      ranked: false,
       headline,
       score: state.score,
       ...(stars === undefined ? {} : { stars }),

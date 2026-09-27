@@ -162,6 +162,7 @@ export function useTyping(session: GameSession) {
     else sfx.lose();
     session.finish({
       won: success,
+      ranked: mode.value.kind === 'endless',
       headline,
       score: state.score,
       ...(result === undefined ? {} : { stars: result }),

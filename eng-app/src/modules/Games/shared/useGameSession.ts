@@ -2,13 +2,15 @@ import { computed, reactive, ref, shallowRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { recordWordAnswer } from 'src/modules/Vocabulary';
 import { grantGameCandies } from 'src/modules/Adventure';
-import type { GameInfo, GameResult, GameWord } from './types';
+import type { GameCard, GameInfo, GameResult, GameWord } from './types';
 import { loadGameWords, shuffle } from './words';
 import { reviewDeck } from './review';
 
 export type GamePhase = 'setup' | 'playing' | 'result';
 
-export const bestScoreKey = (gameId: string) => `game-best-${gameId}`;
+/** 最高分的儲存 key；關卡制遊戲只記無盡模式，用另一個 key 重新計算 */
+export const bestScoreKey = (card: GameCard) =>
+  card.stageBased ? `game-best-endless-${card.id}` : `game-best-${card.id}`;
 
 /**
  * 所有單字遊戲共用的流程：選類別 → 遊戲中 → 結算。
@@ -18,7 +20,7 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
   const categories = useLocalStorage<string[]>('games-selected-categories', []);
   const phase = ref<GamePhase>('setup');
   const result = shallowRef<GameResult | null>(null);
-  const bestScore = useLocalStorage<number>(bestScoreKey(info.id), 0);
+  const bestScore = useLocalStorage<number>(bestScoreKey(info), 0);
   const isNewBest = ref(false);
   /** 這局答對幾題（換算糖果用） */
   let correctCount = 0;
@@ -50,7 +52,7 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
 
   const finish = (r: GameResult) => {
     result.value = { ...r, reward: grantGameCandies(correctCount, r.won) };
-    isNewBest.value = r.score > bestScore.value;
+    isNewBest.value = r.ranked !== false && r.score > bestScore.value;
     if (isNewBest.value) bestScore.value = r.score;
     phase.value = 'result';
   };

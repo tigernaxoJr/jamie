@@ -131,6 +131,7 @@ export function useMemory(session: GameSession) {
     else sfx.lose();
     session.finish({
       won: success,
+      ranked: mode.value.kind === 'endless',
       headline,
       score: Math.round(state.score),
       ...(result === undefined ? {} : { stars: result }),

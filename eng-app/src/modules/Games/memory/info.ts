@@ -1,4 +1,5 @@
-import type { GameInfo } from '../shared';
+import { type GameInfo, starsProgress } from '../shared';
+import { MEMORY_STAGES } from './stages';
 
 export const memoryInfo: GameInfo = {
   id: 'memory',
@@ -8,6 +9,8 @@ export const memoryInfo: GameInfo = {
   skill: '記憶・聽力',
   color: 'teal',
   minWords: 4,
+  stageBased: true,
+  progress: starsProgress('memory-stages', MEMORY_STAGES.length),
   // 翻牌還是有運氣成分，不寫入單字測驗記錄
   recordsProgress: false,
   rules: [

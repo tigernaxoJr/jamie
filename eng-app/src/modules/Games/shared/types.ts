@@ -21,6 +21,10 @@ export interface GameCard {
   /** Quasar 顏色名稱 */
   color: string;
   desktopOnly?: boolean;
+  /** 關卡制遊戲：最高分只記無盡模式 */
+  stageBased?: boolean;
+  /** 遊戲中心卡片上的進度，例如「⭐ 12 / 24」；沒有進度回傳 null */
+  progress?: () => string | null;
 }
 
 /** 單字遊戲的完整設定 */
@@ -48,6 +52,8 @@ export interface GameResult {
   missed: GameWord[];
   /** 關卡制遊戲的星等（1～3） */
   stars?: number;
+  /** 是否計入最高分（關卡模式為 false，只有無盡模式算），預設 true */
+  ranked?: boolean;
   /** 帶回字靈探險的糖果，由 GameSession 結算時填入 */
   reward?: { candies: number; capped: number };
 }

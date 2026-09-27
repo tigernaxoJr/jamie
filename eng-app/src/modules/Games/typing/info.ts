@@ -1,4 +1,5 @@
-import { type GameInfo, lettersOf } from '../shared';
+import { type GameInfo, lettersOf, starsProgress } from '../shared';
+import { TYPING_LEVELS } from './levels';
 
 export const typingInfo: GameInfo = {
   id: 'typing',
@@ -9,6 +10,8 @@ export const typingInfo: GameInfo = {
   color: 'blue-grey',
   desktopOnly: true,
   minWords: 5,
+  stageBased: true,
+  progress: starsProgress('typing-stages', TYPING_LEVELS.length),
   recordsProgress: true,
   // 只用字母和空白組成、不太長的字，比較好打
   wordFilter: (w) => /^[a-z ]+$/i.test(w.answer) && lettersOf(w.answer).length <= 10,

@@ -188,6 +188,7 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
     }
     session.finish({
       won: s ? won : state.completed > 0,
+      ranked: mode.value.kind === 'endless',
       headline,
       score: state.score,
       ...(result === undefined ? {} : { stars: result }),

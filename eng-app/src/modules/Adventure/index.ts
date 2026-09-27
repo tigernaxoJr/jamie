@@ -22,4 +22,17 @@ export const adventureCard = {
   description: '答對單字收服字靈、組隊對戰，收集完整圖鑑！',
   skill: '聽力・拼字',
   color: 'green-7',
+  /** 遊戲中心卡片上的進度：拿到幾個館主徽章 */
+  progress: (): string | null => {
+    try {
+      const badges = (
+        JSON.parse(localStorage.getItem('adventure-save') ?? '{}') as {
+          badges?: string[];
+        }
+      ).badges;
+      return badges?.length ? `🏅 徽章 ${badges.length} 個` : null;
+    } catch {
+      return null;
+    }
+  },
 };

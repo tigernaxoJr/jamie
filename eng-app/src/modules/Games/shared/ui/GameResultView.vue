@@ -12,10 +12,12 @@
 
     <div class="score text-primary q-mt-md">{{ result.score }}</div>
     <div class="text-caption text-grey-7">分數</div>
-    <q-chip v-if="isNewBest" color="amber" text-color="black" icon="emoji_events" class="q-mt-sm">
-      新紀錄！
-    </q-chip>
-    <div v-else class="text-caption text-grey-6 q-mt-sm">最高分 {{ bestScore }}</div>
+    <template v-if="result.ranked !== false">
+      <q-chip v-if="isNewBest" color="amber" text-color="black" icon="emoji_events" class="q-mt-sm">
+        新紀錄！
+      </q-chip>
+      <div v-else class="text-caption text-grey-6 q-mt-sm">最高分 {{ bestScore }}</div>
+    </template>
 
     <div class="row justify-center q-gutter-sm q-mt-md">
       <q-chip v-for="s in result.stats" :key="s.label" outline color="primary">
