@@ -5,3 +5,8 @@ declare namespace NodeJS {
     VUE_ROUTER_BASE: string | undefined;
   }
 }
+
+interface Window {
+  /** index.html 定義：淡出啟動畫面（app 準備好時呼叫） */
+  hideBootSplash?: () => void;
+}

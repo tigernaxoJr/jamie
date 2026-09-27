@@ -23,8 +23,92 @@
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      啟動畫面：和 PWA 系統啟動畫面（manifest 的背景色 + 圖示）長得一樣，
+      系統畫面消失後由它無縫接手，等 app 準備好再淡出，避免「閃一下、空白、再跳出來」。
+      樣式寫在這裡，不必等 CSS 或 JS 載入。
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #f5f7fa;
+      }
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #f5f7fa;
+        transition: opacity 0.3s ease;
+      }
+      #boot-splash.boot-splash--hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #boot-splash img {
+        width: 128px;
+        height: 128px;
+        animation: boot-splash-bob 1.6s ease-in-out infinite;
+      }
+      #boot-splash span {
+        color: #1677d2;
+        font:
+          800 1.3rem/1 system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        letter-spacing: 1px;
+      }
+      @keyframes boot-splash-bob {
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash,
+        #boot-splash img {
+          transition: none;
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot-splash" aria-hidden="true">
+      <img src="icons/icon-192x192.png" alt="" />
+      <span>Jamie 英文</span>
+    </div>
+    <script>
+      (function () {
+        /** 至少顯示多久（從開啟算起，毫秒），太快消失反而像在閃 */
+        var MIN_MS = 600;
+        /** 最久顯示多久；程式出錯時也不會一直卡在啟動畫面 */
+        var MAX_MS = 8000;
+        var hidden = false;
+        window.hideBootSplash = function () {
+          if (hidden) return;
+          hidden = true;
+          var el = document.getElementById('boot-splash');
+          if (!el) return;
+          setTimeout(
+            function () {
+              el.classList.add('boot-splash--hide');
+              setTimeout(function () {
+                el.remove();
+              }, 400);
+            },
+            Math.max(0, MIN_MS - performance.now()),
+          );
+        };
+        setTimeout(window.hideBootSplash, MAX_MS);
+      })();
+    </script>
     <!-- quasar:entry-point -->
   </body>
 </html>
