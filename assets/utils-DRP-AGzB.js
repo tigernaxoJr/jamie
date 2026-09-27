@@ -1,1 +1,0 @@
-function t(e){const n=new SpeechSynthesisUtterance(e);n.lang="en-US",speechSynthesis.speak(n)}const o=e=>{if(!e)return;const n=`https://translate.google.com.tw/?sl=en&tl=zh-TW&text=${encodeURIComponent(e)}&op=translate`;window.open(n,"_blank")};export{o as O,t as W};
