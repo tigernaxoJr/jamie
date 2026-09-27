@@ -24,24 +24,27 @@ const allNewWords = [
   ...Cat10,
 ];
 
-export const GeQuiztWords = (categories: Set<string>): Array<QuizWord> => {
+/**
+ * 載入指定類別的單字，並帶入長期記憶中的答題記錄。
+ * id 是單字在整個題庫中的位置，換類別也不會變，「最近出過」的紀錄才能正確對應。
+ */
+export const loadQuizWords = (categories: ReadonlySet<string>): QuizWord[] => {
   const savedMeta = WordMetaStorage.loadAll();
 
-  return allNewWords
-    .filter((w) => w.categories.some((c) => categories.has(c)))
-    .map((w, id) => {
-      const meta = savedMeta[w.english.toLowerCase()];
-      return new QuizWord(
+  return allNewWords.flatMap((w, id) => {
+    if (!w.categories.some((c) => categories.has(c))) return [];
+    const meta = savedMeta[w.english.toLowerCase()];
+    return [
+      new QuizWord(
         id,
         w.english,
         w.chinese,
         w.image,
         w.audio,
         w.categories,
-        meta?.errorRec,
-        meta?.correctRec,
-      );
-    });
+        meta && { ...meta.errorRec },
+        meta && { ...meta.correctRec },
+      ),
+    ];
+  });
 };
-
-export default {};

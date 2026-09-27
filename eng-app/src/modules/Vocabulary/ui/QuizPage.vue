@@ -68,7 +68,7 @@
             <div class="question">{{ currentWord.chinese }}</div>
 
             <!-- 提示 -->
-            <div v-if="!anserChecked" class="hints">
+            <div v-if="!answerChecked" class="hints">
               <button
                 type="button"
                 class="hint"
@@ -76,7 +76,7 @@
                 @click="showLength = true"
               >
                 <q-icon name="straighten" size="18px" />
-                {{ showLength ? `${currentWord.english.length} 個字母` : '幾個字母？' }}
+                {{ showLength ? `${letterCount(currentWord.english)} 個字母` : '幾個字母？' }}
               </button>
               <button
                 type="button"
@@ -100,17 +100,17 @@
               </button>
             </div>
             <div
-              v-if="!anserChecked && (showHint || showLength)"
+              v-if="!answerChecked && (showHint || showLength)"
               class="text-center text-caption text-muted q-mt-xs"
             >
               用了提示，這題答對不會算分喔
             </div>
-            <div v-if="showAnswer && !anserChecked" class="text-center q-mt-xs">
+            <div v-if="showAnswer && !answerChecked" class="text-center q-mt-xs">
               <SpeechStrip :word="currentWord.english" />
             </div>
 
             <!-- 結果 -->
-            <div v-if="anserChecked" class="feedback q-mt-md">
+            <div v-if="answerChecked" class="feedback q-mt-md">
               <template v-if="correctAns">
                 <div class="feedback__emoji">🎉</div>
                 <div class="feedback__title text-positive">答對了！</div>
@@ -133,22 +133,22 @@
               ref="inputEl"
               v-model="answer"
               class="answer-input q-mt-lg"
-              :class="{ 'answer-input--locked': anserChecked }"
+              :class="{ 'answer-input--locked': answerChecked }"
               placeholder="在這裡輸入英文"
               autocomplete="off"
               autocapitalize="off"
               autocorrect="off"
               spellcheck="false"
-              :readonly="anserChecked"
-              @keyup.enter="() => (anserChecked ? nextQuestion() : checkAnswer())"
+              :readonly="answerChecked"
+              @keyup.enter="() => (answerChecked ? nextQuestion() : checkAnswer())"
             />
             <q-btn
               class="btn-3d full-width q-mt-md"
               size="lg"
-              :color="anserChecked ? 'secondary' : 'primary'"
-              :icon-right="anserChecked || showAnswer || !answer ? 'arrow_forward' : 'check'"
-              :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
-              @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
+              :color="answerChecked ? 'secondary' : 'primary'"
+              :icon-right="answerChecked || showAnswer || !answer ? 'arrow_forward' : 'check'"
+              :label="showAnswer || !answer || answerChecked ? '下一題' : '檢查答案'"
+              @click="() => (answerChecked ? nextQuestion() : checkAnswer())"
             />
           </template>
 
@@ -222,20 +222,19 @@
 import { onMounted, ref, computed, nextTick } from 'vue';
 import PageTitle from 'src/components/PageTitle.vue';
 import { useQuizStore } from './QuizStore';
-import { type QuizWord, WordQuizService } from '../domain';
+import { type QuizWord, WordQuizService, isCorrectAnswer, letterCount } from '../domain';
 import InfoStrip from './QuizPage/InfoStrip.vue';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
 import CategorySelector from './CategorySelector.vue';
 import StatWordList from './QuizPage/StatWordList.vue';
 
-const wordQuizeService = new WordQuizService();
+const quizService = new WordQuizService();
 const answer = ref<string>('');
 const store = useQuizStore();
 const currentWord = ref<QuizWord | undefined>(undefined);
 const showHint = ref<boolean>(false);
 const showLength = ref<boolean>(false);
 const showAnswer = ref<boolean>(false);
-const questionsAnswered = ref(0);
 const isSelectingCategory = ref(false);
 const inputEl = ref<HTMLInputElement | null>(null);
 
@@ -284,14 +283,10 @@ onMounted(() => {
 });
 
 const nextQuestion = () => {
-  if (anserChecked.value && currentWord.value) {
-    if (correctAns.value) store.recordCorrectAns(currentWord.value.id);
-    if (errorAns.value) store.recordErrorAns(currentWord.value.id);
-    anserChecked.value = false;
-    correctAns.value = false;
-    errorAns.value = false;
-  }
-  currentWord.value = wordQuizeService.getNextQuizWord(store.words, store.lastWordIds);
+  answerChecked.value = false;
+  correctAns.value = false;
+  errorAns.value = false;
+  currentWord.value = quizService.getNextQuizWord(store.words, store.lastWordIds);
   if (currentWord.value) {
     store.recordLastWord(currentWord.value.id);
   }
@@ -301,7 +296,7 @@ const nextQuestion = () => {
   showAnswer.value = false;
   void nextTick(() => inputEl.value?.focus());
 };
-const anserChecked = ref<boolean>(false);
+const answerChecked = ref<boolean>(false);
 const correctAns = ref<boolean>(false);
 const errorAns = ref<boolean>(false);
 //
@@ -311,17 +306,20 @@ const checkAnswer = () => {
   // 沒有題目就略過動作，照理說不會出現這個情況
   if (!currentWord.value) return;
 
-  // 計算答案是否正確；也接受去掉括號補充的寫法，例如 "shoe(s)" 可以只輸入 "shoe"
-  const english = currentWord.value.english.toLowerCase();
-  const accepted = [english, english.replace(/\s*\([^)]*\)/g, '').trim()];
-  const correct = accepted.includes(answer.value.trim().toLowerCase());
-  questionsAnswered.value++;
+  // 偷看過答案就直接下一題，不算對也不算錯
   if (showAnswer.value) return nextQuestion();
 
-  // 有顯示提示就不計算
-  anserChecked.value = true;
+  // 可接受括號內的其他寫法，例如 shoe(s) → shoes、airplane (plane) → plane
+  const correct = isCorrectAnswer(answer.value, currentWord.value.english);
+
+  answerChecked.value = true;
+  // 有用提示時答對不算分；答錯一律記錄
   correctAns.value = correct && !showHint.value && !showLength.value;
   errorAns.value = !correct;
+  // 立刻記錄，不等按下一題（離開頁面或重新開始時才不會遺失或記錯）
+  if (correctAns.value || errorAns.value) {
+    store.recordAnswer(currentWord.value.id, correctAns.value);
+  }
 };
 
 const statDialog = ref(false);
@@ -359,7 +357,6 @@ const handleResetQuiz = () => {
   store.resetQuiz();
   confirmResetDialog.value = false;
   nextQuestion();
-  questionsAnswered.value = 0;
 };
 
 // 清除所有記憶
@@ -368,7 +365,6 @@ const handleClearMemory = () => {
   store.clearMemory();
   confirmClearDialog.value = false;
   nextQuestion();
-  questionsAnswered.value = 0;
 };
 </script>
 

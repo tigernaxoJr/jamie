@@ -1,4 +1,4 @@
-// todo import and reexport all in Word.ts, WordQuizService
+export * from './answers';
 export * from './Category';
 export * from './QuizMeta';
 export * from './QuizWord';

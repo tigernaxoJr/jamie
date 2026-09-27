@@ -92,7 +92,7 @@ import { computed, ref, watch } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import PageTitle from 'src/components/PageTitle.vue';
 import Categories from '../infra/Category';
-import { GeQuiztWords } from '../infra/WordBank';
+import { loadQuizWords } from '../infra/WordBank';
 import type { QuizWord } from '../domain';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
 import CategorySelector from './CategorySelector.vue';
@@ -104,7 +104,7 @@ const reviewMode = ref<'en-ch' | 'ch-en'>('ch-en');
 const revealedWords = ref(new Set<number>());
 
 const startReview = () => {
-  reviewWords.value = GeQuiztWords(new Set(selectedCategories.value));
+  reviewWords.value = loadQuizWords(new Set(selectedCategories.value));
   revealedWords.value.clear();
   isReviewing.value = true;
 };
