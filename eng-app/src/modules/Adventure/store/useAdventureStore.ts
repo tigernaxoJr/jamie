@@ -13,6 +13,8 @@ import {
   canEvolve,
   xpToNext,
 } from '../domain/rules';
+import { CANDY_XP } from '../domain/candy';
+import { spendCandies } from './candy';
 
 export interface OwnedCreature {
   uid: string;
@@ -184,6 +186,13 @@ export const useAdventureStore = defineStore('adventure', () => {
     return gained;
   };
 
+  /** 餵 1 顆字靈糖果，回傳升了幾級；糖果不夠或已滿級回傳 null */
+  const feedCandy = (uid: string): number | null => {
+    const c = byUid(uid);
+    if (!c || c.level >= MAX_LEVEL || !spendCandies(1)) return null;
+    return gainXp(uid, CANDY_XP);
+  };
+
   /** 進化條件的目前狀態 */
   const evolveStatus = (c: OwnedCreature): EvolveStatus => {
     const area = homeAreaOf(c.speciesId);
@@ -246,6 +255,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     markSeen,
     catchCreature,
     gainXp,
+    feedCandy,
     evolveStatus,
     evolve,
     recordAnswer,

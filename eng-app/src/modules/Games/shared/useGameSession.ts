@@ -1,6 +1,7 @@
 import { computed, reactive, ref, shallowRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { recordWordAnswer } from 'src/modules/Vocabulary';
+import { grantGameCandies } from 'src/modules/Adventure';
 import type { GameInfo, GameResult, GameWord } from './types';
 import { loadGameWords, shuffle } from './words';
 
@@ -18,6 +19,8 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
   const result = shallowRef<GameResult | null>(null);
   const bestScore = useLocalStorage<number>(bestScoreKey(info.id), 0);
   const isNewBest = ref(false);
+  /** 這局答對幾題（換算糖果用） */
+  let correctCount = 0;
 
   const availableWords = computed(() => loadGameWords(categories.value, info.wordFilter));
   const canStart = computed(() => availableWords.value.length >= info.minWords);
@@ -26,12 +29,13 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
     if (!canStart.value) return;
     result.value = null;
     isNewBest.value = false;
+    correctCount = 0;
     phase.value = 'playing';
     onStart(shuffle(availableWords.value));
   };
 
   const finish = (r: GameResult) => {
-    result.value = r;
+    result.value = { ...r, reward: grantGameCandies(correctCount, r.won) };
     isNewBest.value = r.score > bestScore.value;
     if (isNewBest.value) bestScore.value = r.score;
     phase.value = 'result';
@@ -45,8 +49,9 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
     phase.value = 'setup';
   };
 
-  /** 寫入單字長期記憶（僅限設定為會記錄的遊戲） */
+  /** 記錄答題：累計糖果，並寫入單字長期記憶（僅限設定為會記錄的遊戲） */
   const record = (word: GameWord, correct: boolean) => {
+    if (correct) correctCount++;
     if (info.recordsProgress) recordWordAnswer(word.english, correct);
   };
 

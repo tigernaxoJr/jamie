@@ -109,7 +109,11 @@
         :is-new-best="session.isNewBest"
         @replay="session.start"
         @setup="session.toSetup"
-      />
+      >
+        <template v-if="$slots['result-actions']" #actions>
+          <slot name="result-actions" />
+        </template>
+      </GameResultView>
     </main>
   </div>
 </template>

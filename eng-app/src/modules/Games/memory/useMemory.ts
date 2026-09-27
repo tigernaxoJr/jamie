@@ -120,6 +120,8 @@ export function useMemory(session: GameSession) {
     const [a, b] = open as [Card, Card];
     if (a.word.answer === b.word.answer) {
       a.matched = b.matched = true;
+      // recordsProgress 為 false，只會算進糖果，不寫入測驗記錄
+      session.record(a.word, true);
       sfx.correct();
       if (state.cards.every((c) => c.matched)) clearRound();
       return;
