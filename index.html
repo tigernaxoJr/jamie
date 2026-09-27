@@ -1,3 +1,71 @@
-<!doctype html><html><head><title>Jamie's English App</title><meta charset=utf-8><meta name=description content="Jamie's English App"><meta name=format-detection content="telephone=no"><meta name=msapplication-tap-highlight content=no><meta name=viewport content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width"><link rel=icon type=image/png sizes=128x128 href=/icons/favicon-128x128.png><link rel=icon type=image/png sizes=96x96 href=/icons/favicon-96x96.png><link rel=icon type=image/png sizes=32x32 href=/icons/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/icons/favicon-16x16.png><link rel=icon type=image/ico href=/favicon.ico><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel=stylesheet>  <script type="module" crossorigin src="/assets/index-Cl_b4_PL.js"></script>
+<!doctype html><html><head><title>Jamie's English App</title><meta charset=utf-8><meta name=description content="Jamie's English App"><meta name=format-detection content="telephone=no"><meta name=msapplication-tap-highlight content=no><meta name=viewport content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width"><link rel=icon type=image/png sizes=128x128 href=/icons/favicon-128x128.png><link rel=icon type=image/png sizes=96x96 href=/icons/favicon-96x96.png><link rel=icon type=image/png sizes=32x32 href=/icons/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/icons/favicon-16x16.png><link rel=icon type=image/ico href=/favicon.ico><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel=stylesheet><style>html,
+      body {
+        margin: 0;
+        background: #f5f7fa;
+      }
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #f5f7fa;
+        transition: opacity 0.3s ease;
+      }
+      #boot-splash.boot-splash--hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #boot-splash img {
+        width: 128px;
+        height: 128px;
+        animation: boot-splash-bob 1.6s ease-in-out infinite;
+      }
+      #boot-splash span {
+        color: #1677d2;
+        font:
+          800 1.3rem/1 system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        letter-spacing: 1px;
+      }
+      @keyframes boot-splash-bob {
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash,
+        #boot-splash img {
+          transition: none;
+          animation: none;
+        }
+      }</style>  <script type="module" crossorigin src="/assets/index-CbyM0y3e.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-Bs5jQ17r.css">
-<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#1677d2"><link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677d2"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Jamie's English"><meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" href="/icons/apple-icon-120x120.png"><link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png"><link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-icon-167x167.png"><link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png"></head><body><div id=q-app></div></body></html>
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#1677d2"><link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#1677d2"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Jamie's English"><meta name="msapplication-TileImage" content="/icons/ms-icon-144x144.png"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" href="/icons/apple-icon-120x120.png"><link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png"><link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-icon-167x167.png"><link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png"></head><body><div id=boot-splash aria-hidden=true><img src=/icons/icon-192x192.png alt=""> <span>Jamie 英文</span></div><script>(function () {
+        /** 至少顯示多久（從開啟算起，毫秒），太快消失反而像在閃 */
+        var MIN_MS = 600;
+        /** 最久顯示多久；程式出錯時也不會一直卡在啟動畫面 */
+        var MAX_MS = 8000;
+        var hidden = false;
+        window.hideBootSplash = function () {
+          if (hidden) return;
+          hidden = true;
+          var el = document.getElementById('boot-splash');
+          if (!el) return;
+          setTimeout(
+            function () {
+              el.classList.add('boot-splash--hide');
+              setTimeout(function () {
+                el.remove();
+              }, 400);
+            },
+            Math.max(0, MIN_MS - performance.now()),
+          );
+        };
+        setTimeout(window.hideBootSplash, MAX_MS);
+      })();</script><div id=q-app></div></body></html>
