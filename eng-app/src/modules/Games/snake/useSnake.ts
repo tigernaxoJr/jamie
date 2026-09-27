@@ -1,4 +1,4 @@
-import { computed, reactive } from 'vue';
+import { type Ref, computed, reactive } from 'vue';
 import { WordPronunciation } from 'src/modules/Vocabulary';
 import {
   type GameSession,
@@ -13,8 +13,18 @@ import {
 export const BOARD_SIZE = 12;
 const MAX_LIVES = 3;
 const DECOYS = 3;
-const START_INTERVAL = 0.3;
-const MIN_INTERVAL = 0.13;
+
+export type SnakeSpeed = 'slow' | 'normal' | 'fast';
+
+/** 每一步的秒數：開局、最快、每拼完一個字加快多少 */
+export const SNAKE_SPEEDS: Record<
+  SnakeSpeed,
+  { label: string; start: number; min: number; step: number }
+> = {
+  slow: { label: '🐢 慢', start: 0.5, min: 0.28, step: 0.015 },
+  normal: { label: '🐇 中', start: 0.38, min: 0.2, step: 0.012 },
+  fast: { label: '🚀 快', start: 0.28, min: 0.14, step: 0.012 },
+};
 
 export interface Point {
   x: number;
@@ -50,7 +60,8 @@ const startingSnake = (): Point[] => {
   ];
 };
 
-export function useSnake(session: GameSession) {
+export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
+  const pace = () => SNAKE_SPEEDS[speed.value];
   let deck = new WordDeck([]);
   let dirQueue: Direction[] = [];
   let acc = 0;
@@ -66,7 +77,7 @@ export function useSnake(session: GameSession) {
     lives: MAX_LIVES,
     score: 0,
     completed: 0,
-    interval: START_INTERVAL,
+    interval: SNAKE_SPEEDS.normal.start,
     /** 撞到或吃錯時短暫閃爍 */
     flash: false,
   });
@@ -125,7 +136,7 @@ export function useSnake(session: GameSession) {
       lives: MAX_LIVES,
       score: 0,
       completed: 0,
-      interval: START_INTERVAL,
+      interval: pace().start,
       flash: false,
     });
     nextWord();
@@ -212,7 +223,7 @@ export function useSnake(session: GameSession) {
     session.record(word, !wordHadMistake);
     state.completed++;
     state.score += target.value.length * 10 + (wordHadMistake ? 0 : 20);
-    state.interval = Math.max(MIN_INTERVAL, state.interval - 0.015);
+    state.interval = Math.max(pace().min, state.interval - pace().step);
     sfx.correct();
     WordPronunciation(word.answer);
     nextWord();

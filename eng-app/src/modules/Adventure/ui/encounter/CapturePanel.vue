@@ -200,12 +200,16 @@ const restart = () => {
 <style scoped lang="scss">
 .scene {
   position: relative;
-  height: 230px;
+  height: clamp(170px, 30vh, 230px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   overflow: hidden;
   padding-bottom: 28px;
+}
+.scene :deep(svg.creature) {
+  width: min(150px, 22vh);
+  height: min(150px, 22vh);
 }
 .scene__creature {
   transition:

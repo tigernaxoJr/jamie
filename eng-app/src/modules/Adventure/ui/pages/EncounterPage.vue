@@ -223,12 +223,16 @@ rollWild();
   margin: 0 auto;
 }
 .scene {
-  height: 230px;
+  height: clamp(160px, 30vh, 230px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 20px;
   overflow: hidden;
+}
+.scene :deep(svg.creature) {
+  width: min(150px, 22vh);
+  height: min(150px, 22vh);
 }
 .appear {
   animation: appear 0.6s ease-out;
