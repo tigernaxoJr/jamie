@@ -45,6 +45,11 @@ export const grantGameCandies = (correct: number, won: boolean): CandyReward => 
   return { candies, capped: earned - candies };
 };
 
+/** 任務等額外獎勵：不受小遊戲的每日上限限制 */
+export const grantBonusCandies = (n: number): void => {
+  if (n > 0) wallet.value.candies += n;
+};
+
 /** 花糖果，不夠就回傳 false */
 export const spendCandies = (n: number): boolean => {
   if (wallet.value.candies < n) return false;

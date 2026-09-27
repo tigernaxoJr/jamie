@@ -66,6 +66,8 @@
         </div>
       </section>
 
+      <DailyQuestsCard :grant="grantBonusCandies" class="q-mb-lg" />
+
       <!-- 主要功能 -->
       <section class="actions q-mb-lg">
         <router-link
@@ -111,6 +113,8 @@
 <script setup lang="ts">
 import { getProgressSummary, getTodayProgress, WordPronunciation } from 'src/modules/Vocabulary';
 import { DAILY_BONUS_ENERGY } from 'src/modules/Adventure/domain/rules';
+import { grantBonusCandies } from 'src/modules/Adventure';
+import { DailyQuestsCard } from 'src/modules/Quests';
 
 const summary = getProgressSummary();
 const today = getTodayProgress();

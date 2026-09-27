@@ -3,6 +3,8 @@
     <div class="page-container">
       <PageTitle emoji="🎮" title="遊戲中心" subtitle="邊玩邊背單字！遊戲會用你選的主題出題" />
 
+      <DailyQuestsCard :grant="grantBonusCandies" class="q-mb-lg" />
+
       <div class="grid">
         <router-link
           v-for="{ card, path } in gameEntries"
@@ -37,6 +39,8 @@
 
 <script setup lang="ts">
 import PageTitle from 'src/components/PageTitle.vue';
+import { grantBonusCandies } from 'src/modules/Adventure';
+import { DailyQuestsCard } from 'src/modules/Quests';
 import { gameEntries } from '../registry';
 import type { GameCard } from '../shared/types';
 import { bestScoreKey } from '../shared/useGameSession';

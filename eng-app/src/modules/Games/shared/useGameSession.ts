@@ -2,6 +2,7 @@ import { computed, reactive, ref, shallowRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { recordWordAnswer } from 'src/modules/Vocabulary';
 import { grantGameCandies } from 'src/modules/Adventure';
+import { trackQuest } from 'src/modules/Quests';
 import type { GameCard, GameInfo, GameResult, GameWord } from './types';
 import { loadGameWords, shuffle } from './words';
 import { reviewDeck } from './review';
@@ -24,6 +25,8 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
   const isNewBest = ref(false);
   /** 這局答對幾題（換算糖果用） */
   let correctCount = 0;
+  /** 這局作答幾次（開了就離開、沒作答也沒得分的不算玩過） */
+  let answeredCount = 0;
 
   const availableWords = computed(() => loadGameWords(categories.value, info.wordFilter));
   const canStart = computed(() => availableWords.value.length >= info.minWords);
@@ -35,6 +38,7 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
     result.value = null;
     isNewBest.value = false;
     correctCount = 0;
+    answeredCount = 0;
     reviewing.value = review;
     phase.value = 'playing';
     onStart(shuffle(list));
@@ -52,6 +56,16 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
 
   const finish = (r: GameResult) => {
     result.value = { ...r, reward: grantGameCandies(correctCount, r.won) };
+    if (answeredCount > 0 || r.score > 0) {
+      trackQuest({
+        type: 'game',
+        gameId: info.id,
+        // 只有過關才會有星等
+        stageCleared: r.stars !== undefined,
+        stars: r.stars ?? 0,
+        review: reviewing.value,
+      });
+    }
     isNewBest.value = r.ranked !== false && r.score > bestScore.value;
     if (isNewBest.value) bestScore.value = r.score;
     phase.value = 'result';
@@ -67,6 +81,7 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
 
   /** 記錄答題：累計糖果，並寫入單字長期記憶（僅限設定為會記錄的遊戲） */
   const record = (word: GameWord, correct: boolean) => {
+    answeredCount++;
     if (correct) correctCount++;
     if (info.recordsProgress) recordWordAnswer(word.english, correct);
   };

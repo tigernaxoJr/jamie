@@ -14,6 +14,7 @@ import {
   xpToNext,
 } from '../domain/rules';
 import { CANDY_XP } from '../domain/candy';
+import { trackQuest } from 'src/modules/Quests';
 import { spendCandies } from './candy';
 
 export interface OwnedCreature {
@@ -190,6 +191,7 @@ export const useAdventureStore = defineStore('adventure', () => {
   const feedCandy = (uid: string): number | null => {
     const c = byUid(uid);
     if (!c || c.level >= MAX_LEVEL || !spendCandies(1)) return null;
+    trackQuest({ type: 'feed' });
     return gainXp(uid, CANDY_XP);
   };
 
