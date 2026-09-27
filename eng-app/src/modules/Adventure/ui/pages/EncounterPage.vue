@@ -175,7 +175,7 @@ const subtitle = computed(() =>
   area.value ? `已收服 ${store.caughtInArea(area.value)} / ${area.value.species.length} 種` : '',
 );
 
-const WEIGHT: Record<Rarity, number> = { common: 6, uncommon: 3, rare: 1 };
+const WEIGHT: Record<Rarity, number> = { common: 6, uncommon: 3, rare: 1, legendary: 0.5 };
 
 /** 依稀有度權重抽出野生字靈 */
 const rollWild = () => {

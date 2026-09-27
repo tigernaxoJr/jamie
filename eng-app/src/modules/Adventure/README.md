@@ -1,6 +1,7 @@
 # Adventure 模組：字靈探險隊
 
 類似收集養成的探險遊戲：用題庫單字答題來捕捉、對戰「字靈」，收集圖鑑。
+共 10 個地區（對應題庫第 1～10 級）、53 種字靈（含 1 隻傳說字靈）。
 所有字靈都是原創，外觀由 SVG 部件組合（`ui/CreatureSvg.vue`），不需要任何圖片素材。
 
 ## 結構
@@ -17,7 +18,8 @@ Adventure/
 │   └── words.ts          # 取得地區出題用的單字
 ├── store/                # 存檔（localStorage 'adventure-save'）
 └── ui/
-    ├── CreatureSvg.vue   # 字靈外觀產生器
+    ├── CreatureSvg.vue   # 字靈外觀產生器（身體與臉）
+    ├── creature/         # 部件：身體後方 / 前方的配件、共用幾何資料
     ├── QuestionCard.vue  # 捕捉、對戰共用的答題卡
     ├── encounter/        # 捕捉面板、對戰面板
     └── pages/            # 地圖、遭遇、圖鑑
@@ -34,5 +36,6 @@ Adventure/
 ## 新增字靈 / 地區
 
 1. 在 `domain/species.ts` 的 `SPECIES` 加一筆（外觀用 `look` 組合部件）。
+   需要新部件時，在 `CreaturePart` 加型別，並在 `ui/creature/` 的前方或後方部件元件畫出來。
 2. 把字靈編號加到 `domain/areas.ts` 某個地區的 `species`；新地區加在 `AREAS` 並設定 `wordLevel`。
 3. 數值平衡都在 `domain/rules.ts` 調整。

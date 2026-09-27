@@ -18,6 +18,7 @@ const CAPTURE_RANGE: Record<Rarity, [number, number]> = {
   common: [0.35, 0.95],
   uncommon: [0.2, 0.8],
   rare: [0.1, 0.6],
+  legendary: [0.05, 0.45],
 };
 
 /** 捕捉率，能量越高越容易抓到 */
