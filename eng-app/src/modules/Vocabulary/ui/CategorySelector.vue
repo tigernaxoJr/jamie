@@ -165,6 +165,8 @@ const toggleParent = (parentId: string) => {
   padding: 4px;
 }
 .level {
+  /* 捲動區是 flex 直排，不加這行卡片會被壓扁到放得下為止 */
+  flex-shrink: 0;
   border: 2px solid var(--app-line);
   border-radius: 16px;
   background: #fff;
