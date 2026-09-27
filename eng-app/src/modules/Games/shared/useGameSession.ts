@@ -6,6 +6,7 @@ import { trackQuest } from 'src/modules/Quests';
 import type { GameCard, GameInfo, GameResult, GameWord } from './types';
 import { loadGameWords, shuffle } from './words';
 import { reviewDeck } from './review';
+import { recordGamePlayed } from './gameLogStorage';
 
 export type GamePhase = 'setup' | 'playing' | 'result';
 
@@ -57,6 +58,13 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
   const finish = (r: GameResult) => {
     result.value = { ...r, reward: grantGameCandies(correctCount, r.won) };
     if (answeredCount > 0 || r.score > 0) {
+      recordGamePlayed({
+        gameId: info.id,
+        cleared: r.stars !== undefined,
+        stars: r.stars ?? 0,
+        ...(r.lettersPerMinute ? { lettersPerMinute: r.lettersPerMinute } : {}),
+        now: Date.now(),
+      });
       trackQuest({
         type: 'game',
         gameId: info.id,

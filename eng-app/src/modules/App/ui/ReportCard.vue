@@ -98,6 +98,28 @@
         </div>
       </div>
     </template>
+
+    <!-- 小遊戲 -->
+    <template v-if="games.totalPlays > 0">
+      <div class="text-subtitle2 q-mt-lg q-mb-sm">
+        🎮 小遊戲（最近 7 天玩了 {{ games.totalPlays }} 局）
+      </div>
+      <div class="games-summary">
+        <span v-if="games.cleared">🚩 過關 {{ games.cleared }} 次</span>
+        <span v-if="games.stars">⭐ 拿到 {{ games.stars }} 顆星</span>
+        <span v-if="games.typingBest">
+          ⌨️ 打字最快 {{ games.typingBest }} 字母/分
+          <template v-if="games.typingPrevBest">
+            （上週 {{ games.typingPrevBest }}{{ typingTrend }}）
+          </template>
+        </span>
+      </div>
+      <div class="games-list q-mt-sm">
+        <span v-for="[id, count] in games.plays" :key="id" class="game-chip">
+          {{ gameCardOf(id)?.icon }} {{ gameCardOf(id)?.title ?? id }} × {{ count }}
+        </span>
+      </div>
+    </template>
   </section>
 </template>
 
@@ -112,8 +134,14 @@ import {
   getActivityReport,
   getTodayProgress,
 } from 'src/modules/Vocabulary';
+import { gameCardOf, getGameReport } from 'src/modules/Games';
 
 const report = getActivityReport(7);
+const games = getGameReport(7);
+const typingTrend = computed(() => {
+  const diff = games.typingBest - games.typingPrevBest;
+  return diff > 0 ? `，進步 ${diff}` : '';
+});
 const today = getTodayProgress();
 
 const accuracy = computed(() =>
@@ -266,5 +294,23 @@ const topicName = (id: string) => {
   font-size: 0.8rem;
   font-weight: 800;
   color: $negative;
+}
+.games-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-weight: 700;
+}
+.games-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.game-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 </style>

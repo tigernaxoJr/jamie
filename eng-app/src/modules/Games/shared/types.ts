@@ -54,6 +54,8 @@ export interface GameResult {
   stars?: number;
   /** 是否計入最高分（關卡模式為 false，只有無盡模式算），預設 true */
   ranked?: boolean;
+  /** 打字速度（字母/分），打字遊戲才有，家長報告用 */
+  lettersPerMinute?: number;
   /** 帶回字靈探險的糖果，由 GameSession 結算時填入 */
   reward?: { candies: number; capped: number };
 }
