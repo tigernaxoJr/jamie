@@ -1,1 +1,0 @@
-import{Q as f,a as i}from"./index-Dnzpa2Yv.js";const l=()=>{a(f,{color:"primary",unelevated:!0,noCaps:!0}),a(i,{flat:!0})},a=(s,n)=>{const r=s.props;Object.keys(n).forEach(o=>{const t=r[o],e=n[o],c=Array.isArray(t),u=typeof t=="function";r[o]=c||u?{type:t,default:e}:{...t,default:e}})};export{l as default};
