@@ -28,6 +28,9 @@ export const captureRate = (rarity: Rarity, energy: number): number => {
   return min + (max - min) * ratio;
 };
 
+/** 當天達成每日單字目標時，捕捉的額外能量 */
+export const DAILY_BONUS_ENERGY = 2;
+
 /** 打贏字靈後捕捉的額外能量 */
 export const BATTLE_WIN_ENERGY = 3;
 

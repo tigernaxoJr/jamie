@@ -18,6 +18,13 @@
           aria-label="家長專區"
           title="家長專區"
         />
+        <div
+          v-if="streak > 0"
+          class="pill pill--streak q-mr-xs"
+          :title="`連續 ${streak} 天達成每日目標`"
+        >
+          🔥 {{ streak }}
+        </div>
         <div class="pill" :title="`已熟練 ${mastered} 個單字`">⭐ {{ mastered }}</div>
       </q-toolbar>
       <UpdateNotice />
@@ -70,7 +77,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { getProgressSummary } from 'src/modules/Vocabulary';
+import { getProgressSummary, getTodayProgress } from 'src/modules/Vocabulary';
 import SpeechNotice from 'src/components/SpeechNotice.vue';
 import UpdateNotice from 'src/components/UpdateNotice.vue';
 import { type NavItem, navItems } from './navigation';
@@ -86,14 +93,22 @@ const isActive = (item: NavItem) =>
 
 // 換頁時更新熟練單字數
 const mastered = ref(0);
+const streak = ref(0);
 watch(
   () => route.path,
-  () => (mastered.value = getProgressSummary().mastered),
+  () => {
+    mastered.value = getProgressSummary().mastered;
+    streak.value = getTodayProgress().streak;
+  },
   { immediate: true },
 );
 </script>
 
 <style scoped lang="scss">
+.pill--streak {
+  background: #fff7ed;
+  color: #ea580c;
+}
 .app-header {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);

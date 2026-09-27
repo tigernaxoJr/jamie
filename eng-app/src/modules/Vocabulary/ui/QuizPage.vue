@@ -123,6 +123,9 @@
                 <div class="feedback__emoji">👍</div>
                 <div class="feedback__title text-primary">答對了（有用提示）</div>
               </template>
+              <div v-if="goalJustReached" class="goal-reached q-mt-sm">
+                🎯 今日目標達成！答對 {{ DAILY_GOAL }} 題了，太厲害了！
+              </div>
               <div class="q-mt-xs">
                 正確答案：<b class="feedback__answer">{{ currentWord.english }}</b>
                 <SpeechStrip :word="currentWord.english" />
@@ -222,6 +225,7 @@
 import { onMounted, ref, computed, nextTick } from 'vue';
 import PageTitle from 'src/components/PageTitle.vue';
 import { useQuizStore } from './QuizStore';
+import { DAILY_GOAL, getTodayProgress } from '../index';
 import { type QuizWord, WordQuizService, isCorrectAnswer, letterCount } from '../domain';
 import InfoStrip from './QuizPage/InfoStrip.vue';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
@@ -237,6 +241,7 @@ const showLength = ref<boolean>(false);
 const showAnswer = ref<boolean>(false);
 const isSelectingCategory = ref(false);
 const inputEl = ref<HTMLInputElement | null>(null);
+const goalJustReached = ref(false);
 
 // Category Selection
 const tempSelectedCategories = ref<string[]>([]);
@@ -283,6 +288,7 @@ onMounted(() => {
 });
 
 const nextQuestion = () => {
+  goalJustReached.value = false;
   answerChecked.value = false;
   correctAns.value = false;
   errorAns.value = false;
@@ -319,6 +325,8 @@ const checkAnswer = () => {
   // 立刻記錄，不等按下一題（離開頁面或重新開始時才不會遺失或記錯）
   if (correctAns.value || errorAns.value) {
     store.recordAnswer(currentWord.value.id, correctAns.value);
+    // 這一題剛好達成每日目標
+    goalJustReached.value = correctAns.value && getTodayProgress().correct === DAILY_GOAL;
   }
 };
 
@@ -426,6 +434,15 @@ const handleClearMemory = () => {
 .feedback {
   text-align: center;
   font-size: 1.05rem;
+}
+.goal-reached {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 900;
+  animation: pop 0.5s;
 }
 .feedback__emoji {
   font-size: 2.6rem;

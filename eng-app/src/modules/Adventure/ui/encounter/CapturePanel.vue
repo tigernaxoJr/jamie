@@ -50,6 +50,9 @@
         <q-space />
         <span class="rate" :class="rateClass">捕捉率 {{ Math.round(rate * 100) }}%</span>
       </div>
+      <div v-if="dailyBonus" class="daily-bonus q-mb-xs">
+        🎁 今日目標達成：能量 +{{ dailyBonus }}
+      </div>
       <div class="energy">
         <span v-for="n in MAX_ENERGY" :key="n" class="energy__cell" :class="{ on: n <= energy }" />
       </div>
@@ -116,12 +119,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { type GameWord, WordDeck, sfx, useTimers } from 'src/modules/Games/shared';
+import { getTodayProgress } from 'src/modules/Vocabulary';
 import { type Species, RARITY_NAME } from '../../domain/species';
 import {
   CAPTURE_ENERGY,
   CAPTURE_ROUNDS,
   type CaptureDifficulty,
   MAX_ENERGY,
+  DAILY_BONUS_ENERGY,
   captureRate,
 } from '../../domain/rules';
 import { CAPTURE_KIND, type Question, makeQuestion } from '../../domain/questions';
@@ -147,7 +152,10 @@ const deck = new WordDeck(props.words);
 type Phase = 'choose' | 'question' | 'ready' | 'throwing' | 'caught' | 'failed';
 const phase = ref<Phase>('choose');
 const round = ref(0);
-const energy = ref(props.bonusEnergy);
+// 當天達成每日單字目標，捕捉多一點能量
+const dailyBonus = getTodayProgress().done ? DAILY_BONUS_ENERGY : 0;
+const startEnergy = () => Math.min(MAX_ENERGY, props.bonusEnergy + dailyBonus);
+const energy = ref(startEnergy());
 const question = ref<Question | null>(null);
 let difficulty: CaptureDifficulty = 'easy';
 
@@ -192,7 +200,7 @@ const throwNet = () => {
 
 const restart = () => {
   round.value = 0;
-  energy.value = props.bonusEnergy;
+  energy.value = startEnergy();
   phase.value = 'choose';
 };
 </script>
@@ -241,6 +249,11 @@ const restart = () => {
 }
 .net--shake {
   animation: net-shake 0.6s ease-in-out 3;
+}
+.daily-bonus {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #b45309;
 }
 .energy {
   display: grid;
