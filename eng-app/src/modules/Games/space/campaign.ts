@@ -103,10 +103,6 @@ export const starsFor = (shieldsLost: number, misfires: number): number => {
   return 1;
 };
 
-/** 第 index 關是否解鎖：第 1 關一定解鎖，之後要前一關拿到星星 */
-export const isStageUnlocked = (index: number, stars: readonly number[]): boolean =>
-  index === 0 || (stars[index - 1] ?? 0) > 0;
-
 export interface Upgrade {
   id: 'shield' | 'reload' | 'bomb' | 'slow' | 'bomb2';
   icon: string;

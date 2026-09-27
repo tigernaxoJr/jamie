@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STAGES, UPGRADES, isStageUnlocked, shipStats, starsFor } from './campaign';
+import { STAGES, UPGRADES, shipStats, starsFor } from './campaign';
 
 describe('space campaign', () => {
   it('星等：沒受傷又準確才有 3 星', () => {
@@ -7,13 +7,6 @@ describe('space campaign', () => {
     expect(starsFor(0, 3)).toBe(2);
     expect(starsFor(1, 0)).toBe(2);
     expect(starsFor(2, 0)).toBe(1);
-  });
-
-  it('前一關拿到星星才解鎖下一關', () => {
-    expect(isStageUnlocked(0, [])).toBe(true);
-    expect(isStageUnlocked(1, [])).toBe(false);
-    expect(isStageUnlocked(1, [1])).toBe(true);
-    expect(isStageUnlocked(2, [3, 0])).toBe(false);
   });
 
   it('星星越多飛船越強，全部升級都拿得到', () => {

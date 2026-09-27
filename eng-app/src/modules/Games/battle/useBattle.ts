@@ -1,4 +1,5 @@
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref, shallowRef } from 'vue';
+import { useLocalStorage } from '@vueuse/core';
 import { WordPronunciation } from 'src/modules/Vocabulary';
 import {
   type GameSession,
@@ -9,7 +10,18 @@ import {
   sfx,
   useTimers,
 } from '../shared';
-import { monsters } from './monsters';
+import {
+  BASE_HP,
+  type Monster,
+  type OwnedPerks,
+  type Perk,
+  attackDamage,
+  checkpoints,
+  critEvery,
+  monsterFor,
+  rollPerks,
+  startingPerkPicks,
+} from './tower';
 
 /** meaning: 看中文選英文；reverse: 看英文選中文；listen: 聽發音選英文 */
 export type QuestionType = 'meaning' | 'reverse' | 'listen';
@@ -20,38 +32,67 @@ export interface Question {
   choices: GameWord[];
 }
 
-const MAX_HP = 5;
-const CRIT_EVERY = 3;
+interface TowerSave {
+  /** 爬到過的最高樓層 */
+  bestFloor: number;
+  /** 打倒過的最高魔王樓層（決定可以從哪裡出發） */
+  highestBoss: number;
+}
 
 export function useBattle(session: GameSession) {
   const timers = useTimers();
+  const save = useLocalStorage<TowerSave>(
+    'battle-tower',
+    { bestFloor: 0, highestBoss: 0 },
+    { mergeDefaults: true },
+  );
+  const startPoints = computed(() => checkpoints(save.value.highestBoss));
+  /** 這次從第幾層出發（標題畫面選） */
+  const startFloor = ref(1);
+
   let words: GameWord[] = [];
   let deck = new WordDeck([]);
   const missed = new Map<string, GameWord>();
+  /** 還沒挑的增益卡次數（從高樓層出發時會先挑幾張） */
+  let pendingPicks = 0;
+
+  const monster = shallowRef<Monster>(monsterFor(1));
 
   const state = reactive({
-    stage: 0,
+    floor: 1,
+    /** fight：答題打怪；perk：挑增益卡 */
+    mode: 'fight' as 'fight' | 'perk',
     monsterHp: 0,
-    playerHp: MAX_HP,
+    playerHp: BASE_HP,
+    maxHp: BASE_HP,
+    shield: 0,
+    perks: {} as OwnedPerks,
+    perkChoices: [] as Perk[],
     combo: 0,
     maxCombo: 0,
     score: 0,
     correct: 0,
     answered: 0,
+    bossesBeaten: 0,
     question: null as Question | null,
     /** 玩家選的答案，null 表示還沒作答 */
     chosen: null as GameWord | null,
     /** 動畫狀態 */
-    effect: '' as '' | 'hit' | 'crit' | 'hurt' | 'defeated',
+    effect: '' as '' | 'hit' | 'crit' | 'hurt' | 'blocked' | 'defeated',
   });
 
-  const monster = computed(() => monsters[Math.min(state.stage, monsters.length - 1)]!);
-  const locked = computed(() => state.chosen !== null || state.effect === 'defeated');
+  const locked = computed(
+    () => state.mode !== 'fight' || state.chosen !== null || state.effect === 'defeated',
+  );
+
+  const addScore = (n: number) => {
+    state.score += Math.round(n * (state.perks.lucky ? 1.5 : 1));
+  };
 
   const pickType = (): QuestionType => {
-    // 前兩關只考看字，之後加入聽力
+    // 前兩層只考看字，之後加入聽力
     const types: QuestionType[] =
-      state.stage < 2 ? ['meaning', 'reverse'] : ['meaning', 'reverse', 'listen'];
+      state.floor <= 2 ? ['meaning', 'reverse'] : ['meaning', 'reverse', 'listen'];
     return types[randomInt(types.length)]!;
   };
 
@@ -60,13 +101,23 @@ export function useBattle(session: GameSession) {
     const type = pickType();
     state.chosen = null;
     state.effect = '';
-    state.question = { type, word, choices: makeChoices(word, words, 4) };
+    const count = state.perks.eye ? 3 : 4;
+    state.question = { type, word, choices: makeChoices(word, words, count) };
     if (type !== 'meaning') WordPronunciation(word.answer);
   };
 
   const spawnMonster = () => {
+    monster.value = monsterFor(state.floor);
     state.monsterHp = monster.value.hp;
+    state.mode = 'fight';
+    if (monster.value.boss) sfx.lose();
     nextQuestion();
+  };
+
+  const offerPerks = () => {
+    state.perkChoices = rollPerks(state.perks, state.playerHp, state.maxHp);
+    state.question = null;
+    state.mode = 'perk';
   };
 
   const start = (list: GameWord[]) => {
@@ -74,30 +125,47 @@ export function useBattle(session: GameSession) {
     words = list;
     deck = new WordDeck(list);
     missed.clear();
+    const floor = startPoints.value.includes(startFloor.value) ? startFloor.value : 1;
     Object.assign(state, {
-      stage: 0,
-      playerHp: MAX_HP,
+      floor,
+      playerHp: BASE_HP,
+      maxHp: BASE_HP,
+      shield: 0,
+      perks: {},
       combo: 0,
       maxCombo: 0,
       score: 0,
       correct: 0,
       answered: 0,
+      bossesBeaten: 0,
+      chosen: null,
+      effect: '',
     });
-    spawnMonster();
+    pendingPicks = startingPerkPicks(floor);
+    if (pendingPicks > 0) offerPerks();
+    else spawnMonster();
   };
 
-  const end = (won: boolean, headline?: string) => {
+  const end = (headline?: string) => {
     timers.clearAll();
+    // 爬塔一定會結束在被打倒或離開；這次有打倒魔王就算勝利
+    const won = state.bossesBeaten > 0;
     if (won) sfx.win();
     else sfx.lose();
-    const bonus = won ? state.playerHp * 20 : 0;
+    const reached = state.floor;
+    const isRecord = reached > save.value.bestFloor;
+    if (isRecord) save.value.bestFloor = reached;
     session.finish({
       won,
       headline:
-        headline ?? (won ? '你打倒了惡龍魔王！' : `被${monster.value.name}打敗了，再接再厲！`),
-      score: state.score + bonus,
+        headline ??
+        (isRecord
+          ? `新紀錄！爬到了第 ${reached} 層`
+          : `在第 ${reached} 層被${monster.value.name}打倒了，再接再厲！`),
+      score: state.score,
       stats: [
-        { label: '打倒怪物', value: `${state.stage} / ${monsters.length}` },
+        { label: '到達樓層', value: reached },
+        { label: '打倒魔王', value: state.bossesBeaten },
         { label: '答對', value: `${state.correct} / ${state.answered}` },
         { label: '最高連擊', value: state.maxCombo },
       ],
@@ -117,17 +185,23 @@ export function useBattle(session: GameSession) {
       state.correct++;
       state.combo++;
       state.maxCombo = Math.max(state.maxCombo, state.combo);
-      const crit = state.combo % CRIT_EVERY === 0;
-      const damage = crit ? 2 : 1;
+      const crit = state.combo % critEvery(state.perks) === 0;
+      const damage = attackDamage(state.perks, crit);
       state.monsterHp = Math.max(0, state.monsterHp - damage);
-      state.score += damage * 10 + state.stage * 2;
+      addScore(damage * 10 + state.floor * 2);
+      if (crit && state.perks.vamp) state.playerHp = Math.min(state.maxHp, state.playerHp + 1);
       state.effect = crit ? 'crit' : 'hit';
       sfx.hit();
     } else {
       state.combo = 0;
-      state.playerHp--;
-      state.effect = 'hurt';
       missed.set(q.word.answer, q.word);
+      if (state.shield > 0) {
+        state.shield--;
+        state.effect = 'blocked';
+      } else {
+        state.playerHp = Math.max(0, state.playerHp - monster.value.attack);
+        state.effect = 'hurt';
+      }
       sfx.wrong();
     }
 
@@ -136,21 +210,52 @@ export function useBattle(session: GameSession) {
   };
 
   const afterAnswer = () => {
-    if (state.playerHp <= 0) return end(false);
+    if (state.playerHp <= 0) return end();
     if (state.monsterHp > 0) return nextQuestion();
 
     state.effect = 'defeated';
-    state.score += 50;
+    const boss = monster.value.boss;
+    addScore(boss ? 150 : 50);
+    if (boss) {
+      state.bossesBeaten++;
+      save.value.highestBoss = Math.max(save.value.highestBoss, state.floor);
+    }
     sfx.correct();
     timers.later(() => {
-      state.stage++;
-      if (state.stage >= monsters.length) return end(true);
-      state.playerHp = Math.min(MAX_HP, state.playerHp + 1);
-      spawnMonster();
+      state.floor++;
+      if (state.floor > save.value.bestFloor) save.value.bestFloor = state.floor;
+      offerPerks();
     }, 1200);
   };
 
-  const quit = () => end(false, '提早結束了，下次再挑戰！');
+  const choosePerk = (perk: Perk) => {
+    if (state.mode !== 'perk') return;
+    const p = state.perks;
+    p[perk.id] = (p[perk.id] ?? 0) + 1;
+    if (perk.id === 'heal') state.playerHp = Math.min(state.maxHp, state.playerHp + 2);
+    if (perk.id === 'maxhp') {
+      state.maxHp++;
+      state.playerHp = Math.min(state.maxHp, state.playerHp + 1);
+    }
+    if (perk.id === 'shield') state.shield += 2;
+    sfx.correct();
+    if (pendingPicks > 0) pendingPicks--;
+    if (pendingPicks > 0) offerPerks();
+    else spawnMonster();
+  };
 
-  return { state, monster, locked, maxHp: MAX_HP, start, answer, quit };
+  const quit = () => end('提早結束了，下次再挑戰！');
+
+  return {
+    state,
+    monster,
+    locked,
+    save,
+    startPoints,
+    startFloor,
+    start,
+    answer,
+    choosePerk,
+    quit,
+  };
 }
