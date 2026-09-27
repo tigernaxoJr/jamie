@@ -144,14 +144,33 @@ export default defineConfig((/* ctx */) => {
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
-      // swFilename: 'sw.js',
-      // manifestFilename: 'manifest.json',
-      // extendManifestJson (json) {},
-      // useCredentialsForManifestTag: true,
-      // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      extendGenerateSWOptions(cfg) {
+        // 打字遊戲（iframe）是獨立頁面，不能被導回主程式的 index.html
+        cfg.navigateFallbackDenylist = [/\/games\/typing\//];
+        cfg.runtimeCaching = [
+          // 打字遊戲是部署時另外複製進來的，不在預先快取清單裡，用到時再快取
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/games/typing/'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'typing-game' },
+          },
+          // Google Fonts：樣式表常更新，字型檔案不會變
+          {
+            urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com',
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts-css' },
+          },
+          {
+            urlPattern: ({ url }) => url.origin === 'https://fonts.gstatic.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ];
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
