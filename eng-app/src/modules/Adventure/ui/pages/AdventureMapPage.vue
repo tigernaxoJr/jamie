@@ -48,7 +48,8 @@
       </section>
 
       <template v-else>
-        <TeamCard class="q-mb-lg" />
+        <TeamCard class="q-mb-md" />
+        <EggCard class="q-mb-lg" />
 
         <div class="row items-center q-mb-sm">
           <div class="text-h6">🗺️ 探險地圖</div>
@@ -137,6 +138,7 @@ import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureSvg from '../CreatureSvg.vue';
 import ElementBadge from '../ElementBadge.vue';
 import TeamCard from '../TeamCard.vue';
+import EggCard from '../EggCard.vue';
 
 const store = useAdventureStore();
 

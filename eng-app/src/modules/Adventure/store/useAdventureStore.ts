@@ -14,6 +14,8 @@ import {
   xpToNext,
 } from '../domain/rules';
 import { CANDY_XP } from '../domain/candy';
+import { EGG_COST, hatchEgg } from '../domain/egg';
+import { getSpecies } from '../domain/species';
 import { trackQuest } from 'src/modules/Quests';
 import { spendCandies } from './candy';
 
@@ -238,6 +240,18 @@ export const useAdventureStore = defineStore('adventure', () => {
   const isAreaUnlocked = (area: Area) => !area.unlockAfter || hasBadge(area.unlockAfter);
 
   const unlockedAreas = computed(() => AREAS.filter(isAreaUnlocked));
+
+  /** 花糖果孵一顆字靈蛋；糖果不夠或還沒有夥伴回傳 null */
+  const hatch = (): { creature: OwnedCreature; isNew: boolean } | null => {
+    if (!hasStarter.value) return null;
+    const candidates = unlockedAreas.value.flatMap((area) =>
+      area.species.map((speciesId) => ({ speciesId, rarity: getSpecies(speciesId).rarity, area })),
+    );
+    const result = hatchEgg(candidates, isCaught);
+    if (!result || !spendCandies(EGG_COST)) return null;
+    const isNew = !isCaught(result.speciesId);
+    return { creature: catchCreature(result.speciesId, result.level), isNew };
+  };
   const badgeCount = computed(() => save.value.badges.filter((id) => getArea(id)).length);
 
   return {
@@ -266,5 +280,6 @@ export const useAdventureStore = defineStore('adventure', () => {
     earnBadge,
     canChallengeGym,
     isAreaUnlocked,
+    hatch,
   };
 });
