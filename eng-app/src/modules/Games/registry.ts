@@ -5,6 +5,7 @@ import { snakeInfo } from './snake/info';
 import { bombInfo } from './bomb/info';
 import { spaceInfo } from './space/info';
 import { memoryInfo } from './memory/info';
+import { typingInfo } from './typing/info';
 import { adventureCard } from 'src/modules/Adventure';
 
 export interface GameEntry {
@@ -26,15 +27,8 @@ export const gameEntries: GameEntry[] = [
   { card: bombInfo, path: 'games/bomb', component: () => import('./bomb/BombPage.vue') },
   { card: memoryInfo, path: 'games/memory', component: () => import('./memory/MemoryPage.vue') },
   {
-    card: {
-      id: 'typing',
-      title: '打字遊戲',
-      icon: '⌨️',
-      description: '在字母掉到底之前把它打出來！',
-      skill: '打字',
-      color: 'blue-grey',
-      desktopOnly: true,
-    },
-    path: 'typing',
+    card: typingInfo,
+    path: 'games/typing',
+    component: () => import('./typing/TypingRainPage.vue'),
   },
 ];

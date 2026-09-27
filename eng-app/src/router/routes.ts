@@ -11,7 +11,8 @@ const routes: RouteRecordRaw[] = [
       { path: 'quiz', component: () => import('src/modules/Vocabulary/ui/QuizPage.vue') },
       { path: 'review', component: () => import('src/modules/Vocabulary/ui/ReviewPage.vue') },
       { path: 'parent', component: () => import('src/modules/App/ui/ParentPage.vue') },
-      { path: 'typing', component: () => import('src/modules/Typing/TypingPage.vue') },
+      // 舊的打字遊戲網址
+      { path: 'typing', redirect: '/games/typing' },
       ...gameRoutes,
       ...adventureRoutes,
     ],
