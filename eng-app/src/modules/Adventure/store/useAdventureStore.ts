@@ -91,7 +91,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     const r = save.value.recentAnswers;
     r.push(correct);
     if (r.length > RECENT_SIZE) r.splice(0, r.length - RECENT_SIZE);
-    recordWordAnswer(word.english, correct);
+    recordWordAnswer(word.english, correct, 'adventure');
   };
 
   const caughtInArea = (area: Area) => area.species.filter((id) => isCaught(id)).length;

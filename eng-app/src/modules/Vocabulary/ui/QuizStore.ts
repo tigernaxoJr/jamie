@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import type { QuizMeta, QuizWord } from '../domain';
 import { loadQuizWords } from '../infra/WordBank';
 import { WordMetaStorage } from '../infra/WordMetaStorage';
+import { ActivityLog } from '../infra/ActivityLog';
 import Categories from '../infra/Category';
 
 const LEGACY_WORDS_KEY = 'words';
@@ -89,6 +90,13 @@ export const useQuizStore = defineStore('quizStore', () => {
     if (!w) return;
     const key = w.english.toLowerCase();
     const entry = WordMetaStorage.record(key, correct);
+    ActivityLog.log({
+      english: key,
+      correct,
+      source: 'quiz',
+      topic: w.categories[0],
+      now: Date.now(),
+    });
     for (const other of words.value) {
       if (other.english.toLowerCase() !== key) continue;
       other.errorRec = { ...entry.errorRec };

@@ -3,8 +3,19 @@
  * 其他模組（例如 Games）只透過這裡取用單字、類別與答題記錄，不直接依賴內部結構。
  */
 import type { Word } from './domain';
-import { loadQuizWords } from './infra/WordBank';
+import { loadQuizWords, topicOf } from './infra/WordBank';
 import { WordMetaStorage } from './infra/WordMetaStorage';
+import { ActivityLog } from './infra/ActivityLog';
+import {
+  type ActivityReport,
+  type AnswerSource,
+  type TodayProgress,
+  activityReport,
+  todayProgress,
+} from './domain/activity';
+
+export { DAILY_GOAL } from './domain/activity';
+export type { ActivityReport, AnswerSource, DayStat, TodayProgress } from './domain/activity';
 
 export type { Category, Word } from './domain';
 import Categories from './infra/Category';
@@ -56,7 +67,30 @@ export const getProgressSummary = (): ProgressSummary => {
   };
 };
 
-/** 記錄一次答題結果到長期記憶，會影響單字測驗的出題優先順序 */
-export const recordWordAnswer = (english: string, correct: boolean): void => {
+/**
+ * 記錄一次答題結果：寫入長期記憶（影響單字測驗的出題順序）與學習日誌（每日目標、家長報告）
+ */
+export const recordWordAnswer = (
+  english: string,
+  correct: boolean,
+  source: AnswerSource = 'game',
+): void => {
   WordMetaStorage.record(english, correct);
+  ActivityLog.log({ english, correct, source, topic: topicOf(english), now: Date.now() });
+};
+
+/** 今天的目標進度與連續天數 */
+export const getTodayProgress = (): TodayProgress => todayProgress(ActivityLog.load(), Date.now());
+
+/** 最近 n 天的學習報告 */
+export const getActivityReport = (days = 7): ActivityReport =>
+  activityReport(ActivityLog.load(), Date.now(), days);
+
+/** 由英文字查中文（同一個字有多個意思時以「、」合併），報告顯示用 */
+export const chineseOf = (english: string): string => {
+  const key = english.toLowerCase();
+  const meanings = loadQuizWords(new Set(Categories.map((c) => c.id)))
+    .filter((w) => w.english.toLowerCase() === key)
+    .map((w) => w.chinese);
+  return [...new Set(meanings)].join('、');
 };

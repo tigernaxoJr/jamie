@@ -39,10 +39,14 @@
             {{ props.row.chinese }}
           </q-td>
           <q-td key="correctCount" :props="props" class="text-body1">
-            <q-badge color="positive" class="text-subtitle2">{{ props.row.correctRec.count }}</q-badge>
+            <q-badge color="positive" class="text-subtitle2">{{
+              props.row.correctRec.count
+            }}</q-badge>
           </q-td>
           <q-td key="errorCount" :props="props" class="text-body1">
-            <q-badge color="negative" class="text-subtitle2">{{ props.row.errorRec.count }}</q-badge>
+            <q-badge color="negative" class="text-subtitle2">{{
+              props.row.errorRec.count
+            }}</q-badge>
           </q-td>
           <q-td key="correctConsecutive" :props="props" class="text-body1">
             {{ props.row.correctRec.consecutive }}
@@ -115,7 +119,7 @@ const pagination = ref({
   sortBy: 'english',
   descending: false,
   page: 1,
-  rowsPerPage: 10
+  rowsPerPage: 10,
 });
 
 const columns: QTableColumn<QuizWord>[] = [
@@ -126,13 +130,13 @@ const columns: QTableColumn<QuizWord>[] = [
     align: 'left',
     field: (row) => row.english,
     format: (val) => `${val}`,
-    sortable: true
+    sortable: true,
   },
   {
     name: 'speech',
     align: 'center',
     label: '發音',
-    field: (row) => row.english
+    field: (row) => row.english,
   },
   {
     name: 'chinese',
@@ -141,36 +145,36 @@ const columns: QTableColumn<QuizWord>[] = [
     field: (row) => row.chinese,
     sortable: true,
     classes: 'gt-xs',
-    headerClasses: 'gt-xs'
+    headerClasses: 'gt-xs',
   },
   {
     name: 'correctCount',
     align: 'center',
     label: '對',
     field: (row) => row.correctRec.count,
-    sortable: true
+    sortable: true,
   },
   {
     name: 'errorCount',
     align: 'center',
     label: '錯',
     field: (row) => row.errorRec.count,
-    sortable: true
+    sortable: true,
   },
   {
     name: 'correctConsecutive',
     align: 'center',
     label: '連對',
     field: (row) => row.correctRec.consecutive,
-    sortable: true
+    sortable: true,
   },
   {
     name: 'errorConsecutive',
     align: 'center',
     label: '連錯',
     field: (row) => row.errorRec.consecutive,
-    sortable: true
-  }
+    sortable: true,
+  },
 ];
 </script>
 
