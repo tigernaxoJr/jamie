@@ -96,6 +96,9 @@
           >暴擊率 {{ Math.round(critChance(store.recentAccuracy) * 100) }}%（看最近答對率）</span
         >
       </div>
+      <div v-if="matchups.length" class="matchups q-mb-sm">
+        <MatchupTag v-for="m in matchups" :key="m.text" :good="m.good">{{ m.text }}</MatchupTag>
+      </div>
       <div class="moves">
         <q-btn
           v-for="m in moves"
@@ -172,7 +175,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { type GameWord, WordDeck, sfx, useTimers } from 'src/modules/Games/shared';
-import { ELEMENTS } from '../../domain/elements';
+import { getCorrectStreak } from 'src/modules/Vocabulary';
+import { ELEMENTS, effectiveness } from '../../domain/elements';
 import { creatureName, getSpecies } from '../../domain/species';
 import {
   type MoveKind,
@@ -189,6 +193,7 @@ import { MOVE_KIND, type Question, makeQuestion } from '../../domain/questions';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 import CreatureSvg from '../CreatureSvg.vue';
 import ElementBadge from '../ElementBadge.vue';
+import MatchupTag from '../MatchupTag.vue';
 import QuestionCard from '../QuestionCard.vue';
 
 const props = defineProps<{
@@ -253,7 +258,7 @@ const moves = computed(() => {
     {
       kind: 'normal' as const,
       name: '撞擊',
-      desc: `看中文選英文 · 威力 ${MOVE_POWER.normal.hit}`,
+      desc: `看中文拼英文（有提示） · 威力 ${MOVE_POWER.normal.hit}`,
       color: 'grey-2',
       textColor: 'dark',
       disabled: false,
@@ -271,13 +276,38 @@ const moves = computed(() => {
       name: `必殺・${el.ultimate}`,
       desc:
         combo.value >= ULTIMATE_COMBO
-          ? `看中文拼英文 · 威力 ${MOVE_POWER.ultimate.hit}`
+          ? `看中文拼英文（沒提示） · 威力 ${MOVE_POWER.ultimate.hit}`
           : `連擊 ${ULTIMATE_COMBO} 次解鎖`,
       color: 'deep-orange',
       textColor: 'white',
       disabled: combo.value < ULTIMATE_COMBO,
     },
   ];
+});
+
+/** 倍率顯示，例如 ×2、×0.5 */
+const times = (eff: number) => `×${eff}`;
+
+/** 出招前提示屬性相剋：我方打對手、對手打我方，只列出有相剋的 */
+const matchups = computed(() => {
+  const mine = activeSpecies.value.element;
+  const theirs = enemy.value.species.element;
+  const attackEff = effectiveness(mine, theirs);
+  const defendEff = effectiveness(theirs, mine);
+  const list: { text: string; good: boolean }[] = [];
+  if (attackEff !== 1) {
+    list.push({
+      text: `${ELEMENTS[mine].emoji} 你的攻擊${attackEff > 1 ? '效果絕佳' : '效果不好'} ${times(attackEff)}`,
+      good: attackEff > 1,
+    });
+  }
+  if (defendEff !== 1) {
+    list.push({
+      text: `${ELEMENTS[theirs].emoji} 對手的攻擊${defendEff > 1 ? '很痛' : '不太痛'} ${times(defendEff)}`,
+      good: defendEff < 1,
+    });
+  }
+  return list;
 });
 
 const hpColor = (ratio: number) => (ratio > 0.5 ? 'positive' : ratio > 0.2 ? 'orange' : 'negative');
@@ -288,7 +318,10 @@ const showPopup = (target: 'enemy' | 'partner', text: string) => {
 
 const useMove = (kind: MoveKind) => {
   currentMove = kind;
-  question.value = makeQuestion(MOVE_KIND[kind], deck.draw(), props.words);
+  const word = deck.draw();
+  // 必殺技不給提示；撞擊依熟練度給提示
+  const streak = kind === 'ultimate' ? null : getCorrectStreak(word.english);
+  question.value = makeQuestion(MOVE_KIND[kind], word, props.words, streak);
   phase.value = 'question';
 };
 
@@ -315,7 +348,8 @@ const onAnswered = (correct: boolean) => {
     timers.later(() => {
       fx.value = 'enemyHit';
       enemyHp.value = Math.max(0, enemyHp.value - damage);
-      showPopup('enemy', `-${damage}${crit ? ' 暴擊！' : ''}`);
+      const effText = effectiveness === 1 ? '' : ` ${times(effectiveness)}`;
+      showPopup('enemy', `-${damage}${effText}${crit ? ' 暴擊！' : ''}`);
       sfx.hit();
     }, 250);
     const notes = [
@@ -348,11 +382,13 @@ const enemyFainted = () => {
 
 const enemyTurn = () => {
   const dmg = enemyDamage(enemy.value.species, enemy.value.level, activeSpecies.value);
-  message.value = `${enemy.value.species.name}發動攻擊！`;
+  const eff = effectiveness(enemy.value.species.element, activeSpecies.value.element);
+  const note = eff > 1 ? '效果絕佳！' : eff < 1 ? '效果不太好…' : '';
+  message.value = `${enemy.value.species.name}發動攻擊！${note}`;
   timers.later(() => {
     fx.value = 'partnerHit';
     hp[activeUid.value] = Math.max(0, activeHp.value - dmg);
-    showPopup('partner', `-${dmg}`);
+    showPopup('partner', `-${dmg}${eff === 1 ? '' : ` ${times(eff)}`}`);
     sfx.hit();
   }, 400);
   timers.later(() => {
@@ -502,6 +538,11 @@ const win = () => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+.matchups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .move {
   min-height: 72px;

@@ -91,6 +91,10 @@ export const recordWordAnswer = (
   ActivityLog.log({ english, correct, source, topic: topicOf(english), now: Date.now() });
 };
 
+/** 某個單字目前連續答對幾次（沒作答過為 0） */
+export const getCorrectStreak = (english: string): number =>
+  WordMetaStorage.loadAll()[english.toLowerCase()]?.correctRec.consecutive ?? 0;
+
 /** 今天的目標進度與連續天數 */
 export const getTodayProgress = (): TodayProgress => todayProgress(ActivityLog.load(), Date.now());
 

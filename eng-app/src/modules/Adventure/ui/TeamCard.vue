@@ -4,7 +4,7 @@
       <div class="text-subtitle1 text-weight-bold">🤝 我的隊伍</div>
       <q-space />
       <span class="candy-pill" title="玩遊戲中心的小遊戲可以拿到字靈糖果">🍬 {{ candyCount }}</span>
-      <q-btn flat dense color="primary" icon="menu_book" label="管理隊伍" to="/adventure/dex" />
+      <q-btn flat dense color="primary" icon="groups" label="管理隊伍" to="/adventure/team" />
     </div>
     <div class="team">
       <div v-for="(c, i) in slots" :key="c?.uid ?? `empty-${i}`" class="member">
@@ -46,10 +46,10 @@
             @click="feed(c.uid)"
           />
         </template>
-        <div v-else class="member__empty">
+        <router-link v-else to="/adventure/team" class="member__empty">
           <q-icon name="add" size="28px" />
-          <div class="text-caption">從圖鑑加入</div>
-        </div>
+          <div class="text-caption">加入隊員</div>
+        </router-link>
       </div>
     </div>
     <div v-if="candyCount < 1" class="text-caption text-muted q-mt-sm">
@@ -146,6 +146,7 @@ const feed = (uid: string) => {
 }
 .member__empty {
   flex: 1;
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;

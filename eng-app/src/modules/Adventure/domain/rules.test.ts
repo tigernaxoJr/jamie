@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AREAS, leaderLevels } from './areas';
+import { effectiveness, strongAgainst, weakAgainst } from './elements';
 import {
   EVOLVE_LEVEL,
   EVOLVE_MASTERED,
@@ -38,6 +39,62 @@ describe('evolution', () => {
     expect(playerDamage({ ...base, attackerStage: 2 }).damage).toBeGreaterThan(
       playerDamage(base).damage,
     );
+  });
+});
+
+describe('element matchups', () => {
+  it('剋制 2 倍、被剋 0.5 倍', () => {
+    expect(effectiveness('fire', 'grass')).toBe(2);
+    expect(effectiveness('grass', 'fire')).toBe(0.5);
+    expect(effectiveness('fire', 'thunder')).toBe(1);
+  });
+
+  it('光不剋任何屬性，也不被任何屬性剋', () => {
+    for (const el of ['fire', 'water', 'grass', 'thunder', 'earth', 'light'] as const) {
+      expect(effectiveness('light', el)).toBe(1);
+      expect(effectiveness(el, 'light')).toBe(1);
+    }
+  });
+
+  it('查詢剋誰、怕誰', () => {
+    expect(strongAgainst('earth')).toEqual(['thunder']);
+    expect(weakAgainst('water')).toEqual(['grass', 'thunder']);
+    expect(strongAgainst('light')).toEqual([]);
+    expect(weakAgainst('light')).toEqual([]);
+  });
+
+  it('撞擊也吃屬性相剋', () => {
+    const hit = (defender: number) =>
+      playerDamage({
+        attacker: getSpecies(1), // 火
+        attackerLevel: 5,
+        defender: getSpecies(defender),
+        move: 'normal',
+        correct: true,
+        crit: false,
+      });
+    expect(hit(3).effectiveness).toBe(2); // 草
+    expect(hit(3).damage).toBe(hit(4).damage * 2); // 土：沒有相剋
+  });
+});
+
+describe('battle length', () => {
+  it('沒有相剋時，同等級的野生字靈要答對 4 題以上才打得倒', () => {
+    for (const area of AREAS) {
+      const level = area.levels[1];
+      for (const id of area.species) {
+        const s = getSpecies(id);
+        const { damage } = playerDamage({
+          attacker: s,
+          attackerLevel: level,
+          defender: s,
+          move: 'normal',
+          correct: true,
+          crit: false,
+        });
+        expect(Math.ceil(maxHp(s, level) / damage)).toBeGreaterThanOrEqual(4);
+      }
+    }
   });
 });
 

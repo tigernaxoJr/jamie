@@ -35,12 +35,23 @@ const STRONG_AGAINST: Record<Element, Element[]> = {
   water: ['fire'],
   thunder: ['water'],
   earth: ['thunder'],
-  light: ['fire', 'water', 'grass', 'thunder', 'earth'],
+  // 光不剋任何屬性，但也沒有屬性剋得了光
+  light: [],
 };
 
-/** 屬性相剋倍率：剋制 1.5、被剋 0.75、其他 1 */
+/** 這個屬性剋制哪些屬性 */
+export const strongAgainst = (el: Element): readonly Element[] => STRONG_AGAINST[el];
+
+/** 哪些屬性剋制這個屬性 */
+export const weakAgainst = (el: Element): Element[] =>
+  (Object.keys(STRONG_AGAINST) as Element[]).filter((a) => STRONG_AGAINST[a].includes(el));
+
+export const SUPER_EFFECTIVE = 2;
+export const NOT_EFFECTIVE = 0.5;
+
+/** 屬性相剋倍率：剋制 2、被剋 0.5、其他 1 */
 export const effectiveness = (attacker: Element, defender: Element): number => {
-  if (STRONG_AGAINST[attacker].includes(defender)) return 1.5;
-  if (STRONG_AGAINST[defender].includes(attacker)) return 0.75;
+  if (STRONG_AGAINST[attacker].includes(defender)) return SUPER_EFFECTIVE;
+  if (STRONG_AGAINST[defender].includes(attacker)) return NOT_EFFECTIVE;
   return 1;
 };

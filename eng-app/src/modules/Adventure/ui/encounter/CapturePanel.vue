@@ -132,7 +132,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { type GameWord, WordDeck, sfx, useTimers } from 'src/modules/Games/shared';
-import { getTodayProgress } from 'src/modules/Vocabulary';
+import { getCorrectStreak, getTodayProgress } from 'src/modules/Vocabulary';
 import { type Species, RARITY_NAME } from '../../domain/species';
 import {
   CAPTURE_ENERGY,
@@ -185,12 +185,13 @@ const rateClass = computed(() =>
 const difficulties: { key: CaptureDifficulty; label: string; desc: string; color: string }[] = [
   { key: 'easy', label: '簡單', desc: '聽發音選中文', color: 'positive' },
   { key: 'normal', label: '普通', desc: '聽發音選拼法', color: 'primary' },
-  { key: 'hard', label: '困難', desc: '聽發音拼單字', color: 'deep-orange' },
+  { key: 'hard', label: '困難', desc: '看中文拼英文', color: 'deep-orange' },
 ];
 
 const ask = (d: CaptureDifficulty) => {
   difficulty = d;
-  question.value = makeQuestion(CAPTURE_KIND[d], deck.draw(), props.words);
+  const word = deck.draw();
+  question.value = makeQuestion(CAPTURE_KIND[d], word, props.words, getCorrectStreak(word.english));
   phase.value = 'question';
 };
 
@@ -198,13 +199,16 @@ const onAnswered = (correct: boolean) => {
   if (question.value) store.recordAnswer(question.value.word, correct);
   if (correct) energy.value = Math.min(MAX_ENERGY, energy.value + CAPTURE_ENERGY[difficulty]);
   round.value++;
-  phase.value = round.value >= CAPTURE_ROUNDS ? 'ready' : 'choose';
+  // 能量滿了捕捉率已經最高，不用再答題
+  const done = round.value >= CAPTURE_ROUNDS || energy.value >= MAX_ENERGY;
+  phase.value = done ? 'ready' : 'choose';
 };
 
 const boostWithCandy = () => {
   if (candyUsed.value || !spendCandies(CANDY_ENERGY_COST)) return;
   candyUsed.value = true;
   energy.value = Math.min(MAX_ENERGY, energy.value + CANDY_ENERGY);
+  if (energy.value >= MAX_ENERGY) phase.value = 'ready';
   sfx.correct();
 };
 

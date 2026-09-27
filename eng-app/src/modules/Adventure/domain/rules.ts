@@ -40,8 +40,11 @@ export const BATTLE_WIN_ENERGY = 3;
 export const EVOLVED_BONUS = 1.3;
 const stageBonus = (stage: number) => (stage >= 2 ? EVOLVED_BONUS : 1);
 
+/** 血量倍率：讓每場對戰多打幾回合、多練幾個字（沒有相剋時野生字靈約 6 下） */
+export const HP_SCALE = 2;
+
 export const maxHp = (s: Species, level: number, stage = 1) =>
-  Math.round((s.baseHp + level * 4) * stageBonus(stage));
+  Math.round((s.baseHp + level * 4) * HP_SCALE * stageBonus(stage));
 export const attack = (s: Species, level: number, stage = 1) =>
   Math.round((s.baseAtk + level * 2) * stageBonus(stage));
 
@@ -111,8 +114,7 @@ export const playerDamage = ({
   crit,
 }: DamageInput) => {
   const power = correct ? MOVE_POWER[move].hit : MOVE_POWER[move].miss;
-  // 只有屬性技和必殺技吃屬性相剋
-  const eff = move === 'normal' ? 1 : effectiveness(attacker.element, defender.element);
+  const eff = effectiveness(attacker.element, defender.element);
   const base = (power * attack(attacker, attackerLevel, attackerStage)) / 10;
   return { damage: Math.round(base * eff * (crit ? CRIT_MULTIPLIER : 1)), effectiveness: eff };
 };
