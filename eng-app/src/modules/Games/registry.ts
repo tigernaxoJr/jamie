@@ -5,6 +5,7 @@ import { snakeInfo } from './snake/info';
 import { bombInfo } from './bomb/info';
 import { spaceInfo } from './space/info';
 import { memoryInfo } from './memory/info';
+import { adventureCard } from 'src/modules/Adventure';
 
 export interface GameEntry {
   card: GameCard;
@@ -18,6 +19,7 @@ export interface GameEntry {
  * 遊戲清單：新增遊戲時只要在這裡加一筆，遊戲中心與路由會自動更新。
  */
 export const gameEntries: GameEntry[] = [
+  { card: adventureCard, path: 'adventure' },
   { card: battleInfo, path: 'games/battle', component: () => import('./battle/BattlePage.vue') },
   { card: spaceInfo, path: 'games/space', component: () => import('./space/SpacePage.vue') },
   { card: snakeInfo, path: 'games/snake', component: () => import('./snake/SnakePage.vue') },
