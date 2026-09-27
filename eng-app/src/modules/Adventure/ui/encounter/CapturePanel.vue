@@ -53,6 +53,19 @@
       <div v-if="dailyBonus" class="daily-bonus q-mb-xs">
         🎁 今日目標達成：能量 +{{ dailyBonus }}
       </div>
+      <div v-if="candyUsed" class="daily-bonus q-mb-xs">🍬 字靈糖果：能量 +{{ CANDY_ENERGY }}</div>
+      <q-btn
+        v-else-if="(phase === 'choose' || phase === 'ready') && candyCount >= CANDY_ENERGY_COST"
+        dense
+        unelevated
+        no-caps
+        size="sm"
+        color="orange-1"
+        text-color="orange-10"
+        class="q-mb-xs text-weight-bold"
+        :label="`🍬 用 ${CANDY_ENERGY_COST} 顆糖果，能量 +${CANDY_ENERGY}（有 ${candyCount} 顆）`"
+        @click="boostWithCandy"
+      />
       <div class="energy">
         <span v-for="n in MAX_ENERGY" :key="n" class="energy__cell" :class="{ on: n <= energy }" />
       </div>
@@ -130,6 +143,8 @@ import {
   captureRate,
 } from '../../domain/rules';
 import { CAPTURE_KIND, type Question, makeQuestion } from '../../domain/questions';
+import { CANDY_ENERGY, CANDY_ENERGY_COST } from '../../domain/candy';
+import { candyCount, spendCandies } from '../../store/candy';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureSvg from '../CreatureSvg.vue';
 import ElementBadge from '../ElementBadge.vue';
@@ -154,7 +169,10 @@ const phase = ref<Phase>('choose');
 const round = ref(0);
 // 當天達成每日單字目標，捕捉多一點能量
 const dailyBonus = getTodayProgress().done ? DAILY_BONUS_ENERGY : 0;
-const startEnergy = () => Math.min(MAX_ENERGY, props.bonusEnergy + dailyBonus);
+// 用糖果加的能量，這次遭遇重新挑戰時也保留
+const candyUsed = ref(false);
+const startEnergy = () =>
+  Math.min(MAX_ENERGY, props.bonusEnergy + dailyBonus + (candyUsed.value ? CANDY_ENERGY : 0));
 const energy = ref(startEnergy());
 const question = ref<Question | null>(null);
 let difficulty: CaptureDifficulty = 'easy';
@@ -181,6 +199,13 @@ const onAnswered = (correct: boolean) => {
   if (correct) energy.value = Math.min(MAX_ENERGY, energy.value + CAPTURE_ENERGY[difficulty]);
   round.value++;
   phase.value = round.value >= CAPTURE_ROUNDS ? 'ready' : 'choose';
+};
+
+const boostWithCandy = () => {
+  if (candyUsed.value || !spendCandies(CANDY_ENERGY_COST)) return;
+  candyUsed.value = true;
+  energy.value = Math.min(MAX_ENERGY, energy.value + CANDY_ENERGY);
+  sfx.correct();
 };
 
 const throwNet = () => {

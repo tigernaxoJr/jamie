@@ -14,7 +14,7 @@ import {
   todayProgress,
 } from './domain/activity';
 
-export { DAILY_GOAL } from './domain/activity';
+export { DAILY_GOAL, dayKey } from './domain/activity';
 export type { ActivityReport, AnswerSource, DayStat, TodayProgress } from './domain/activity';
 
 export type { Category, Word } from './domain';

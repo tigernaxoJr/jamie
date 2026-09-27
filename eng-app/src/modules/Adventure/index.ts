@@ -1,5 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router';
 
+export { candyCount, grantGameCandies, type CandyReward } from './store/candy';
+export { CORRECT_PER_CANDY } from './domain/candy';
+
 /** 字靈探險隊的路由，掛在 MainLayout 底下 */
 export const adventureRoutes: RouteRecordRaw[] = [
   { path: 'adventure', component: () => import('./ui/pages/AdventureMapPage.vue') },

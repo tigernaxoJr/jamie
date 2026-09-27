@@ -44,4 +44,8 @@ export interface GameResult {
   stats: GameStat[];
   /** 這局答錯/沒拼出來的單字 */
   missed: GameWord[];
+  /** 關卡制遊戲的星等（1～3） */
+  stars?: number;
+  /** 帶回字靈探險的糖果，由 GameSession 結算時填入 */
+  reward?: { candies: number; capped: number };
 }
