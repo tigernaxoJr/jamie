@@ -48,11 +48,13 @@
       </section>
 
       <template v-else>
-        <PartnerCard v-if="store.partner" :creature="store.partner" class="q-mb-lg">
-          <q-btn flat color="primary" label="換夥伴" to="/adventure/dex" class="gt-xs" />
-        </PartnerCard>
+        <TeamCard class="q-mb-lg" />
 
-        <div class="text-h6 q-mb-sm">🗺️ 探險地圖</div>
+        <div class="row items-center q-mb-sm">
+          <div class="text-h6">🗺️ 探險地圖</div>
+          <q-space />
+          <span class="pill">🏅 徽章 {{ store.badgeCount }} / {{ AREAS.length }}</span>
+        </div>
         <div class="areas">
           <div
             v-for="(area, i) in AREAS"
@@ -76,6 +78,9 @@
             <div class="q-pa-md">
               <div class="row items-center no-wrap">
                 <div class="text-h6">{{ area.name }}</div>
+                <span v-if="store.hasBadge(area.id)" class="q-ml-xs" :title="area.leader.badge"
+                  >🏅</span
+                >
                 <q-space />
                 <span class="pill">第 {{ i + 1 }} 級單字</span>
               </div>
@@ -85,17 +90,32 @@
                 <q-space />
                 <span>已收服 {{ store.caughtInArea(area) }} / {{ area.species.length }}</span>
               </div>
-              <q-btn
-                v-if="store.isAreaUnlocked(area)"
-                class="btn-3d full-width q-mt-sm"
-                color="primary"
-                icon="explore"
-                label="去探索"
-                :to="`/adventure/explore/${area.id}`"
-              />
+              <template v-if="store.isAreaUnlocked(area)">
+                <q-btn
+                  class="btn-3d full-width q-mt-sm"
+                  color="primary"
+                  icon="explore"
+                  label="去探索"
+                  :to="`/adventure/explore/${area.id}`"
+                />
+                <q-btn
+                  v-if="store.canChallengeGym(area)"
+                  class="full-width q-mt-sm"
+                  outline
+                  :color="store.hasBadge(area.id) ? 'grey-7' : 'deep-orange'"
+                  icon="emoji_events"
+                  :label="`${store.hasBadge(area.id) ? '再次挑戰' : '挑戰'}館主 ${area.leader.emoji} ${area.leader.name}`"
+                  :to="`/adventure/gym/${area.id}`"
+                />
+                <div v-else class="gym-hint q-mt-sm">
+                  {{ area.leader.emoji }} 在這區收服
+                  {{ GYM_REQUIRED_CAUGHT }} 種字靈，就能挑戰館主{{ area.leader.name }}
+                </div>
+              </template>
               <div v-else class="locked q-mt-sm">
-                🔒 在{{ getArea(area.unlockAfter!.area)?.name }}收服
-                {{ area.unlockAfter!.caught }} 種字靈後解鎖
+                🔒 打贏{{ getArea(area.unlockAfter!)?.name }}的館主{{
+                  getArea(area.unlockAfter!)?.leader.name
+                }}後解鎖
               </div>
             </div>
           </div>
@@ -112,11 +132,11 @@ import { WordPronunciation } from 'src/modules/Vocabulary';
 import { sfx } from 'src/modules/Games/shared';
 import { AREAS, getArea } from '../../domain/areas';
 import { SPECIES, STARTER_IDS, getSpecies } from '../../domain/species';
-import { STARTER_LEVEL } from '../../domain/rules';
+import { GYM_REQUIRED_CAUGHT, STARTER_LEVEL } from '../../domain/rules';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureSvg from '../CreatureSvg.vue';
 import ElementBadge from '../ElementBadge.vue';
-import PartnerCard from '../PartnerCard.vue';
+import TeamCard from '../TeamCard.vue';
 
 const store = useAdventureStore();
 
@@ -194,6 +214,15 @@ const confirmStarter = () => {
 }
 .area--locked .area__scene {
   filter: grayscale(0.9) brightness(0.8);
+}
+.gym-hint {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
 }
 .locked {
   padding: 10px;

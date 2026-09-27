@@ -24,6 +24,19 @@ const allNewWords = [
   ...Cat10,
 ];
 
+let topicIndex: Map<string, string> | null = null;
+
+/** 英文字所屬的子類別（同一個字在多個主題時取第一個），給學習日誌統計用 */
+export const topicOf = (english: string): string | undefined => {
+  topicIndex ??= new Map(
+    [...allNewWords].reverse().flatMap((w) => {
+      const topic = w.categories[0];
+      return topic ? [[w.english.toLowerCase(), topic] as const] : [];
+    }),
+  );
+  return topicIndex.get(english.toLowerCase());
+};
+
 /**
  * 載入指定類別的單字，並帶入長期記憶中的答題記錄。
  * id 是單字在整個題庫中的位置，換類別也不會變，「最近出過」的紀錄才能正確對應。

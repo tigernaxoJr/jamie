@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'eng-app/**'
-      - 'games/Typing/**'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -32,12 +31,6 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: eng-app/pnpm-lock.yaml
 
-      - name: Set up npm cache for Typing game
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-typing-${{ hashFiles('games/Typing/package-lock.json') }}
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: eng-app
@@ -50,19 +43,8 @@ jobs:
         run: pnpm build
         working-directory: eng-app
 
-      - name: Build Games - Typing
-        run: |
-          npm ci
-          npm run build
-        working-directory: games/Typing
-
-      - name: Move Typing Game to App Dist
-        run: |
-          mkdir -p eng-app/dist/spa/games/typing
-          cp -r games/Typing/dist/* eng-app/dist/spa/games/typing/
-
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./eng-app/dist/spa
+          publish_dir: ./eng-app/dist/pwa

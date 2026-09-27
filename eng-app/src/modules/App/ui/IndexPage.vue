@@ -11,7 +11,30 @@
           <div class="hero__mascot gt-xs">🦉</div>
         </div>
 
-        <div class="stats q-mt-lg">
+        <!-- 今日目標 -->
+        <div class="goal q-mt-md" :class="{ 'goal--done': today.done }">
+          <div class="row items-center no-wrap">
+            <span class="goal__title">
+              {{ today.done ? '🎉 今天的目標達成了！' : '🎯 今日目標：答對 ' + today.goal + ' 題' }}
+            </span>
+            <q-space />
+            <span v-if="today.streak > 0" class="goal__streak">🔥 連續 {{ today.streak }} 天</span>
+          </div>
+          <q-linear-progress
+            :value="Math.min(1, today.correct / today.goal)"
+            color="warning"
+            track-color="white"
+            size="14px"
+            rounded
+            class="q-mt-xs"
+          />
+          <div class="text-caption text-weight-bold q-mt-xs">
+            今天答對 {{ today.correct }} / {{ today.goal }} 題
+            <span v-if="today.done">· 捕捉字靈時能量 +{{ DAILY_BONUS_ENERGY }}</span>
+          </div>
+        </div>
+
+        <div class="stats q-mt-md">
           <div class="stat">
             <div class="stat__value">{{ summary.practiced }}</div>
             <div class="stat__label">練習過</div>
@@ -86,9 +109,11 @@
 </template>
 
 <script setup lang="ts">
-import { getProgressSummary, WordPronunciation } from 'src/modules/Vocabulary';
+import { getProgressSummary, getTodayProgress, WordPronunciation } from 'src/modules/Vocabulary';
+import { DAILY_BONUS_ENERGY } from 'src/modules/Adventure/domain/rules';
 
 const summary = getProgressSummary();
+const today = getTodayProgress();
 const weakWords = summary.weak.slice(0, 12);
 
 const hour = new Date().getHours();
@@ -144,6 +169,26 @@ const actions = [
 }
 .hero__bar {
   opacity: 0.95;
+}
+.goal {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.goal--done {
+  background: rgba(255, 255, 255, 0.28);
+}
+.goal__title {
+  font-weight: 900;
+}
+.goal__streak {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #ea580c;
+  font-weight: 900;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 .stats {
   display: grid;

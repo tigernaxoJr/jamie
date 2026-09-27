@@ -73,9 +73,10 @@
       <BattlePanel
         v-else-if="phase === 'battle'"
         :key="`battle-${encounterId}`"
-        :enemy="wild.species"
-        :enemy-level="wild.level"
-        :partner="store.partner"
+        :enemies="[wild]"
+        :team="store.team"
+        mode="wild"
+        :intro="`野生的${wild.species.name}出現了！要用什麼招式？`"
         :words="words"
         :background="area.background"
         @won="onWon"
@@ -101,6 +102,7 @@
           （{{ wild.species.meaning }}）
         </div>
         <div v-if="isNew" class="pill q-mt-sm">📖 新登錄到圖鑑！</div>
+        <div v-if="joinedTeam" class="pill q-mt-sm q-ml-xs">🤝 已加入隊伍</div>
         <div class="text-caption text-muted q-mt-sm">{{ wild.species.description }}</div>
         <div class="column q-gutter-sm q-mt-lg">
           <q-btn
@@ -119,7 +121,7 @@
       <!-- 對戰輸了 -->
       <div v-else-if="phase === 'lost'" class="app-card q-pa-lg text-center">
         <div style="font-size: 3rem">😴</div>
-        <div class="text-h6">夥伴累倒了，休息一下再出發吧！</div>
+        <div class="text-h6">隊伍都累倒了，休息一下再出發吧！</div>
         <div class="text-muted">回地圖後體力會自動恢復</div>
         <div class="column q-gutter-sm q-mt-lg">
           <q-btn
@@ -169,6 +171,7 @@ const phase = ref<Phase>('intro');
 const wild = shallowRef<{ species: Species; level: number } | null>(null);
 const bonusEnergy = ref(0);
 const isNew = ref(false);
+const joinedTeam = ref(false);
 const encounterId = ref(0);
 
 const subtitle = computed(() =>
@@ -209,7 +212,8 @@ const onWon = () => {
 const onCaught = () => {
   if (!wild.value || !store.partner) return;
   isNew.value = !store.isCaught(wild.value.species.id);
-  store.catchCreature(wild.value.species.id, wild.value.level);
+  const caught = store.catchCreature(wild.value.species.id, wild.value.level);
+  joinedTeam.value = store.isInTeam(caught.uid);
   store.gainXp(store.partner.uid, CAPTURE_XP);
   phase.value = 'caught';
 };

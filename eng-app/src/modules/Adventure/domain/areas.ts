@@ -1,3 +1,12 @@
+export interface Leader {
+  name: string;
+  emoji: string;
+  /** 徽章名稱 */
+  badge: string;
+  /** 出場的字靈（依序） */
+  team: number[];
+}
+
 export interface Area {
   id: string;
   name: string;
@@ -11,8 +20,10 @@ export interface Area {
   species: number[];
   /** 背景漸層 */
   background: string;
-  /** 解鎖條件：前一區至少捕捉幾種 */
-  unlockAfter?: { area: string; caught: number };
+  /** 解鎖條件：打贏這一區的館主 */
+  unlockAfter?: string;
+  /** 館主：在這區收服足夠字靈後可以挑戰，打贏拿到徽章 */
+  leader: Leader;
 }
 
 export const AREAS: readonly Area[] = [
@@ -24,6 +35,7 @@ export const AREAS: readonly Area[] = [
     wordLevel: '1',
     levels: [1, 3],
     species: [4, 5, 6, 7, 8, 3],
+    leader: { name: '小葵', emoji: '👧', badge: '花朵徽章', team: [5, 4, 6] },
     background: 'linear-gradient(180deg, #bae6fd 0%, #dcfce7 55%, #86efac 100%)',
   },
   {
@@ -34,8 +46,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '2',
     levels: [3, 5],
     species: [9, 10, 11, 12, 13, 1],
+    leader: { name: '阿森', emoji: '🧑', badge: '森林徽章', team: [9, 11, 13] },
     background: 'linear-gradient(180deg, #14532d 0%, #166534 50%, #4d7c0f 100%)',
-    unlockAfter: { area: 'meadow', caught: 3 },
+    unlockAfter: 'meadow',
   },
   {
     id: 'beach',
@@ -45,8 +58,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '3',
     levels: [5, 7],
     species: [14, 15, 16, 17, 18, 2],
+    leader: { name: '海海', emoji: '🧒', badge: '貝殼徽章', team: [14, 15, 17] },
     background: 'linear-gradient(180deg, #7dd3fc 0%, #bae6fd 45%, #fde68a 100%)',
-    unlockAfter: { area: 'forest', caught: 3 },
+    unlockAfter: 'forest',
   },
   {
     id: 'town',
@@ -56,8 +70,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '4',
     levels: [7, 9],
     species: [19, 20, 21, 22, 23],
+    leader: { name: '鐘錶爺爺', emoji: '👴', badge: '齒輪徽章', team: [19, 21, 23] },
     background: 'linear-gradient(180deg, #fde68a 0%, #fed7aa 50%, #fdba74 100%)',
-    unlockAfter: { area: 'beach', caught: 3 },
+    unlockAfter: 'beach',
   },
   {
     id: 'bakery',
@@ -67,8 +82,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '5',
     levels: [9, 11],
     species: [24, 25, 26, 27, 28],
+    leader: { name: '甜甜主廚', emoji: '👩‍🍳', badge: '蛋糕徽章', team: [24, 27, 28] },
     background: 'linear-gradient(180deg, #fce7f3 0%, #fbcfe8 50%, #fda4af 100%)',
-    unlockAfter: { area: 'town', caught: 3 },
+    unlockAfter: 'town',
   },
   {
     id: 'valley',
@@ -78,8 +94,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '6',
     levels: [11, 13],
     species: [29, 30, 31, 32, 33],
+    leader: { name: '風哥', emoji: '🧗', badge: '彩虹徽章', team: [29, 31, 33] },
     background: 'linear-gradient(180deg, #94a3b8 0%, #cbd5e1 50%, #a7f3d0 100%)',
-    unlockAfter: { area: 'bakery', caught: 3 },
+    unlockAfter: 'bakery',
   },
   {
     id: 'park',
@@ -89,8 +106,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '7',
     levels: [13, 15],
     species: [34, 35, 36, 37, 38],
+    leader: { name: '教練', emoji: '🏃', badge: '獎盃徽章', team: [34, 36, 38] },
     background: 'linear-gradient(180deg, #7dd3fc 0%, #bbf7d0 60%, #4ade80 100%)',
-    unlockAfter: { area: 'valley', caught: 3 },
+    unlockAfter: 'valley',
   },
   {
     id: 'jungle',
@@ -100,8 +118,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '8',
     levels: [15, 17],
     species: [39, 40, 41, 42, 43],
+    leader: { name: '叢林隊長', emoji: '🤠', badge: '猛獸徽章', team: [40, 42, 43] },
     background: 'linear-gradient(180deg, #065f46 0%, #047857 50%, #65a30d 100%)',
-    unlockAfter: { area: 'park', caught: 3 },
+    unlockAfter: 'park',
   },
   {
     id: 'castle',
@@ -111,8 +130,9 @@ export const AREAS: readonly Area[] = [
     wordLevel: '9',
     levels: [17, 19],
     species: [44, 45, 46, 47, 48],
+    leader: { name: '騎士團長', emoji: '🤴', badge: '盾牌徽章', team: [46, 47, 48] },
     background: 'linear-gradient(180deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%)',
-    unlockAfter: { area: 'jungle', caught: 3 },
+    unlockAfter: 'jungle',
   },
   {
     id: 'festival',
@@ -122,12 +142,21 @@ export const AREAS: readonly Area[] = [
     wordLevel: '10',
     levels: [19, 21],
     species: [49, 50, 51, 52, 53],
+    leader: { name: '節慶女王', emoji: '👸', badge: '星光徽章', team: [50, 52, 49] },
     background: 'linear-gradient(180deg, #7f1d1d 0%, #b91c1c 50%, #f59e0b 100%)',
-    unlockAfter: { area: 'castle', caught: 3 },
+    unlockAfter: 'castle',
   },
 ];
 
 export const getArea = (id: string): Area | undefined => AREAS.find((a) => a.id === id);
+
+/** 字靈的主要棲息地（第一個出現的地區），進化看這一區的單字熟練數 */
+export const homeAreaOf = (speciesId: number): Area | undefined =>
+  AREAS.find((a) => a.species.includes(speciesId));
+
+/** 館主字靈的等級：比該區野生字靈的最高等級再高一點 */
+export const leaderLevels = (area: Area): number[] =>
+  area.leader.team.map((_, i) => area.levels[1] + 1 + i);
 
 /** 某隻字靈的棲息地名稱 */
 export const habitatsOf = (speciesId: number): string[] =>

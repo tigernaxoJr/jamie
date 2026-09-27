@@ -1,44 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // https://github.com/quasarframework/quasar/issues/7379
-import { QCard, QDate, QDialog, QTabs } from 'quasar';
-import { QInput } from 'quasar';
-import { QSelect } from 'quasar';
-import { QTable } from 'quasar';
-import { QBtn } from 'quasar';
+// 只設定全站都會用到的元件；在這裡 import 的元件會被打包進首頁，
+// 只在個別頁面用到的元件（例如表格）請在該頁直接設定 props。
+import { QBtn, QCard } from 'quasar';
 import { boot } from 'quasar/wrappers';
-import { QStepper } from 'quasar';
 
-const dense = true;
-const flat = true;
-const bordered = true;
-const outlined = true;
-const stackLabel = true;
-const hideBottomSpace = true;
-const color = 'primary';
-const unelevated = true;
-const animated = true;
-// const outline = true;
 export default boot(() => {
-  SetComponentDefaults<QStepper>(QStepper, { animated, headerNav: true });
-  SetComponentDefaults<QBtn>(QBtn, { color, unelevated, noCaps: true });
-  SetComponentDefaults<QDate>(QDate, { flat });
-  SetComponentDefaults<QInput>(QInput, {
-    outlined,
-    dense,
-    stackLabel,
-    hideBottomSpace,
-    inputStyle: { fontSize: '1rem' },
-  });
-  SetComponentDefaults<QSelect>(QSelect, { outlined, dense, stackLabel, hideBottomSpace });
-  SetComponentDefaults<QCard>(QCard, { flat });
-  SetComponentDefaults<QTable>(QTable, {
-    flat,
-    bordered,
-    rowsPerPageOptions: [10, 20, 50],
-    pagination: { rowsPerPage: 10 },
-  });
-  SetComponentDefaults<QTabs>(QTabs, { dense, align: 'left' });
-  SetComponentDefaults<QDialog>(QDialog, { persistent: true });
+  SetComponentDefaults<QBtn>(QBtn, { color: 'primary', unelevated: true, noCaps: true });
+  SetComponentDefaults<QCard>(QCard, { flat: true });
 });
 
 type Default = Record<string, any>;
