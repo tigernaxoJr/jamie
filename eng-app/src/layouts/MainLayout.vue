@@ -9,6 +9,7 @@
         <q-space />
         <div class="pill" :title="`已熟練 ${mastered} 個單字`">⭐ {{ mastered }}</div>
       </q-toolbar>
+      <SpeechNotice />
     </q-header>
 
     <!-- 桌機：側邊選單 -->
@@ -58,6 +59,7 @@
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { getProgressSummary } from 'src/modules/Vocabulary';
+import SpeechNotice from 'src/components/SpeechNotice.vue';
 import { type NavItem, navItems } from './navigation';
 
 const route = useRoute();

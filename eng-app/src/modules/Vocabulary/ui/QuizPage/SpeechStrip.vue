@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { OpenGoogleTranslateTTS, WordPronunciation } from '../../utils';
+import { OpenGoogleTranslateTTS, WordPronunciation } from '../../speech';
 
 withDefaults(defineProps<{ word?: string }>(), { word: '' });
 </script>

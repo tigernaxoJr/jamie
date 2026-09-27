@@ -11,7 +11,7 @@ import Categories from './infra/Category';
 
 export { Categories };
 export { default as CategorySelector } from './ui/CategorySelector.vue';
-export { WordPronunciation } from './utils';
+export { WordPronunciation, speechStatus } from './speech';
 export { baseAnswer, isCorrectAnswer, letterCount } from './domain/answers';
 
 /** 取得屬於指定類別的單字 */
