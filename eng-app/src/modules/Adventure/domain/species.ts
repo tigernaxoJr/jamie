@@ -1152,6 +1152,11 @@ export const SPECIES: readonly Species[] = [
   },
 ];
 
+/** 顯示用名字：進化後加上「超級」 */
+export const creatureName = (s: Species, stage = 1) => (stage >= 2 ? `超級${s.name}` : s.name);
+export const creatureEnglish = (s: Species, stage = 1) =>
+  stage >= 2 ? `Super ${s.english}` : s.english;
+
 /** 一開始可以選的夥伴 */
 export const STARTER_IDS = [1, 2, 3] as const;
 

@@ -82,28 +82,88 @@
           <div class="text-caption text-muted text-weight-bold q-mb-xs">
             我收服的{{ selected.name }}
           </div>
-          <div v-for="c in owned" :key="c.uid" class="owned row items-center no-wrap">
-            <span class="text-weight-bold">Lv {{ c.level }}</span>
-            <span class="text-caption text-muted q-ml-sm">{{
-              new Date(c.caughtAt).toLocaleDateString()
-            }}</span>
-            <q-space />
-            <q-chip
-              v-if="store.partner?.uid === c.uid"
-              dense
-              color="primary"
-              text-color="white"
-              icon="favorite"
-              >目前夥伴</q-chip
-            >
-            <q-btn
-              v-else
-              flat
-              dense
-              color="primary"
-              label="設為夥伴"
-              @click="store.setPartner(c.uid)"
-            />
+          <div v-for="c in owned" :key="c.uid" class="owned">
+            <div class="row items-center no-wrap">
+              <CreatureSvg
+                :species="selected"
+                :size="44"
+                :animated="false"
+                :evolved="(c.stage ?? 1) >= 2"
+              />
+              <div class="q-ml-sm">
+                <div class="text-weight-bold">{{ creatureName(selected, c.stage) }}</div>
+                <div class="text-caption text-muted">Lv {{ c.level }}</div>
+              </div>
+              <q-space />
+              <q-chip v-if="store.partner?.uid === c.uid" dense color="primary" text-color="white">
+                隊長
+              </q-chip>
+              <template v-else-if="store.isInTeam(c.uid)">
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  label="設為隊長"
+                  @click="store.setPartner(c.uid)"
+                />
+                <q-btn
+                  flat
+                  dense
+                  color="grey-7"
+                  label="移出"
+                  @click="store.removeFromTeam(c.uid)"
+                />
+              </template>
+              <q-btn
+                v-else
+                flat
+                dense
+                color="primary"
+                icon="group_add"
+                :label="teamFull ? '隊伍已滿' : '加入隊伍'"
+                :disable="teamFull"
+                @click="store.addToTeam(c.uid)"
+              />
+            </div>
+
+            <!-- 進化 -->
+            <div v-if="!evolveOf(c).evolved" class="evolve q-mt-xs">
+              <div class="text-caption text-weight-bold">✨ 進化條件</div>
+              <div class="evolve__row">
+                <span>等級 Lv {{ evolveOf(c).needLevel }}</span>
+                <span :class="c.level >= evolveOf(c).needLevel ? 'text-positive' : 'text-muted'">
+                  {{ Math.min(c.level, evolveOf(c).needLevel) }} / {{ evolveOf(c).needLevel }}
+                </span>
+              </div>
+              <div class="evolve__row">
+                <span>熟練{{ evolveOf(c).wordLevelName }}單字</span>
+                <span
+                  :class="
+                    evolveOf(c).mastered >= evolveOf(c).needMastered
+                      ? 'text-positive'
+                      : 'text-muted'
+                  "
+                >
+                  {{ Math.min(evolveOf(c).mastered, evolveOf(c).needMastered) }} /
+                  {{ evolveOf(c).needMastered }}
+                </span>
+              </div>
+              <div class="text-caption text-muted">
+                單字連續答對 3 次就算熟練，去單字測驗多練習吧！
+              </div>
+              <q-btn
+                v-if="evolveOf(c).canEvolve"
+                class="btn-3d full-width q-mt-sm"
+                color="accent"
+                text-color="dark"
+                icon="auto_awesome"
+                :label="`進化成${creatureName(selected, 2)}！`"
+                @click="doEvolve(c)"
+              />
+            </div>
+            <div v-else class="text-caption text-weight-bold text-orange-9 q-mt-xs">
+              ✨ 已經進化，能力提升 30%
+            </div>
           </div>
         </div>
       </q-card>
@@ -116,8 +176,10 @@ import { computed, ref } from 'vue';
 import PageTitle from 'src/components/PageTitle.vue';
 import { WordPronunciation } from 'src/modules/Vocabulary';
 import { habitatsOf } from '../../domain/areas';
-import { RARITY_NAME, SPECIES, type Species } from '../../domain/species';
-import { useAdventureStore } from '../../store/useAdventureStore';
+import { RARITY_NAME, SPECIES, type Species, creatureName } from '../../domain/species';
+import { TEAM_SIZE } from '../../domain/rules';
+import { sfx } from 'src/modules/Games/shared';
+import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 import CreatureSvg from '../CreatureSvg.vue';
 import ElementBadge from '../ElementBadge.vue';
 
@@ -133,6 +195,12 @@ const selected = ref<Species | null>(null);
 const owned = computed(() =>
   selected.value ? store.creatures.filter((c) => c.speciesId === selected.value!.id) : [],
 );
+
+const teamFull = computed(() => store.team.length >= TEAM_SIZE);
+const evolveOf = (c: OwnedCreature) => store.evolveStatus(c);
+const doEvolve = (c: OwnedCreature) => {
+  if (store.evolve(c.uid)) sfx.win();
+};
 
 const open = (s: Species) => {
   selected.value = s;
@@ -195,9 +263,20 @@ const open = (s: Species) => {
   max-width: 420px;
 }
 .owned {
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-radius: 12px;
   background: #f5f7fa;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+.evolve {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fff;
+}
+.evolve__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 </style>

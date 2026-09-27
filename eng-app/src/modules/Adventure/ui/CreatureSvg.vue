@@ -14,6 +14,21 @@
   >
     <ellipse cx="60" cy="110" rx="30" ry="5" class="shadow" />
 
+    <!-- 進化後的光環 -->
+    <g v-if="evolved" class="aura">
+      <circle cx="60" :cy="g.cy" r="56" :fill="elementColor" opacity="0.2" />
+      <circle
+        cx="60"
+        :cy="g.cy"
+        r="50"
+        fill="none"
+        :stroke="elementColor"
+        stroke-width="2.5"
+        stroke-dasharray="5 7"
+        class="aura__ring"
+      />
+    </g>
+
     <g class="creature__body">
       <CreatureBackParts :look="look" :g="g" :accent="accent" />
 
@@ -104,13 +119,21 @@
         <circle v-else cx="60" :cy="g.face + 11" r="2" fill="#1f2937" />
       </g>
     </g>
+    <path
+      v-if="evolved && !silhouette"
+      :d="starPath(100, 18, 9)"
+      fill="#facc15"
+      stroke="rgba(0,0,0,0.3)"
+      stroke-width="1.5"
+    />
   </svg>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Species } from '../domain/species';
-import { GEOMETRY, LINE, darken } from './creature/geometry';
+import { ELEMENTS } from '../domain/elements';
+import { GEOMETRY, LINE, darken, starPath } from './creature/geometry';
 import CreatureBackParts from './creature/CreatureBackParts.vue';
 import CreatureFrontParts from './creature/CreatureFrontParts.vue';
 
@@ -123,14 +146,17 @@ const props = withDefaults(
     animated?: boolean;
     /** 面向左邊（對戰時我方字靈） */
     flip?: boolean;
+    /** 進化後：加上屬性光環與星星 */
+    evolved?: boolean;
   }>(),
-  { size: 120, silhouette: false, animated: true, flip: false },
+  { size: 120, silhouette: false, animated: true, flip: false, evolved: false },
 );
 
 const look = computed(() => props.species.look);
 const accent = computed(() => look.value.accent ?? darken(look.value.color));
 const dark = computed(() => darken(look.value.color, 0.25));
 const g = computed(() => GEOMETRY[look.value.body]);
+const elementColor = computed(() => ELEMENTS[props.species.element].color);
 </script>
 
 <style scoped>
@@ -139,6 +165,18 @@ const g = computed(() => GEOMETRY[look.value.body]);
   display: inline-block;
   vertical-align: middle;
   overflow: visible;
+}
+.aura__ring {
+  animation: spin 8s linear infinite;
+  transform-origin: 60px 70px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.creature--silhouette .aura {
+  display: none;
 }
 .shadow {
   fill: rgba(0, 0, 0, 0.12);

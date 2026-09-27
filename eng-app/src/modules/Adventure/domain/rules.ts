@@ -36,8 +36,29 @@ export const BATTLE_WIN_ENERGY = 3;
 
 // ---------- 能力值與成長 ----------
 
-export const maxHp = (s: Species, level: number) => s.baseHp + level * 4;
-export const attack = (s: Species, level: number) => s.baseAtk + level * 2;
+/** 進化後能力提升的倍率 */
+export const EVOLVED_BONUS = 1.3;
+const stageBonus = (stage: number) => (stage >= 2 ? EVOLVED_BONUS : 1);
+
+export const maxHp = (s: Species, level: number, stage = 1) =>
+  Math.round((s.baseHp + level * 4) * stageBonus(stage));
+export const attack = (s: Species, level: number, stage = 1) =>
+  Math.round((s.baseAtk + level * 2) * stageBonus(stage));
+
+// ---------- 進化與隊伍 ----------
+
+/** 進化條件：等級，以及字靈所在地區那一級的單字熟練數 */
+export const EVOLVE_LEVEL = 10;
+export const EVOLVE_MASTERED = 15;
+
+export const canEvolve = (level: number, stage: number, masteredWords: number) =>
+  stage < 2 && level >= EVOLVE_LEVEL && masteredWords >= EVOLVE_MASTERED;
+
+/** 隊伍最多幾隻 */
+export const TEAM_SIZE = 3;
+
+/** 挑戰館主前，要在該區收服幾種字靈 */
+export const GYM_REQUIRED_CAUGHT = 3;
 
 /** 升到下一級需要的經驗值 */
 export const xpToNext = (level: number) => level * 20;
@@ -47,6 +68,12 @@ export const MAX_LEVEL = 30;
 export const STARTER_LEVEL = 3;
 
 // ---------- 對戰 ----------
+
+/** 對戰中的對手 */
+export interface Opponent {
+  species: Species;
+  level: number;
+}
 
 export type MoveKind = 'normal' | 'element' | 'ultimate';
 
@@ -67,6 +94,7 @@ export const CRIT_MULTIPLIER = 1.5;
 export interface DamageInput {
   attacker: Species;
   attackerLevel: number;
+  attackerStage?: number;
   defender: Species;
   move: MoveKind;
   correct: boolean;
@@ -76,6 +104,7 @@ export interface DamageInput {
 export const playerDamage = ({
   attacker,
   attackerLevel,
+  attackerStage = 1,
   defender,
   move,
   correct,
@@ -84,12 +113,13 @@ export const playerDamage = ({
   const power = correct ? MOVE_POWER[move].hit : MOVE_POWER[move].miss;
   // 只有屬性技和必殺技吃屬性相剋
   const eff = move === 'normal' ? 1 : effectiveness(attacker.element, defender.element);
-  const base = (power * attack(attacker, attackerLevel)) / 10;
+  const base = (power * attack(attacker, attackerLevel, attackerStage)) / 10;
   return { damage: Math.round(base * eff * (crit ? CRIT_MULTIPLIER : 1)), effectiveness: eff };
 };
 
 /** 野生字靈的攻擊，帶一點隨機 */
 export const enemyDamage = (enemy: Species, level: number, target: Species) => {
+  // 目標進化與否不影響受到的傷害；進化的好處是血量與攻擊力
   const eff = effectiveness(enemy.element, target.element);
   const roll = 0.8 + Math.random() * 0.4;
   return Math.max(1, Math.round(attack(enemy, level) * 0.6 * eff * roll));

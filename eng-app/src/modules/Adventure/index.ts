@@ -4,6 +4,7 @@ import type { RouteRecordRaw } from 'vue-router';
 export const adventureRoutes: RouteRecordRaw[] = [
   { path: 'adventure', component: () => import('./ui/pages/AdventureMapPage.vue') },
   { path: 'adventure/dex', component: () => import('./ui/pages/DexPage.vue') },
+  { path: 'adventure/gym/:areaId', component: () => import('./ui/pages/GymPage.vue') },
   {
     path: 'adventure/explore/:areaId',
     component: () => import('./ui/pages/EncounterPage.vue'),

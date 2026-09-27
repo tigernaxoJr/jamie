@@ -43,6 +43,17 @@ export interface ProgressSummary {
   weak: Word[];
 }
 
+/** 某一級（例如 '1'）的單字中，已熟練幾個（同一個英文字只算一次） */
+export const getMasteredCount = (levelId: string): number => {
+  const ids = Categories.filter((c) => c.parentId === levelId).map((c) => c.id);
+  const mastered = new Set(
+    loadQuizWords(new Set(ids))
+      .filter((w) => w.correctRec.consecutive >= MASTERED_STREAK)
+      .map((w) => w.english.toLowerCase()),
+  );
+  return mastered.size;
+};
+
 /** 整體學習進度（涵蓋所有類別） */
 export const getProgressSummary = (): ProgressSummary => {
   const seen = new Set<string>();
