@@ -2,7 +2,7 @@
  * Vocabulary 模組的公開介面。
  * 其他模組（例如 Games）只透過這裡取用單字、類別與答題記錄，不直接依賴內部結構。
  */
-import type { Word } from './domain';
+import type { QuizWord, Word } from './domain';
 import { loadQuizWords, topicOf } from './infra/WordBank';
 import { WordMetaStorage } from './infra/WordMetaStorage';
 import { ActivityLog } from './infra/ActivityLog';
@@ -17,7 +17,8 @@ import {
 export { DAILY_GOAL, dayKey } from './domain/activity';
 export type { ActivityReport, AnswerSource, DayStat, TodayProgress } from './domain/activity';
 
-export type { Category, Word } from './domain';
+export type { Category, QuizWord, Word } from './domain';
+export { practiceWeight } from './domain/practice';
 import Categories from './infra/Category';
 
 export { Categories };
@@ -25,8 +26,8 @@ export { default as CategorySelector } from './ui/CategorySelector.vue';
 export { WordPronunciation, speechStatus } from './speech';
 export { baseAnswer, isCorrectAnswer, letterCount } from './domain/answers';
 
-/** 取得屬於指定類別的單字 */
-export const getWordsByCategories = (categoryIds: string[]): Word[] =>
+/** 取得屬於指定類別的單字（含答題記錄） */
+export const getWordsByCategories = (categoryIds: string[]): QuizWord[] =>
   loadQuizWords(new Set(categoryIds));
 
 /** 連續答對幾次算「熟練」 */

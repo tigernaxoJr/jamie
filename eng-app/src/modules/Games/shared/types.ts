@@ -5,6 +5,8 @@ export interface GameWord {
   chinese: string;
   /** 玩家要拼/選的答案：去掉括號補充說明，例如 "shoe(s)" → "shoe" */
   answer: string;
+  /** 出題權重（1～4，預設 1）：越不熟的字越大，在抽牌堆裡出現越多次 */
+  weight?: number;
 }
 
 /** 遊戲中心卡片上顯示的資訊 */
