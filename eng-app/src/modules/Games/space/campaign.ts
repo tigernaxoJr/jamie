@@ -36,7 +36,7 @@ export const STAGES: Stage[] = [
   },
   {
     name: '小行星帶',
-    emoji: '🪨',
+    emoji: '🌑',
     goal: 12,
     maxMeteors: 3,
     spawnInterval: 2.8,

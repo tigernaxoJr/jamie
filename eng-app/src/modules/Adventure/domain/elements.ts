@@ -24,7 +24,7 @@ export const ELEMENTS: Record<Element, ElementInfo> = {
     ultimate: '萬雷轟頂',
     ink: '#422006',
   },
-  earth: { name: '土', emoji: '🪨', color: '#a16207', move: '落石', ultimate: '大地震' },
+  earth: { name: '土', emoji: '🗻', color: '#a16207', move: '落石', ultimate: '大地震' },
   light: { name: '光', emoji: '✨', color: '#f472b6', move: '閃光', ultimate: '星光爆發' },
 };
 
