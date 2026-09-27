@@ -7,6 +7,7 @@ export { CORRECT_PER_CANDY } from './domain/candy';
 export const adventureRoutes: RouteRecordRaw[] = [
   { path: 'adventure', component: () => import('./ui/pages/AdventureMapPage.vue') },
   { path: 'adventure/dex', component: () => import('./ui/pages/DexPage.vue') },
+  { path: 'adventure/team', component: () => import('./ui/pages/TeamPage.vue') },
   { path: 'adventure/gym/:areaId', component: () => import('./ui/pages/GymPage.vue') },
   {
     path: 'adventure/explore/:areaId',

@@ -139,6 +139,13 @@ export const useAdventureStore = defineStore('adventure', () => {
     if (uids.length > 0) writeTeam(uids);
   };
 
+  /** 用隊伍外的字靈換下某個隊員，位置不變 */
+  const replaceInTeam = (outUid: string, inUid: string) => {
+    const uids = team.value.map((c) => c.uid);
+    if (!uids.includes(outUid) || uids.includes(inUid) || !byUid(inUid)) return;
+    writeTeam(uids.map((u) => (u === outUid ? inUid : u)));
+  };
+
   /** 設為隊長（排到第一個，不在隊伍中就加入） */
   const setPartner = (uid: string) => {
     const rest = team.value.map((c) => c.uid).filter((u) => u !== uid);
@@ -265,6 +272,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     isInTeam,
     addToTeam,
     removeFromTeam,
+    replaceInTeam,
     setPartner,
     isCaught,
     isSeen,

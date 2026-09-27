@@ -22,12 +22,24 @@
             <div v-for="(o, i) in opponents" :key="i" class="opponent">
               <CreatureSvg :species="o.species" :size="72" :animated="false" />
               <div class="text-caption text-weight-bold">{{ o.species.name }} Lv {{ o.level }}</div>
+              <ElementBadge :element="o.species.element" />
             </div>
           </div>
         </div>
 
         <div class="app-card q-pa-md q-mt-md">
-          <div class="text-weight-bold q-mb-xs">出戰隊伍</div>
+          <div class="row items-center q-mb-xs">
+            <div class="text-weight-bold">出戰隊伍</div>
+            <q-space />
+            <q-btn
+              flat
+              dense
+              color="primary"
+              icon="groups"
+              label="調整隊伍"
+              :to="{ path: '/adventure/team', query: { from: route.path } }"
+            />
+          </div>
           <div class="row q-gutter-md">
             <div v-for="c in store.team" :key="c.uid" class="text-center">
               <CreatureSvg
@@ -39,11 +51,20 @@
               <div class="text-caption text-weight-bold">
                 {{ creatureName(getSpecies(c.speciesId), c.stage) }} Lv {{ c.level }}
               </div>
+              <div class="column items-center q-gutter-y-xs q-mt-xs">
+                <MatchupTag
+                  v-for="m in matchupsOf(getSpecies(c.speciesId).element)"
+                  :key="m.text"
+                  :good="m.good"
+                  >{{ m.text }}</MatchupTag
+                >
+              </div>
             </div>
           </div>
           <div v-if="store.team.length < TEAM_SIZE" class="text-caption text-muted q-mt-xs">
-            隊伍最多 {{ TEAM_SIZE }} 隻，可以到圖鑑把更多字靈加入隊伍。
+            隊伍最多 {{ TEAM_SIZE }} 隻，點「調整隊伍」可以加入更多字靈。
           </div>
+          <div v-else class="text-caption text-muted q-mt-xs">選剋制對手屬性的字靈，傷害加倍！</div>
         </div>
 
         <q-btn
@@ -119,7 +140,10 @@ import { creatureName, getSpecies } from '../../domain/species';
 import { type Opponent, TEAM_SIZE } from '../../domain/rules';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
+import { type Element, effectiveness } from '../../domain/elements';
 import CreatureSvg from '../CreatureSvg.vue';
+import ElementBadge from '../ElementBadge.vue';
+import MatchupTag from '../MatchupTag.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 
 const route = useRoute();
@@ -143,6 +167,17 @@ const opponents = computed<Opponent[]>(() => {
   const levels = leaderLevels(area.value);
   return area.value.leader.team.map((id, i) => ({ species: getSpecies(id), level: levels[i]! }));
 });
+
+/** 這隻隊員剋幾隻對手、怕幾隻對手 */
+const matchupsOf = (el: Element) => {
+  const species = opponents.value.map((o) => o.species);
+  const strong = species.filter((s) => effectiveness(el, s.element) > 1).length;
+  const weak = species.filter((s) => effectiveness(s.element, el) > 1).length;
+  return [
+    ...(strong ? [{ text: `剋 ${strong} 隻`, good: true }] : []),
+    ...(weak ? [{ text: `怕 ${weak} 隻`, good: false }] : []),
+  ];
+};
 
 const nextArea = computed(() => AREAS.find((a) => a.unlockAfter === area.value?.id));
 
