@@ -1,18 +1,24 @@
-import { type Ref, computed, reactive } from 'vue';
+import { type Ref, computed, reactive, ref } from 'vue';
 import { WordPronunciation } from 'src/modules/Vocabulary';
 import {
   type GameSession,
   type GameWord,
+  type StageSelection,
   WordDeck,
   lettersOf,
   randomInt,
   sfx,
   useGameLoop,
+  useStageProgress,
 } from '../shared';
+import { BOARD_SIZE, type Point, SNAKE_STAGES, START_ROW, parseWalls, snakeStars } from './stages';
 
-export const BOARD_SIZE = 12;
+export { BOARD_SIZE, type Point } from './stages';
+
 const MAX_LIVES = 3;
 const DECOYS = 3;
+/** 會移動的錯誤字母每走幾步移動一格 */
+const DECOY_MOVE_EVERY = 3;
 
 export type SnakeSpeed = 'slow' | 'normal' | 'fast';
 
@@ -26,11 +32,8 @@ export const SNAKE_SPEEDS: Record<
   fast: { label: '🚀 快', start: 0.28, min: 0.14, step: 0.012 },
 };
 
-export interface Point {
-  x: number;
-  y: number;
-}
 export interface BoardLetter extends Point {
+  id: number;
   ch: string;
 }
 export type Direction = 'up' | 'down' | 'left' | 'right';
@@ -50,27 +53,36 @@ const OPPOSITE: Record<Direction, Direction> = {
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
 
 const same = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
+const key = (p: Point) => `${p.x},${p.y}`;
+const inBounds = (p: Point) => p.x >= 0 && p.y >= 0 && p.x < BOARD_SIZE && p.y < BOARD_SIZE;
 
-const startingSnake = (): Point[] => {
-  const y = Math.floor(BOARD_SIZE / 2);
-  return [
-    { x: 3, y },
-    { x: 2, y },
-    { x: 1, y },
-  ];
-};
+const startingSnake = (): Point[] => [
+  { x: 3, y: START_ROW },
+  { x: 2, y: START_ROW },
+  { x: 1, y: START_ROW },
+];
 
 export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
   const pace = () => SNAKE_SPEEDS[speed.value];
+  const { stars, totalStars, recordStars } = useStageProgress('snake-stages');
+  const mode = ref<StageSelection>({ kind: 'stage', index: 0 });
+  const stage = computed(() =>
+    mode.value.kind === 'stage' ? SNAKE_STAGES[mode.value.index] : undefined,
+  );
+
   let deck = new WordDeck([]);
   let dirQueue: Direction[] = [];
   let acc = 0;
+  let steps = 0;
+  let nextLetterId = 1;
   let wordHadMistake = false;
+  let wallSet = new Set<string>();
   const missed = new Map<string, GameWord>();
 
   const state = reactive({
     snake: startingSnake(),
     dir: 'right' as Direction,
+    walls: [] as Point[],
     letters: [] as BoardLetter[],
     word: null as GameWord | null,
     progress: 0,
@@ -85,18 +97,19 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
   const target = computed(() => (state.word ? lettersOf(state.word.answer) : ''));
   const needed = computed(() => target.value[state.progress] ?? '');
 
+  const isWall = (p: Point) => wallSet.has(key(p));
   const isFree = (p: Point) =>
-    !state.snake.some((s) => same(s, p)) && !state.letters.some((l) => same(l, p));
+    !isWall(p) && !state.snake.some((s) => same(s, p)) && !state.letters.some((l) => same(l, p));
 
   const randomFreeCell = (): Point => {
     const head = state.snake[0]!;
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 300; i++) {
       const p = { x: randomInt(BOARD_SIZE), y: randomInt(BOARD_SIZE) };
       // 不要生在蛇頭正前方附近
       const near = Math.abs(p.x - head.x) + Math.abs(p.y - head.y) < 3;
       if (!near && isFree(p)) return p;
     }
-    return { x: 0, y: 0 };
+    return { x: BOARD_SIZE - 1, y: 0 };
   };
 
   const placeLetters = () => {
@@ -108,7 +121,20 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
       const c = decoys.splice(randomInt(decoys.length), 1)[0]!;
       chars.push(c);
     }
-    for (const ch of chars) state.letters.push({ ...randomFreeCell(), ch });
+    for (const ch of chars) state.letters.push({ id: nextLetterId++, ...randomFreeCell(), ch });
+  };
+
+  /** 錯誤字母隨機往旁邊走一格（正確字母不動，才不會追不到） */
+  const moveDecoys = () => {
+    const head = state.snake[0]!;
+    for (const l of state.letters) {
+      if (l.ch === needed.value) continue;
+      const options = Object.values(VECTORS)
+        .map((v) => ({ x: l.x + v.x, y: l.y + v.y }))
+        .filter((p) => inBounds(p) && isFree(p) && !same(p, head));
+      const to = options[randomInt(options.length)];
+      if (to) Object.assign(l, to);
+    }
   };
 
   const nextWord = () => {
@@ -130,9 +156,13 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
     missed.clear();
     dirQueue = [];
     acc = -1; // 開局給 1 秒準備
+    steps = 0;
+    const walls = stage.value ? parseWalls(stage.value.map) : [];
+    wallSet = new Set(walls.map(key));
     Object.assign(state, {
       snake: startingSnake(),
       dir: 'right',
+      walls,
       lives: MAX_LIVES,
       score: 0,
       completed: 0,
@@ -144,15 +174,25 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
     loop.start();
   };
 
-  const end = (reason: string) => {
+  const end = (won: boolean, headline: string) => {
     loop.stop();
-    sfx.lose();
+    const s = stage.value;
+    let result: number | undefined;
+    if (won && s && mode.value.kind === 'stage') {
+      result = snakeStars(MAX_LIVES - state.lives);
+      recordStars(mode.value.index, result);
+      state.score += state.lives * 30;
+      sfx.win();
+    } else {
+      sfx.lose();
+    }
     session.finish({
-      won: state.completed > 0,
-      headline: `${reason}你拼出了 ${state.completed} 個單字`,
+      won: s ? won : state.completed > 0,
+      headline,
       score: state.score,
+      ...(result === undefined ? {} : { stars: result }),
       stats: [
-        { label: '拼完單字', value: state.completed },
+        { label: '拼完單字', value: s ? `${state.completed} / ${s.goal}` : state.completed },
         { label: '蛇的長度', value: state.snake.length },
       ],
       missed: [...missed.values()],
@@ -167,7 +207,14 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
       wordHadMistake = true;
       missed.set(state.word.answer, state.word);
     }
-    if (state.lives <= 0) end('愛心用完了！');
+    if (state.lives <= 0) {
+      end(
+        false,
+        stage.value
+          ? `愛心用完了！再試一次${stage.value.name}吧`
+          : `愛心用完了！你拼出了 ${state.completed} 個單字`,
+      );
+    }
   };
 
   const crash = () => {
@@ -187,18 +234,26 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
     if (nextDir) state.dir = nextDir;
     const v = VECTORS[state.dir];
     const head = state.snake[0]!;
-    const newHead = { x: head.x + v.x, y: head.y + v.y };
+    let newHead = { x: head.x + v.x, y: head.y + v.y };
 
-    const outOfBounds =
-      newHead.x < 0 || newHead.y < 0 || newHead.x >= BOARD_SIZE || newHead.y >= BOARD_SIZE;
+    if (!inBounds(newHead)) {
+      if (!stage.value?.wrap) return crash();
+      // 穿越邊界，從另一邊回來
+      newHead = {
+        x: (newHead.x + BOARD_SIZE) % BOARD_SIZE,
+        y: (newHead.y + BOARD_SIZE) % BOARD_SIZE,
+      };
+    }
     // 尾巴這一格會移走，所以不算撞到
     const hitSelf = state.snake.slice(0, -1).some((s) => same(s, newHead));
-    if (outOfBounds || hitSelf) return crash();
+    if (hitSelf || isWall(newHead)) return crash();
 
     state.snake.unshift(newHead);
     const eaten = state.letters.find((l) => same(l, newHead));
     if (!eaten) {
       state.snake.pop();
+      steps++;
+      if (stage.value?.movingDecoys && steps % DECOY_MOVE_EVERY === 0) moveDecoys();
       return;
     }
 
@@ -226,6 +281,8 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
     state.interval = Math.max(pace().min, state.interval - pace().step);
     sfx.correct();
     WordPronunciation(word.answer);
+    const s = stage.value;
+    if (s && state.completed >= s.goal) return end(true, `${s.name}過關！`);
     nextWord();
   };
 
@@ -235,7 +292,11 @@ export function useSnake(session: GameSession, speed: Ref<SnakeSpeed>) {
     dirQueue.push(d);
   };
 
-  const quit = () => end('遊戲結束，');
+  const quit = () =>
+    end(
+      false,
+      stage.value ? '提早結束了，下次再挑戰！' : `遊戲結束，你拼出了 ${state.completed} 個單字`,
+    );
 
-  return { state, needed, loop, start, turn, quit };
+  return { state, needed, mode, stage, stars, totalStars, loop, start, turn, quit };
 }

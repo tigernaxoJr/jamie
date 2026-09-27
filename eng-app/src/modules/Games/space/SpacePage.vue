@@ -2,39 +2,7 @@
   <GameShell :session="session" @quit="space.quit">
     <!-- 標題畫面：選關卡、看飛船升級 -->
     <template #settings>
-      <div class="picker">
-        <div class="picker__head">
-          <span>選擇關卡</span>
-          <span>⭐ {{ space.totalStars.value }} / {{ STAGES.length * 3 }}</span>
-        </div>
-        <div class="stages">
-          <button
-            v-for="(st, i) in STAGES"
-            :key="st.name"
-            type="button"
-            class="stage-btn"
-            :class="{ on: isSelected({ kind: 'stage', index: i }) }"
-            :disabled="!unlocked(i)"
-            @click="select({ kind: 'stage', index: i })"
-          >
-            <span class="stage-btn__emoji">{{ unlocked(i) ? st.emoji : '🔒' }}</span>
-            <span class="stage-btn__name">{{ i + 1 }}. {{ st.name }}</span>
-            <span class="stage-btn__stars">
-              <span v-for="n in 3" :key="n" :class="{ lit: n <= starsOf(i) }">★</span>
-            </span>
-          </button>
-          <button
-            type="button"
-            class="stage-btn stage-btn--endless"
-            :class="{ on: isSelected({ kind: 'endless' }) }"
-            @click="select({ kind: 'endless' })"
-          >
-            <span class="stage-btn__emoji">♾️</span>
-            <span class="stage-btn__name">無盡模式</span>
-            <span class="stage-btn__stars">挑戰最高分</span>
-          </button>
-        </div>
-
+      <StagePicker v-model="space.mode.value" :stages="STAGES" :stars="space.stars.value">
         <div class="picker__head q-mt-md"><span>🚀 飛船升級（星星越多越強）</span></div>
         <div class="upgrades">
           <div
@@ -52,7 +20,7 @@
             </span>
           </div>
         </div>
-      </div>
+      </StagePicker>
     </template>
 
     <div class="row items-center no-wrap q-mb-sm">
@@ -149,10 +117,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useEventListener } from '@vueuse/core';
-import { GameShell, LivesBar, PauseOverlay, useGameSession } from '../shared';
-import { STAGES, UPGRADES, isStageUnlocked } from './campaign';
+import {
+  GameShell,
+  LivesBar,
+  PauseOverlay,
+  StagePicker,
+  firstOpenStage,
+  nextStageIndex,
+  useGameSession,
+} from '../shared';
+import { STAGES, UPGRADES } from './campaign';
 import { spaceInfo } from './info';
-import { type SpaceMode, useSpace } from './useSpace';
+import { useSpace } from './useSpace';
 
 const session = useGameSession(spaceInfo, (words) => space.start(words));
 const space = useSpace(session);
@@ -163,22 +139,8 @@ const boss = space.boss;
 const lasers = computed(() => state.effects.filter((e) => e.kind === 'laser'));
 const booms = computed(() => state.effects.filter((e) => e.kind !== 'laser'));
 
-const starsOf = (i: number) => space.progress.value.stars[i] ?? 0;
-const unlocked = (i: number) => isStageUnlocked(i, space.progress.value.stars);
-
-const isSelected = (m: SpaceMode) => {
-  const cur = space.mode.value;
-  if (m.kind === 'endless' || cur.kind === 'endless') return m.kind === cur.kind;
-  return m.index === cur.index;
-};
-
-const select = (m: SpaceMode) => {
-  space.mode.value = m;
-};
-
-// 預設選還沒拿到星星的第一關（全破就選最後一關）
-const firstOpen = STAGES.findIndex((_, i) => unlocked(i) && starsOf(i) === 0);
-select({ kind: 'stage', index: firstOpen === -1 ? STAGES.length - 1 : firstOpen });
+// 預設選還沒拿到星星的第一關
+space.mode.value = { kind: 'stage', index: firstOpenStage(STAGES.length, space.stars.value) };
 
 const hudLabel = computed(() => {
   const s = stage.value;
@@ -188,16 +150,14 @@ const hudLabel = computed(() => {
 });
 
 /** 過關後可以挑戰的下一關 */
-const nextIndex = computed(() => {
-  const m = space.mode.value;
-  if (m.kind !== 'stage' || !session.result?.won) return null;
-  return m.index + 1 < STAGES.length ? m.index + 1 : null;
-});
+const nextIndex = computed(() =>
+  nextStageIndex(space.mode.value, !!session.result?.won, STAGES.length),
+);
 const nextStage = computed(() => (nextIndex.value === null ? null : STAGES[nextIndex.value]));
 
 const playNext = () => {
   if (nextIndex.value === null) return;
-  select({ kind: 'stage', index: nextIndex.value });
+  space.mode.value = { kind: 'stage', index: nextIndex.value };
   session.start();
 };
 
@@ -210,65 +170,11 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 </script>
 
 <style scoped>
-.picker {
-  max-width: 560px;
-  margin: 0 auto;
-  text-align: left;
-}
 .picker__head {
   display: flex;
   justify-content: space-between;
   margin-bottom: 6px;
   font-weight: 800;
-}
-.stages {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-.stage-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 0;
-  padding: 6px 4px;
-  border: 2px solid transparent;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.22);
-  color: #fff;
-  font: inherit;
-  cursor: pointer;
-}
-.stage-btn.on {
-  border-color: #fff;
-  background: rgba(255, 255, 255, 0.22);
-}
-.stage-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.stage-btn__emoji {
-  font-size: 1.5rem;
-  line-height: 1.2;
-}
-.stage-btn__name {
-  max-width: 100%;
-  overflow: hidden;
-  font-size: 0.8rem;
-  font-weight: 800;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.stage-btn__stars {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.35);
-}
-.stage-btn__stars .lit {
-  color: #fbbf24;
-}
-.stage-btn--endless .stage-btn__stars {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.7rem;
 }
 .upgrades {
   display: grid;

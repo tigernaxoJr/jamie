@@ -1,17 +1,26 @@
 <template>
   <GameShell :session="session" @quit="snake.quit">
     <template #settings>
-      <q-btn-toggle
-        v-model="speed"
-        rounded
-        unelevated
-        no-caps
-        toggle-color="white"
-        toggle-text-color="green-8"
-        color="green-9"
-        text-color="white"
-        :options="speedOptions"
-      />
+      <StagePicker v-model="snake.mode.value" :stages="SNAKE_STAGES" :stars="snake.stars.value">
+        <div v-if="stage" class="stage-tags q-mt-sm">
+          <span>🎯 拼完 {{ stage.goal }} 個單字過關</span>
+          <span v-if="stage.wrap">🌀 可以穿越邊界</span>
+          <span v-if="stage.movingDecoys">🏃 錯誤字母會亂跑</span>
+        </div>
+        <div class="text-center q-mt-sm">
+          <q-btn-toggle
+            v-model="speed"
+            rounded
+            unelevated
+            no-caps
+            toggle-color="white"
+            toggle-text-color="green-8"
+            color="green-9"
+            text-color="white"
+            :options="speedOptions"
+          />
+        </div>
+      </StagePicker>
     </template>
 
     <!-- HUD：愛心、題目、分數 -->
@@ -30,23 +39,29 @@
           </span>
         </div>
       </div>
-      <div class="hud__score">⭐ {{ state.score }}</div>
+      <div class="hud__side">
+        <div class="hud__score">⭐ {{ state.score }}</div>
+        <div v-if="stage" class="hud__goal">
+          {{ stage.emoji }} {{ state.completed }} / {{ stage.goal }}
+        </div>
+      </div>
     </div>
 
     <!-- 棋盤：依剩餘空間自動縮放成正方形 -->
     <div class="board-wrap">
       <div
         class="board"
-        :class="{ flash: state.flash }"
+        :class="{ flash: state.flash, 'board--wrap': stage?.wrap }"
         @pointerdown="onPointerDown"
         @pointerup="onPointerUp"
       >
         <div
-          v-for="l in state.letters"
-          :key="`${l.x}-${l.y}`"
-          class="cell letter"
-          :style="cellStyle(l)"
-        >
+          v-for="w in state.walls"
+          :key="`w-${w.x}-${w.y}`"
+          class="cell wall"
+          :style="cellStyle(w)"
+        />
+        <div v-for="l in state.letters" :key="l.id" class="cell letter" :style="cellStyle(l)">
           {{ l.ch }}
         </div>
         <div
@@ -61,6 +76,18 @@
         <PauseOverlay v-if="snake.loop.paused.value" @resume="snake.loop.resume" />
       </div>
     </div>
+
+    <template #result-actions>
+      <q-btn
+        v-if="nextStage"
+        class="btn-3d"
+        color="primary"
+        size="lg"
+        icon="skip_next"
+        :label="`下一關：${nextStage.emoji} ${nextStage.name}`"
+        @click="playNext"
+      />
+    </template>
 
     <!-- 觸控裝置的方向鍵（也可以直接在棋盤上滑動） -->
     <div class="dpad">
@@ -81,8 +108,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useEventListener, useLocalStorage } from '@vueuse/core';
-import { GameShell, LivesBar, PauseOverlay, lettersOf, useGameSession } from '../shared';
+import {
+  GameShell,
+  LivesBar,
+  PauseOverlay,
+  StagePicker,
+  firstOpenStage,
+  lettersOf,
+  nextStageIndex,
+  useGameSession,
+} from '../shared';
 import { snakeInfo } from './info';
+import { SNAKE_STAGES } from './stages';
 import {
   BOARD_SIZE,
   type Direction,
@@ -107,6 +144,22 @@ const DPAD: { dir: Direction; icon: string; label: string }[] = [
   { dir: 'right', icon: 'arrow_forward', label: '向右' },
 ];
 const state = snake.state;
+const stage = snake.stage;
+
+// 預設選還沒拿到星星的第一關
+snake.mode.value = { kind: 'stage', index: firstOpenStage(SNAKE_STAGES.length, snake.stars.value) };
+
+/** 過關後可以挑戰的下一關 */
+const nextIndex = computed(() =>
+  nextStageIndex(snake.mode.value, !!session.result?.won, SNAKE_STAGES.length),
+);
+const nextStage = computed(() => (nextIndex.value === null ? null : SNAKE_STAGES[nextIndex.value]));
+
+const playNext = () => {
+  if (nextIndex.value === null) return;
+  snake.mode.value = { kind: 'stage', index: nextIndex.value };
+  session.start();
+};
 
 const letters = computed(() => (state.word ? [...lettersOf(state.word.answer)] : []));
 
@@ -172,9 +225,30 @@ const onPointerUp = (e: PointerEvent) => {
   font-weight: 900;
   font-size: 1.1rem;
 }
+.hud__side {
+  text-align: right;
+  white-space: nowrap;
+}
 .hud__score {
   font-weight: 900;
-  white-space: nowrap;
+}
+.hud__goal {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #2e7d32;
+}
+.stage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.stage-tags span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.2);
 }
 .board-wrap {
   flex: 1;
@@ -200,6 +274,9 @@ const onPointerUp = (e: PointerEvent) => {
   touch-action: none;
   user-select: none;
 }
+.board--wrap {
+  border-style: dashed;
+}
 .board.flash {
   border-color: #e53935;
   background-color: #ffebee;
@@ -223,7 +300,16 @@ const onPointerUp = (e: PointerEvent) => {
   font-size: 0.8em;
   z-index: 1;
 }
+.wall {
+  background: #8d6e63;
+  border-radius: 20%;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+  transform: scale(0.94);
+}
 .letter {
+  transition:
+    left 0.2s,
+    top 0.2s;
   font-weight: 900;
   font-size: clamp(0.9rem, 4cqmin, 1.6rem);
   color: #12335e;

@@ -1,13 +1,14 @@
 import { computed, reactive, ref } from 'vue';
-import { useLocalStorage } from '@vueuse/core';
 import {
   type GameSession,
   type GameWord,
+  type StageSelection,
   WordDeck,
   randomInt,
   sfx,
   shuffle,
   useGameLoop,
+  useStageProgress,
   useTimers,
 } from '../shared';
 import { BOSS_DAMAGE, STAGES, type ShipStats, shipStats, starsFor } from './campaign';
@@ -16,9 +17,6 @@ const HITS_PER_WAVE = 8;
 const EFFECT_MS = 350;
 /** 魔王被打中時往上退多少 % */
 const BOSS_KNOCKBACK = 12;
-
-/** 關卡模式（第 index 關）或無盡模式 */
-export type SpaceMode = { kind: 'stage'; index: number } | { kind: 'endless' };
 
 export interface Meteor {
   id: number;
@@ -40,23 +38,11 @@ export interface Effect {
   kind: 'laser' | 'boom' | 'bigboom';
 }
 
-interface CampaignSave {
-  /** 每一關拿到的最高星數 */
-  stars: number[];
-}
-
 export function useSpace(session: GameSession) {
   const timers = useTimers();
-  const progress = useLocalStorage<CampaignSave>(
-    'space-campaign',
-    { stars: [] },
-    {
-      mergeDefaults: true,
-    },
-  );
-  const totalStars = computed(() => progress.value.stars.reduce((sum, n) => sum + (n ?? 0), 0));
+  const { stars, totalStars, recordStars } = useStageProgress('space-campaign');
 
-  const mode = ref<SpaceMode>({ kind: 'stage', index: 0 });
+  const mode = ref<StageSelection>({ kind: 'stage', index: 0 });
   const stage = computed(() =>
     mode.value.kind === 'stage' ? STAGES[mode.value.index] : undefined,
   );
@@ -173,11 +159,7 @@ export function useSpace(session: GameSession) {
     let stars: number | undefined;
     if (won && mode.value.kind === 'stage') {
       stars = starsFor(state.shieldsLost, state.misfires);
-      const i = mode.value.index;
-      const saved = [...progress.value.stars];
-      while (saved.length <= i) saved.push(0);
-      saved[i] = Math.max(saved[i] ?? 0, stars);
-      progress.value.stars = saved;
+      recordStars(mode.value.index, stars);
       state.score += state.shields * 50;
       sfx.win();
     } else {
@@ -348,7 +330,7 @@ export function useSpace(session: GameSession) {
     stage,
     wave,
     boss,
-    progress,
+    stars,
     totalStars,
     loop,
     start,
