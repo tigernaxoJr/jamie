@@ -1,18 +1,16 @@
 <template>
-  <div class="fullscreen bg-blue text-white text-center q-pa-md flex flex-center">
+  <div class="not-found fullscreen flex flex-center text-center q-pa-md">
     <div>
-      <div style="font-size: 30vh">404</div>
-
-      <div class="text-h2" style="opacity: 0.4">Oops. Nothing here...</div>
-
+      <div class="not-found__emoji">🦉❓</div>
+      <div class="text-h3 q-mt-md">找不到這一頁</div>
+      <div class="text-muted text-subtitle1 q-mt-sm">貓頭鷹找遍了森林，還是找不到你要的頁面。</div>
       <q-btn
-        class="q-mt-xl"
-        color="white"
-        text-color="blue"
-        unelevated
+        class="btn-3d q-mt-xl q-px-lg"
+        size="lg"
+        color="primary"
+        icon="home"
+        label="回到首頁"
         to="/"
-        label="Go Home"
-        no-caps
       />
     </div>
   </div>
@@ -21,3 +19,13 @@
 <script setup lang="ts">
 //
 </script>
+
+<style scoped>
+.not-found {
+  background: var(--app-bg);
+}
+.not-found__emoji {
+  font-size: 6rem;
+  line-height: 1;
+}
+</style>

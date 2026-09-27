@@ -1,48 +1,52 @@
 <template>
-  <q-layout view="hHh Lpr lFf">
-    <q-header class="bg-white text-primary" height-hint="58" bordered>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-          class="q-mr-sm"
-        />
-
-        <q-toolbar-title class="text-weight-bold"> Jamie's English App </q-toolbar-title>
-
-        <div class="text-caption text-grey-7">v0.0.1 alpha</div>
+  <q-layout view="hHh LpR fFf">
+    <q-header class="app-header">
+      <q-toolbar class="app-toolbar">
+        <router-link to="/" class="brand row items-center no-wrap">
+          <span class="brand__logo">🦉</span>
+          <span class="brand__name">Jamie's English</span>
+        </router-link>
+        <q-space />
+        <div class="pill" :title="`已熟練 ${mastered} 個單字`">⭐ {{ mastered }}</div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above class="bg-grey-1" bordered>
-      <q-list padding>
-        <template v-for="(x, idx) in linksList" :key="idx">
-          <q-item
-            clickable
-            tag="a"
-            :to="x.to"
-            :active="isActive(x.to)"
-            class="q-mx-md q-my-xs rounded-borders"
-            active-class="bg-primary text-white"
-          >
-            <q-item-section v-if="x.icon" avatar>
-              <q-icon :name="x.icon" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label class="text-weight-medium">{{ x.title }}</q-item-label>
-              <q-item-label caption :class="isActive(x.to) ? 'text-white' : ''">{{
-                x.caption
-              }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-list>
+    <!-- 桌機：側邊選單 -->
+    <q-drawer v-model="drawerOpen" show-if-above :breakpoint="1023" :width="232" class="app-drawer">
+      <nav class="q-pa-md column q-gutter-y-sm">
+        <router-link
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          class="nav-item row items-center no-wrap"
+          :class="{ 'nav-item--active': isActive(item) }"
+        >
+          <q-icon :name="item.icon" size="26px" />
+          <span>{{ item.title }}</span>
+        </router-link>
+      </nav>
     </q-drawer>
+
+    <!-- 手機、平板：底部選單 -->
+    <q-footer v-if="$q.screen.lt.md" class="app-footer">
+      <q-tabs
+        dense
+        no-caps
+        indicator-color="transparent"
+        active-color="primary"
+        class="footer-tabs text-grey-7"
+      >
+        <q-route-tab
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          :exact="!!item.exact"
+          :icon="item.icon"
+          :label="item.title"
+          class="footer-tab"
+        />
+      </q-tabs>
+    </q-footer>
 
     <q-page-container>
       <router-view />
@@ -51,55 +55,98 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-
-const linksList = [
-  {
-    title: '英文測驗',
-    caption: '開始英文單字測驗',
-    icon: 'quiz',
-    to: '/quiz',
-  },
-  {
-    title: '英文複習',
-    caption: '開始英文單字複習',
-    icon: 'book',
-    to: '/review',
-  },
-  {
-    title: '遊戲中心',
-    caption: '邊玩邊背單字',
-    icon: 'sports_esports',
-    to: '/games',
-  },
-  {
-    title: '打字遊戲',
-    caption: '英文打字練習 (限電腦版)',
-    icon: 'keyboard',
-    to: '/typing',
-  },
-  {
-    title: '首頁',
-    caption: '回到首頁',
-    icon: 'home',
-    to: '/',
-  },
-] as {
-  title: string;
-  caption: string;
-  icon: string;
-  to: string;
-}[];
+import { getProgressSummary } from 'src/modules/Vocabulary';
+import { type NavItem, navItems } from './navigation';
 
 const route = useRoute();
-// 子頁面（例如 /games/battle）也要讓上層選單亮起來
-const isActive = (to: string) =>
-  route.path === to || (to !== '/' && route.path.startsWith(`${to}/`));
+// show-if-above 會在桌機自動打開；手機上保持關閉（改用底部選單）
+const drawerOpen = ref(false);
 
-const leftDrawerOpen = ref(false);
+const isActive = (item: NavItem) =>
+  item.exact
+    ? route.path === item.to
+    : route.path === item.to || route.path.startsWith(`${item.to}/`);
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
-}
+// 換頁時更新熟練單字數
+const mastered = ref(0);
+watch(
+  () => route.path,
+  () => (mastered.value = getProgressSummary().mastered),
+  { immediate: true },
+);
 </script>
+
+<style scoped lang="scss">
+.app-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  color: var(--app-ink);
+  border-bottom: 1px solid var(--app-line);
+}
+.app-toolbar {
+  min-height: 60px;
+}
+.brand {
+  text-decoration: none;
+  color: inherit;
+  gap: 10px;
+}
+.brand__logo {
+  font-size: 1.9rem;
+  line-height: 1;
+}
+.brand__name {
+  font-size: 1.25rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, $primary, #0ea5a5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.app-drawer {
+  background: transparent;
+}
+:deep(.q-drawer) {
+  background: transparent;
+}
+.nav-item {
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--app-muted);
+  text-decoration: none;
+  transition: background 0.15s;
+  &:hover {
+    background: rgba(22, 119, 210, 0.08);
+    color: $primary;
+  }
+}
+.nav-item--active,
+.nav-item--active:hover {
+  background: $primary;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(22, 119, 210, 0.35);
+}
+.app-footer {
+  background: #fff;
+  border-top: 1px solid var(--app-line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.footer-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 4px 0;
+  font-weight: 800;
+}
+:deep(.footer-tabs .q-tabs__content) {
+  width: 100%;
+}
+:deep(.footer-tab .q-tab__label) {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+</style>

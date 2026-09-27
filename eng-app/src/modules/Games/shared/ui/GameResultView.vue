@@ -1,9 +1,9 @@
 <template>
-  <q-card class="result-card soft-shadow q-pa-lg text-center">
+  <div class="result-card app-card q-pa-lg text-center">
     <div class="result-emoji">{{ result.won ? '🏆' : '💪' }}</div>
     <div class="text-h5 text-weight-bold q-mt-sm">{{ result.headline }}</div>
 
-    <div class="text-h2 text-weight-bolder text-primary q-mt-md">{{ result.score }}</div>
+    <div class="score text-primary q-mt-md">{{ result.score }}</div>
     <div class="text-caption text-grey-7">分數</div>
     <q-chip v-if="isNewBest" color="amber" text-color="black" icon="emoji_events" class="q-mt-sm">
       新紀錄！
@@ -39,9 +39,9 @@
 
     <div class="column q-gutter-sm q-mt-lg">
       <q-btn
+        class="btn-3d"
         color="primary"
         size="lg"
-        rounded
         icon="replay"
         label="再玩一次"
         @click="$emit('replay')"
@@ -49,7 +49,7 @@
       <q-btn flat color="primary" icon="category" label="換單字範圍" @click="$emit('setup')" />
       <q-btn flat color="grey-8" icon="sports_esports" label="回遊戲中心" to="/games" />
     </div>
-  </q-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -62,8 +62,13 @@ defineEmits<{ (e: 'replay'): void; (e: 'setup'): void }>();
 
 <style scoped>
 .result-card {
-  width: 100%;
   max-width: 480px;
+  margin: 0 auto;
+}
+.score {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
 }
 .result-emoji {
   font-size: 4rem;

@@ -1,25 +1,16 @@
 // Quasar SCSS (& Sass) Variables
-// --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// 活潑、高對比的配色，適合國小學童
 
-// Check documentation for full list of Quasar variables
+$primary: #1677d2; // 天空藍
+$secondary: #14b8a6; // 薄荷綠
+$accent: #ffb020; // 陽光黃
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+$dark: #1b2a3a;
+$dark-page: #111c28;
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+$positive: #22c55e;
+$negative: #ef4444;
+$info: #0ea5e9;
+$warning: #fbbf24;
 
-$primary: #3949ab; // Indigo-6
-$secondary: #546e7a; // Blue Grey-7
-$accent: #5c6bc0; // Indigo-4
-
-$dark: #263238; // Blue Grey-9
-$dark-page: #eceff1; // Blue Grey-1
-
-$positive: #43a047; // Green-7
-$negative: #e53935; // Red-6
-$info: #039be5; // Light Blue-7
-$warning: #fdd835; // Yellow-7
+$typography-font-family: 'Nunito', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;

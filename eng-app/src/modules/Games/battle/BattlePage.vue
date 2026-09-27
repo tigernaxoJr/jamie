@@ -121,7 +121,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
 
 <style scoped>
 .arena {
-  background: linear-gradient(180deg, #ede7f6 0%, #fff 100%);
+  background: linear-gradient(180deg, #fff1e6 0%, #fff 100%);
 }
 .monster {
   font-size: 6rem;

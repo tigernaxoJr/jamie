@@ -1,48 +1,56 @@
 <template>
-  <q-page padding class="column items-center">
+  <q-page padding>
     <!-- 準備：玩法 + 選類別 -->
-    <q-card v-if="session.phase === 'setup'" class="shell-card soft-shadow q-pa-md">
-      <div class="row items-center no-wrap q-gutter-sm">
-        <q-btn flat round icon="arrow_back" to="/games" aria-label="回遊戲中心" />
-        <div class="text-h3">{{ info.icon }}</div>
-        <div>
-          <div class="text-h5 text-weight-bold">{{ info.title }}</div>
-          <div class="text-caption text-grey-7">{{ info.description }}</div>
-        </div>
-      </div>
+    <div v-if="session.phase === 'setup'" class="shell-setup">
+      <PageTitle
+        :emoji="info.icon"
+        :title="info.title"
+        :subtitle="info.description"
+        back="/games"
+      />
 
-      <q-banner rounded class="bg-blue-1 q-mt-md">
-        <div class="text-weight-bold q-mb-xs">玩法</div>
-        <ul class="q-my-none q-pl-md">
+      <div class="app-card q-pa-lg q-mb-md">
+        <div class="row items-center q-mb-sm">
+          <div class="text-subtitle1 text-weight-bold">📜 怎麼玩</div>
+          <q-space />
+          <span v-if="session.bestScore > 0" class="pill">🏅 最高分 {{ session.bestScore }}</span>
+        </div>
+        <ol class="rules">
           <li v-for="rule in info.rules" :key="rule">{{ rule }}</li>
-        </ul>
-        <div v-if="session.bestScore > 0" class="q-mt-sm text-weight-medium">
-          🏅 最高分：{{ session.bestScore }}
-        </div>
-      </q-banner>
-
-      <div
-        class="text-center q-mt-md"
-        :class="[session.canStart ? 'text-grey-7' : 'text-negative', { shake: warn }]"
-      >
-        已選單字 {{ session.availableCount }} 個
-        <span v-if="!session.canStart">（至少需要 {{ info.minWords }} 個，請多選幾個類別）</span>
+        </ol>
       </div>
 
-      <CategorySelector
-        :model-value="session.categories"
-        @update:model-value="session.setCategories"
-        :categories="Categories"
-        confirm-label="開始遊戲"
-        @confirm="onConfirm"
-      >
-        <template #title>選擇單字範圍</template>
-      </CategorySelector>
-    </q-card>
+      <div class="app-card q-pa-lg">
+        <CategorySelector
+          :model-value="session.categories"
+          @update:model-value="session.setCategories"
+          :categories="Categories"
+          confirm-label="開始遊戲"
+          @confirm="onConfirm"
+        >
+          <template #title>選擇單字主題</template>
+        </CategorySelector>
+        <div
+          class="text-center text-weight-bold q-mt-sm"
+          :class="[session.canStart ? 'text-muted' : 'text-negative', { shake: warn }]"
+        >
+          已選 {{ session.availableCount }} 個單字
+          <span v-if="!session.canStart">（至少要 {{ info.minWords }} 個，請多選幾個主題）</span>
+        </div>
+      </div>
+    </div>
 
     <!-- 遊戲中 -->
     <div v-else-if="session.phase === 'playing'" class="shell-play">
-      <div class="row items-center no-wrap q-mb-sm">
+      <div class="play-bar app-card row items-center no-wrap q-mb-md">
+        <q-btn
+          flat
+          round
+          icon="arrow_back"
+          color="grey-8"
+          aria-label="結束遊戲"
+          @click="$emit('quit')"
+        />
         <div class="text-subtitle1 text-weight-bold ellipsis">{{ info.icon }} {{ info.title }}</div>
         <q-space />
         <q-btn
@@ -52,7 +60,7 @@
           :aria-label="muted ? '開啟音效' : '關閉音效'"
           @click="toggleMute"
         />
-        <q-btn flat color="grey-8" icon="stop_circle" label="結束" @click="$emit('quit')" />
+        <q-btn flat color="negative" icon="stop_circle" label="結束" @click="$emit('quit')" />
       </div>
       <slot />
     </div>
@@ -71,6 +79,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import PageTitle from 'src/components/PageTitle.vue';
 import { Categories, CategorySelector } from 'src/modules/Vocabulary';
 import type { GameSession } from '../useGameSession';
 import { muted } from '../sfx';
@@ -94,13 +103,28 @@ const toggleMute = () => {
 </script>
 
 <style scoped>
-.shell-card {
-  width: 100%;
+.shell-setup {
   max-width: 640px;
+  margin: 0 auto;
 }
 .shell-play {
-  width: 100%;
   max-width: 760px;
+  margin: 0 auto;
+}
+.play-bar {
+  padding: 4px 8px;
+  border-radius: 16px;
+}
+.rules {
+  list-style: decimal;
+  margin: 0;
+  padding-left: 1.4em;
+  line-height: 1.8;
+  font-weight: 600;
+}
+.rules li::marker {
+  color: var(--q-primary);
+  font-weight: 900;
 }
 .shake {
   animation: shake 0.4s;

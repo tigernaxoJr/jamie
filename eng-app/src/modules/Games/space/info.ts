@@ -6,7 +6,7 @@ export const spaceInfo: GameInfo = {
   icon: '🚀',
   description: '中文隕石從天而降，發射正確的英文飛彈擊落它們！',
   skill: '認字・反應',
-  color: 'indigo',
+  color: 'blue-9',
   minWords: 6,
   recordsProgress: true,
   rules: [
