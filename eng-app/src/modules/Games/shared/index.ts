@@ -5,6 +5,7 @@ export * from './useGameSession';
 export * from './useGameLoop';
 export * from './useTimers';
 export { default as GameShell } from './ui/GameShell.vue';
+export { default as LetterKeyboard } from './ui/LetterKeyboard.vue';
 export { default as LivesBar } from './ui/LivesBar.vue';
 export { default as PauseOverlay } from './ui/PauseOverlay.vue';
 export * from './stages';

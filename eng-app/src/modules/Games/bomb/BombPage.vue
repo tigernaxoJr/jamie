@@ -140,6 +140,7 @@ import { computed } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import {
   GameShell,
+  LetterKeyboard,
   LivesBar,
   PauseOverlay,
   StagePicker,
@@ -148,7 +149,6 @@ import {
   useGameSession,
 } from '../shared';
 import { bombInfo } from './info';
-import LetterKeyboard from './LetterKeyboard.vue';
 import { BOMB_TYPES, CHAIN_LENGTH, ROOMS } from './rooms';
 import { MAX_WRONG, useBomb } from './useBomb';
 
