@@ -1,12 +1,5 @@
-import { getWordsByCategories } from 'src/modules/Vocabulary';
+import { baseAnswer, getWordsByCategories } from 'src/modules/Vocabulary';
 import type { GameWord } from './types';
-
-/** 去掉括號補充，例如 "have (has, had)" → "have" */
-export const toAnswer = (english: string): string =>
-  english
-    .replace(/\s*\([^)]*\)/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
 
 export const isLetter = (ch: string): boolean => /^[a-z]$/i.test(ch);
 
@@ -32,7 +25,7 @@ export const loadGameWords = (
   const seen = new Set<string>();
   const result: GameWord[] = [];
   for (const w of getWordsByCategories(categoryIds)) {
-    const gw: GameWord = { english: w.english, chinese: w.chinese, answer: toAnswer(w.english) };
+    const gw: GameWord = { english: w.english, chinese: w.chinese, answer: baseAnswer(w.english) };
     const key = gw.answer.toLowerCase();
     if (!gw.answer || seen.has(key) || (filter && !filter(gw))) continue;
     seen.add(key);

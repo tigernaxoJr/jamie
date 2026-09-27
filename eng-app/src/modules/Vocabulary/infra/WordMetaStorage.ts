@@ -39,32 +39,17 @@ export const WordMetaStorage = {
   },
 
   /**
-   * 儲存單一單字的 metadata（merge 到現有 map 中）。
+   * 記錄一次答題結果並回傳更新後的記錄。
+   * 以儲存中的最新資料為準（讀取 → 更新 → 寫回），同一個英文字的不同題目不會互相覆蓋。
    */
-  save(englishKey: string, entry: WordMetaEntry): void {
-    const map = this.loadAll();
-    map[englishKey.toLowerCase()] = entry;
-    this.saveAll(map);
-  },
-
-  /**
-   * 記錄一次答題結果（不需要先載入單字）。供測驗以外的模組（例如遊戲）使用。
-   */
-  record(englishKey: string, correct: boolean): void {
+  record(englishKey: string, correct: boolean): WordMetaEntry {
     const map = this.loadAll();
     const key = englishKey.toLowerCase();
     const entry = map[key] ?? { errorRec: emptyAnswerRecord(), correctRec: emptyAnswerRecord() };
     applyAnswer(entry, correct);
     map[key] = entry;
     this.saveAll(map);
-  },
-
-  /**
-   * 取得單一單字的 metadata，如果不存在則回傳 undefined。
-   */
-  get(englishKey: string): WordMetaEntry | undefined {
-    const map = this.loadAll();
-    return map[englishKey.toLowerCase()];
+    return entry;
   },
 
   /**
