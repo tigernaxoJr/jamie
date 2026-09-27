@@ -21,7 +21,6 @@ const animated = true;
 export default boot(() => {
   SetComponentDefaults<QStepper>(QStepper, { animated, headerNav: true });
   SetComponentDefaults<QBtn>(QBtn, { dense, color, unelevated });
-  SetComponentDefaults<QSelect>(QSelect, { dense, outlined, hideBottomSpace });
   SetComponentDefaults<QDate>(QDate, { flat });
   SetComponentDefaults<QInput>(QInput, {
     outlined,
@@ -30,7 +29,7 @@ export default boot(() => {
     hideBottomSpace,
     inputStyle: { fontSize: '1rem' },
   });
-  SetComponentDefaults<QSelect>(QSelect, { outlined, dense, stackLabel });
+  SetComponentDefaults<QSelect>(QSelect, { outlined, dense, stackLabel, hideBottomSpace });
   SetComponentDefaults<QCard>(QCard, { flat, bordered });
   SetComponentDefaults<QTable>(QTable, {
     flat,

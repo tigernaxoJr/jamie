@@ -32,6 +32,12 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: eng-app/pnpm-lock.yaml
 
+      - name: Set up npm cache for Typing game
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-typing-${{ hashFiles('games/Typing/package-lock.json') }}
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: eng-app
@@ -42,7 +48,7 @@ jobs:
 
       - name: Build Games - Typing
         run: |
-          npm install
+          npm ci
           npm run build
         working-directory: games/Typing
 

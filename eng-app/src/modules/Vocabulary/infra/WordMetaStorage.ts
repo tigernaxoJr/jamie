@@ -1,4 +1,4 @@
-import type { AnswerRecord } from '../domain/QuizWord';
+import { type AnswerRecord, applyAnswer, emptyAnswerRecord } from '../domain/QuizWord';
 
 const STORAGE_KEY = 'word-metadata';
 
@@ -44,6 +44,18 @@ export const WordMetaStorage = {
   save(englishKey: string, entry: WordMetaEntry): void {
     const map = this.loadAll();
     map[englishKey.toLowerCase()] = entry;
+    this.saveAll(map);
+  },
+
+  /**
+   * 記錄一次答題結果（不需要先載入單字）。供測驗以外的模組（例如遊戲）使用。
+   */
+  record(englishKey: string, correct: boolean): void {
+    const map = this.loadAll();
+    const key = englishKey.toLowerCase();
+    const entry = map[key] ?? { errorRec: emptyAnswerRecord(), correctRec: emptyAnswerRecord() };
+    applyAnswer(entry, correct);
+    map[key] = entry;
     this.saveAll(map);
   },
 

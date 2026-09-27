@@ -267,6 +267,7 @@ const currentCategoryInfo = computed(() => {
 
 // next
 onMounted(() => {
+  store.reloadWords();
   if (store.words.length === 0) {
     openCategorySelection();
   } else {
@@ -286,7 +287,6 @@ const nextQuestion = () => {
   if (currentWord.value) {
     store.recordLastWord(currentWord.value.id);
   }
-  console.log('nextQuestion', currentWord.value);
   answer.value = '';
   showHint.value = false;
   showLength.value = false;
@@ -297,7 +297,6 @@ const correctAns = ref<boolean>(false);
 const errorAns = ref<boolean>(false);
 //
 const checkAnswer = () => {
-  console.log('checkAnswer', answer.value);
   // 沒有輸入答案就下一題
   if (!answer.value.trim()) return nextQuestion();
   // 沒有題目就略過動作，照理說不會出現這個情況

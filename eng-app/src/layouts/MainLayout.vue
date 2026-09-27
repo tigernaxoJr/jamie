@@ -25,7 +25,7 @@
             clickable
             tag="a"
             :to="x.to"
-            :active="x.to === $route.path"
+            :active="isActive(x.to)"
             class="q-mx-md q-my-xs rounded-borders"
             active-class="bg-primary text-white"
           >
@@ -35,7 +35,7 @@
 
             <q-item-section>
               <q-item-label class="text-weight-medium">{{ x.title }}</q-item-label>
-              <q-item-label caption :class="x.to === $route.path ? 'text-white' : ''">{{
+              <q-item-label caption :class="isActive(x.to) ? 'text-white' : ''">{{
                 x.caption
               }}</q-item-label>
             </q-item-section>
@@ -52,6 +52,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const linksList = [
   {
@@ -65,6 +66,12 @@ const linksList = [
     caption: '開始英文單字複習',
     icon: 'book',
     to: '/review',
+  },
+  {
+    title: '遊戲中心',
+    caption: '邊玩邊背單字',
+    icon: 'sports_esports',
+    to: '/games',
   },
   {
     title: '打字遊戲',
@@ -84,6 +91,11 @@ const linksList = [
   icon: string;
   to: string;
 }[];
+
+const route = useRoute();
+// 子頁面（例如 /games/battle）也要讓上層選單亮起來
+const isActive = (to: string) =>
+  route.path === to || (to !== '/' && route.path.startsWith(`${to}/`));
 
 const leftDrawerOpen = ref(false);
 

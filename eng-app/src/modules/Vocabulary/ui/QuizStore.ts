@@ -1,10 +1,39 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
-import type { QuizWord } from '../domain';
+import { type QuizMeta, type QuizWord, applyAnswer } from '../domain';
 import { GeQuiztWords } from '../infra/WordBank';
 import { WordMetaStorage } from '../infra/WordMetaStorage';
 import Categories from '../infra/Category';
+
+const LEGACY_WORDS_KEY = 'words';
+
+/**
+ * 舊版會把整份單字清單存在 localStorage 'words'。
+ * 將其中尚未存在於 WordMetaStorage 的答題記錄搬過去，然後移除舊 key。
+ */
+const migrateLegacyWords = () => {
+  try {
+    const raw = localStorage.getItem(LEGACY_WORDS_KEY);
+    if (!raw) return;
+    const legacy = JSON.parse(raw) as Partial<QuizWord>[];
+    if (Array.isArray(legacy)) {
+      const map = WordMetaStorage.loadAll();
+      for (const w of legacy) {
+        if (!w.english || !w.errorRec || !w.correctRec) continue;
+        const key = w.english.toLowerCase();
+        const answered = w.errorRec.lastTime > 0 || w.correctRec.lastTime > 0;
+        if (answered && !map[key]) {
+          map[key] = { errorRec: w.errorRec, correctRec: w.correctRec };
+        }
+      }
+      WordMetaStorage.saveAll(map);
+    }
+    localStorage.removeItem(LEGACY_WORDS_KEY);
+  } catch {
+    // 舊資料毀損就直接忽略
+  }
+};
 
 export const useQuizStore = defineStore('quizStore', () => {
   const categoryOptions = ref(Categories);
@@ -20,10 +49,10 @@ export const useQuizStore = defineStore('quizStore', () => {
     }
   };
 
-  const words = useLocalStorage<QuizWord[]>(
-    'words',
-    GeQuiztWords(new Set(selectedCategories.value)),
-  );
+  migrateLegacyWords();
+  // 單字清單由題庫 + 長期記憶 (WordMetaStorage) 組成，不再整份存進 localStorage，
+  // 避免每次答題都序列化整個清單，也讓題庫更新能直接生效。
+  const words = ref<QuizWord[]>(GeQuiztWords(new Set(selectedCategories.value)));
 
   /**
    * 重新開始：清除當前所選類別的單字 metadata，然後重新載入。
@@ -43,48 +72,39 @@ export const useQuizStore = defineStore('quizStore', () => {
     selectedCategories.value = ids;
     words.value = GeQuiztWords(new Set(selectedCategories.value));
   };
-  const recordCorrectAns = (id: number) => {
+  /**
+   * 從長期記憶重新載入單字（其他模組如遊戲也可能更新答題記錄）。
+   */
+  const reloadWords = () => {
+    words.value = GeQuiztWords(new Set(selectedCategories.value));
+  };
+
+  const recordAnswer = (id: number, correct: boolean) => {
     const w = words.value.find((word) => word.id === id);
     if (!w) return;
-    w.correctRec.count += 1;
-    w.correctRec.consecutive += 1;
-    w.correctRec.lastTime = Date.now();
-    w.errorRec.consecutive = 0;
+    applyAnswer(w, correct);
     // 持久化到長期記憶
     WordMetaStorage.save(w.english, {
       errorRec: { ...w.errorRec },
       correctRec: { ...w.correctRec },
     });
   };
+  const recordCorrectAns = (id: number) => recordAnswer(id, true);
+  const recordErrorAns = (id: number) => recordAnswer(id, false);
 
-  const recordErrorAns = (id: number) => {
-    const w = words.value.find((word) => word.id === id);
-    if (!w) return;
-    w.errorRec.count += 1;
-    w.errorRec.lastTime = Date.now();
-    w.errorRec.consecutive += 1;
-    w.correctRec.consecutive = 0;
-    // 持久化到長期記憶
-    WordMetaStorage.save(w.english, {
-      errorRec: { ...w.errorRec },
-      correctRec: { ...w.correctRec },
-    });
-  };
-
-  const meta = computed(() => {
-    const _words = words.value.slice();
-    const d = _words.map((x) => ({
-      consecutiveCorrect: x.correctRec.consecutive,
-      consecutiveError: x.errorRec.consecutive,
-    }));
-    const count = words.value.length;
-    const e1 = d.filter(({ consecutiveError: e }) => e === 1).length;
-    const e2 = d.filter(({ consecutiveError: e }) => e === 2).length;
-    const e3 = d.filter(({ consecutiveError: e }) => e >= 3).length;
-    const c1 = d.filter(({ consecutiveCorrect: c }) => c === 1).length;
-    const c2 = d.filter(({ consecutiveCorrect: c }) => c === 2).length;
-    const c3 = d.filter(({ consecutiveCorrect: c }) => c >= 3).length;
-    return { count, e1, e2, e3, c1, c2, c3 };
+  const meta = computed<QuizMeta>(() => {
+    const m: QuizMeta = { count: words.value.length, e1: 0, e2: 0, e3: 0, c1: 0, c2: 0, c3: 0 };
+    for (const w of words.value) {
+      const e = w.errorRec.consecutive;
+      const c = w.correctRec.consecutive;
+      if (e === 1) m.e1++;
+      else if (e === 2) m.e2++;
+      else if (e >= 3) m.e3++;
+      if (c === 1) m.c1++;
+      else if (c === 2) m.c2++;
+      else if (c >= 3) m.c3++;
+    }
+    return m;
   });
   /**
    * 清除所有長期記憶（遺忘所有單字的答題記錄）。
@@ -101,6 +121,7 @@ export const useQuizStore = defineStore('quizStore', () => {
     categoryOptions,
     selectedCategories,
     setCategories,
+    reloadWords,
     resetQuiz,
     recordCorrectAns,
     recordErrorAns,
