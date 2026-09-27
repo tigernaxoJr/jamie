@@ -1,11 +1,31 @@
 <template>
   <GameShell :session="session" @quit="typing.quit">
+    <!-- 標題畫面：選關卡 -->
+    <template #settings>
+      <StagePicker v-model="typing.mode.value" :stages="TYPING_LEVELS" :stars="typing.stars.value">
+        <div class="stage-tags q-mt-sm">
+          <template v-if="picked">
+            <span v-if="picked.kind === 'letters'">⌨️ {{ picked.chars!.toUpperCase() }}</span>
+            <span v-else-if="picked.kind === 'mixed'">⌨️ 字母和單字一起掉</span>
+            <span v-else-if="picked.hideEnglish">🀄 只看中文拼英文</span>
+            <span v-else
+              >📝 {{ picked.maxLetters ? `${picked.maxLetters} 個字母以內的` : '' }}單字</span
+            >
+            <span>🎯 {{ picked.target }} 分過關</span>
+          </template>
+          <span v-else>♾️ 一直掉單字，越打越快</span>
+          <span v-if="!picked || picked.powerUps">❄️💖💣 會掉道具</span>
+        </div>
+      </StagePicker>
+    </template>
+
     <!-- HUD -->
     <div class="hud app-card">
       <LivesBar :lives="state.hp" :max="typing.maxHp" />
       <div class="hud__level">
-        <div class="text-weight-bold">第 {{ state.level + 1 }} 關・{{ level.name }}</div>
+        <div class="text-weight-bold">{{ level.emoji }} {{ level.name }}</div>
         <q-linear-progress
+          v-if="typing.mode.value.kind === 'stage'"
           :value="typing.levelProgress.value"
           color="blue-grey"
           track-color="grey-3"
@@ -20,7 +40,7 @@
     </div>
 
     <!-- 掉落區 -->
-    <div class="field" :class="{ 'field--miss': flash }">
+    <div class="field" :class="{ 'field--miss': flash, 'field--frozen': state.frozen > 0 }">
       <div
         v-for="it in state.items"
         :key="it.id"
@@ -29,9 +49,11 @@
           'item--letter': !it.word,
           'item--locked': it.id === state.lockedId,
           'item--danger': it.y > 75,
+          'item--power': it.power,
         }"
         :style="{ left: `${it.x}%`, top: `${it.y}%` }"
       >
+        <span v-if="it.power" class="item__power">{{ POWER_UPS[it.power].icon }}</span>
         <template v-if="!it.word">{{ it.text }}</template>
         <template v-else-if="level.hideEnglish">
           <div class="item__zh">{{ it.word.chinese }}</div>
@@ -53,25 +75,44 @@
         </template>
       </div>
 
-      <div v-if="state.levelBreak" class="level-break absolute-full flex flex-center column">
-        <div class="text-h4 text-weight-bold">🎉 第 {{ state.level + 1 }} 關完成！</div>
-        <div class="text-h6 q-mt-sm">下一關：{{ nextLevelName }}</div>
+      <div v-if="state.lastPower" class="power-banner">
+        {{ POWER_UPS[state.lastPower].icon }} {{ POWER_UPS[state.lastPower].name }}
       </div>
       <PauseOverlay v-if="typing.loop.paused.value" @resume="typing.loop.resume" />
     </div>
 
     <div class="text-caption text-muted text-center q-mt-xs">
-      打錯單字想換一個？按 <kbd>Backspace</kbd> 取消鎖定
+      打錯單字想換一個？按 <kbd>Backspace</kbd> 取消鎖定；打出有 ❄️💖💣 的字可以拿到道具
     </div>
+
+    <template #result-actions>
+      <q-btn
+        v-if="nextStage"
+        class="btn-3d"
+        color="primary"
+        size="lg"
+        icon="skip_next"
+        :label="`下一關：${nextStage.emoji} ${nextStage.name}`"
+        @click="playNext"
+      />
+    </template>
   </GameShell>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
-import { GameShell, LivesBar, PauseOverlay, useGameSession } from '../shared';
+import {
+  GameShell,
+  LivesBar,
+  PauseOverlay,
+  StagePicker,
+  firstOpenStage,
+  nextStageIndex,
+  useGameSession,
+} from '../shared';
 import { typingInfo } from './info';
-import { TYPING_LEVELS } from './levels';
+import { POWER_UPS, TYPING_LEVELS } from './levels';
 import { useTyping } from './useTyping';
 
 const session = useGameSession(typingInfo, (words) => typing.start(words));
@@ -79,7 +120,31 @@ const typing = useTyping(session);
 const state = typing.state;
 const level = typing.level;
 
-const nextLevelName = computed(() => TYPING_LEVELS[state.level + 1]?.name ?? '');
+// 預設選還沒拿到星星的第一關
+typing.mode.value = {
+  kind: 'stage',
+  index: firstOpenStage(TYPING_LEVELS.length, typing.stars.value),
+};
+
+/** 標題畫面選到的關卡 */
+const picked = computed(() => {
+  const m = typing.mode.value;
+  return m.kind === 'stage' ? TYPING_LEVELS[m.index] : undefined;
+});
+
+/** 過關後可以挑戰的下一關 */
+const nextIndex = computed(() =>
+  nextStageIndex(typing.mode.value, !!session.result?.won, TYPING_LEVELS.length),
+);
+const nextStage = computed(() =>
+  nextIndex.value === null ? null : TYPING_LEVELS[nextIndex.value],
+);
+
+const playNext = () => {
+  if (nextIndex.value === null) return;
+  typing.mode.value = { kind: 'stage', index: nextIndex.value };
+  session.start();
+};
 
 // 按錯時畫面邊框閃一下
 const flash = ref(false);
@@ -138,6 +203,10 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   border: 3px solid #cbd5e1;
   transition: border-color 0.1s;
 }
+.field--frozen {
+  border-color: #38bdf8;
+  background: linear-gradient(180deg, #bae6fd 0%, #e0f2fe 100%);
+}
 .field--miss {
   border-color: $negative;
 }
@@ -169,6 +238,16 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   transform: translate(-50%, -100%) scale(1.08);
   z-index: 2;
 }
+.item--power {
+  border-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+.item__power {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  font-size: 1.1rem;
+}
 .item--danger {
   background: #fff1f2;
 }
@@ -194,9 +273,38 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   font-weight: 700;
   color: var(--app-muted);
 }
-.level-break {
-  background: rgba(255, 255, 255, 0.88);
+.power-banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
   z-index: 5;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  font-weight: 900;
+  white-space: nowrap;
+  animation: pop 0.3s;
+}
+.stage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.stage-tags span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.2);
+}
+@keyframes pop {
+  from {
+    transform: translateX(-50%) scale(0.6);
+    opacity: 0;
+  }
 }
 kbd {
   padding: 1px 6px;

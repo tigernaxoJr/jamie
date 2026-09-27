@@ -11,13 +11,7 @@ import {
   useStageProgress,
   useTimers,
 } from '../shared';
-import {
-  type CardFace,
-  FLASHLIGHTS,
-  MEMORY_STAGES,
-  endlessRound,
-  memoryStars,
-} from './stages';
+import { type CardFace, FLASHLIGHTS, MEMORY_STAGES, endlessRound, memoryStars } from './stages';
 
 const FLIP_BACK_MS = 900;
 const FLASH_MS = 1200;
