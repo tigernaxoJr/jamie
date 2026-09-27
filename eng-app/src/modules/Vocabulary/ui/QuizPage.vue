@@ -267,6 +267,7 @@ const currentCategoryInfo = computed(() => {
 
 // next
 onMounted(() => {
+  store.reloadWords();
   if (store.words.length === 0) {
     openCategorySelection();
   } else {

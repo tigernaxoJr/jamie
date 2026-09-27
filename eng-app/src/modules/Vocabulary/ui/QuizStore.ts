@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
-import type { QuizMeta, QuizWord } from '../domain';
+import { type QuizMeta, type QuizWord, applyAnswer } from '../domain';
 import { GeQuiztWords } from '../infra/WordBank';
 import { WordMetaStorage } from '../infra/WordMetaStorage';
 import Categories from '../infra/Category';
@@ -35,7 +35,7 @@ const migrateLegacyWords = () => {
   }
 };
 
-export const useQuizStore =defineStore('quizStore', () => {
+export const useQuizStore = defineStore('quizStore', () => {
   const categoryOptions = ref(Categories);
   const selectedCategories = useLocalStorage<string[]>('quiz-selected-categories', []);
   const lastWordIds = useLocalStorage<number[]>('quiz-last-word-ids', []);
@@ -72,33 +72,25 @@ export const useQuizStore =defineStore('quizStore', () => {
     selectedCategories.value = ids;
     words.value = GeQuiztWords(new Set(selectedCategories.value));
   };
-  const recordCorrectAns = (id: number) => {
-    const w = words.value.find((word) => word.id === id);
-    if (!w) return;
-    w.correctRec.count += 1;
-    w.correctRec.consecutive += 1;
-    w.correctRec.lastTime = Date.now();
-    w.errorRec.consecutive = 0;
-    // 持久化到長期記憶
-    WordMetaStorage.save(w.english, {
-      errorRec: { ...w.errorRec },
-      correctRec: { ...w.correctRec },
-    });
+  /**
+   * 從長期記憶重新載入單字（其他模組如遊戲也可能更新答題記錄）。
+   */
+  const reloadWords = () => {
+    words.value = GeQuiztWords(new Set(selectedCategories.value));
   };
 
-  const recordErrorAns = (id: number) => {
+  const recordAnswer = (id: number, correct: boolean) => {
     const w = words.value.find((word) => word.id === id);
     if (!w) return;
-    w.errorRec.count += 1;
-    w.errorRec.lastTime = Date.now();
-    w.errorRec.consecutive += 1;
-    w.correctRec.consecutive = 0;
+    applyAnswer(w, correct);
     // 持久化到長期記憶
     WordMetaStorage.save(w.english, {
       errorRec: { ...w.errorRec },
       correctRec: { ...w.correctRec },
     });
   };
+  const recordCorrectAns = (id: number) => recordAnswer(id, true);
+  const recordErrorAns = (id: number) => recordAnswer(id, false);
 
   const meta = computed<QuizMeta>(() => {
     const m: QuizMeta = { count: words.value.length, e1: 0, e2: 0, e3: 0, c1: 0, c2: 0, c3: 0 };
@@ -129,6 +121,7 @@ export const useQuizStore =defineStore('quizStore', () => {
     categoryOptions,
     selectedCategories,
     setCategories,
+    reloadWords,
     resetQuiz,
     recordCorrectAns,
     recordErrorAns,

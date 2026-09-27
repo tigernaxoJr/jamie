@@ -1,0 +1,70 @@
+import { computed, reactive, ref, shallowRef } from 'vue';
+import { useLocalStorage } from '@vueuse/core';
+import { recordWordAnswer } from 'src/modules/Vocabulary';
+import type { GameInfo, GameResult, GameWord } from './types';
+import { loadGameWords, shuffle } from './words';
+
+export type GamePhase = 'setup' | 'playing' | 'result';
+
+export const bestScoreKey = (gameId: string) => `game-best-${gameId}`;
+
+/**
+ * 所有單字遊戲共用的流程：選類別 → 遊戲中 → 結算。
+ * 各遊戲只需要在 onStart 收到單字後開始自己的邏輯，結束時呼叫 finish。
+ */
+export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => void) {
+  const categories = useLocalStorage<string[]>('games-selected-categories', []);
+  const phase = ref<GamePhase>('setup');
+  const result = shallowRef<GameResult | null>(null);
+  const bestScore = useLocalStorage<number>(bestScoreKey(info.id), 0);
+  const isNewBest = ref(false);
+
+  const availableWords = computed(() => loadGameWords(categories.value, info.wordFilter));
+  const canStart = computed(() => availableWords.value.length >= info.minWords);
+
+  const start = () => {
+    if (!canStart.value) return;
+    result.value = null;
+    isNewBest.value = false;
+    phase.value = 'playing';
+    onStart(shuffle(availableWords.value));
+  };
+
+  const finish = (r: GameResult) => {
+    result.value = r;
+    isNewBest.value = r.score > bestScore.value;
+    if (isNewBest.value) bestScore.value = r.score;
+    phase.value = 'result';
+  };
+
+  const setCategories = (ids: string[]) => {
+    categories.value = ids;
+  };
+
+  const toSetup = () => {
+    phase.value = 'setup';
+  };
+
+  /** 寫入單字長期記憶（僅限設定為會記錄的遊戲） */
+  const record = (word: GameWord, correct: boolean) => {
+    if (info.recordsProgress) recordWordAnswer(word.english, correct);
+  };
+
+  return reactive({
+    info,
+    categories,
+    phase,
+    result,
+    bestScore,
+    isNewBest,
+    availableCount: computed(() => availableWords.value.length),
+    canStart,
+    setCategories,
+    start,
+    finish,
+    toSetup,
+    record,
+  });
+}
+
+export type GameSession = ReturnType<typeof useGameSession>;

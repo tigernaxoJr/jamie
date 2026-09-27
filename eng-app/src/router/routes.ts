@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router';
+import { gameRoutes } from 'src/modules/Games';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -9,6 +10,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'quiz', component: () => import('src/modules/Vocabulary/ui/QuizPage.vue') },
       { path: 'review', component: () => import('src/modules/Vocabulary/ui/ReviewPage.vue') },
       { path: 'typing', component: () => import('src/modules/Typing/TypingPage.vue') },
+      ...gameRoutes,
     ],
   },
 

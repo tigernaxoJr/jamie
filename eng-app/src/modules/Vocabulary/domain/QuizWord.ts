@@ -13,6 +13,28 @@ export type AnswerRecord = {
   consecutive: number;
 };
 
+/** 一個單字的答對/答錯記錄組 */
+export type AnswerRecords = {
+  errorRec: AnswerRecord;
+  correctRec: AnswerRecord;
+};
+
+export const emptyAnswerRecord = (): AnswerRecord => ({ count: 0, lastTime: 0, consecutive: 0 });
+
+/**
+ * 依答題結果更新記錄 (就地修改)。
+ * 答對會重置連續答錯；答錯會重置連續答對。
+ */
+export const applyAnswer = (target: AnswerRecords, correct: boolean, now = Date.now()): void => {
+  const [hit, miss] = correct
+    ? [target.correctRec, target.errorRec]
+    : [target.errorRec, target.correctRec];
+  hit.count += 1;
+  hit.consecutive += 1;
+  hit.lastTime = now;
+  miss.consecutive = 0;
+};
+
 /**
  * Word: 領域實體 (Domain Entity) - 代表單個單詞。
  * (DDD 概念：具有唯一識別碼 (id) 和生命週期)
@@ -46,9 +68,7 @@ export class QuizWord extends Word {
   ) {
     super(id, english, chinese, image, audio, categories);
     // 初始化記錄或使用傳入的記錄 (常用於從 API 或本地儲存載入資料)
-    const initialRecord: AnswerRecord = { count: 0, lastTime: 0, consecutive: 0 };
-
-    this.errorRec = errorRec || { ...initialRecord };
-    this.correctRec = correctRec || { ...initialRecord };
+    this.errorRec = errorRec || emptyAnswerRecord();
+    this.correctRec = correctRec || emptyAnswerRecord();
   }
 }
