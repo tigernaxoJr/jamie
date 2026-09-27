@@ -44,6 +44,19 @@ export default defineConfigWithVueTs(
   // https://github.com/vuejs/eslint-config-typescript
   vueTsConfigs.recommendedTypeChecked,
 
+  /**
+   * vueTsConfigs 只在載入設定時，對「當下已存在」的 <script lang="ts"> .vue 檔開啟型別資訊。
+   * `quasar dev` 的 ESLint 檢查器只載入一次設定，之後新增或搬移的 .vue 會拿不到型別資訊，
+   * 型別規則直接丟例外，整個開發伺服器跟著掛掉。
+   * 這個專案的 .vue 都用 TypeScript，所以對所有 .vue 一律開啟。
+   */
+  {
+    files: ['**/*.vue'],
+    languageOptions: {
+      parserOptions: { projectService: true },
+    },
+  },
+
   {
     languageOptions: {
       ecmaVersion: 'latest',
