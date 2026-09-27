@@ -12,10 +12,12 @@
 
     <div class="score text-primary q-mt-md">{{ result.score }}</div>
     <div class="text-caption text-grey-7">分數</div>
-    <q-chip v-if="isNewBest" color="amber" text-color="black" icon="emoji_events" class="q-mt-sm">
-      新紀錄！
-    </q-chip>
-    <div v-else class="text-caption text-grey-6 q-mt-sm">最高分 {{ bestScore }}</div>
+    <template v-if="result.ranked !== false">
+      <q-chip v-if="isNewBest" color="amber" text-color="black" icon="emoji_events" class="q-mt-sm">
+        新紀錄！
+      </q-chip>
+      <div v-else class="text-caption text-grey-6 q-mt-sm">最高分 {{ bestScore }}</div>
+    </template>
 
     <div class="row justify-center q-gutter-sm q-mt-md">
       <q-chip v-for="s in result.stats" :key="s.label" outline color="primary">
@@ -61,6 +63,14 @@
           </q-item-section>
         </q-item>
       </q-list>
+      <q-btn
+        class="full-width q-mt-sm"
+        outline
+        color="deep-orange"
+        icon="school"
+        :label="`只練這 ${result.missed.length} 個字，再玩一次`"
+        @click="$emit('review')"
+      />
     </div>
 
     <div class="column q-gutter-sm q-mt-lg">
@@ -86,7 +96,7 @@ import { CORRECT_PER_CANDY, candyCount } from 'src/modules/Adventure';
 import type { GameResult } from '../types';
 
 defineProps<{ result: GameResult; bestScore: number; isNewBest: boolean }>();
-defineEmits<{ (e: 'replay'): void; (e: 'setup'): void }>();
+defineEmits<{ (e: 'replay'): void; (e: 'setup'): void; (e: 'review'): void }>();
 </script>
 
 <style scoped>

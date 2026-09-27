@@ -2,12 +2,17 @@ import { computed, reactive, ref, shallowRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { recordWordAnswer } from 'src/modules/Vocabulary';
 import { grantGameCandies } from 'src/modules/Adventure';
-import type { GameInfo, GameResult, GameWord } from './types';
+import { trackQuest } from 'src/modules/Quests';
+import type { GameCard, GameInfo, GameResult, GameWord } from './types';
 import { loadGameWords, shuffle } from './words';
+import { reviewDeck } from './review';
+import { recordGamePlayed } from './gameLogStorage';
 
 export type GamePhase = 'setup' | 'playing' | 'result';
 
-export const bestScoreKey = (gameId: string) => `game-best-${gameId}`;
+/** 最高分的儲存 key；關卡制遊戲只記無盡模式，用另一個 key 重新計算 */
+export const bestScoreKey = (card: GameCard) =>
+  card.stageBased ? `game-best-endless-${card.id}` : `game-best-${card.id}`;
 
 /**
  * 所有單字遊戲共用的流程：選類別 → 遊戲中 → 結算。
@@ -17,26 +22,59 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
   const categories = useLocalStorage<string[]>('games-selected-categories', []);
   const phase = ref<GamePhase>('setup');
   const result = shallowRef<GameResult | null>(null);
-  const bestScore = useLocalStorage<number>(bestScoreKey(info.id), 0);
+  const bestScore = useLocalStorage<number>(bestScoreKey(info), 0);
   const isNewBest = ref(false);
   /** 這局答對幾題（換算糖果用） */
   let correctCount = 0;
+  /** 這局作答幾次（開了就離開、沒作答也沒得分的不算玩過） */
+  let answeredCount = 0;
 
   const availableWords = computed(() => loadGameWords(categories.value, info.wordFilter));
   const canStart = computed(() => availableWords.value.length >= info.minWords);
 
-  const start = () => {
-    if (!canStart.value) return;
+  /** 這局是不是「只練答錯的字」 */
+  const reviewing = ref(false);
+
+  const begin = (list: GameWord[], review: boolean) => {
     result.value = null;
     isNewBest.value = false;
     correctCount = 0;
+    answeredCount = 0;
+    reviewing.value = review;
     phase.value = 'playing';
-    onStart(shuffle(availableWords.value));
+    onStart(shuffle(list));
+  };
+
+  const start = () => {
+    if (canStart.value) begin(availableWords.value, false);
+  };
+
+  /** 複習：答錯的字大量出現，再補幾個其他字，讓遊戲有足夠的選項 */
+  const startReview = (words: readonly GameWord[]) => {
+    if (words.length === 0) return start();
+    begin(reviewDeck(words, availableWords.value, info.minWords), true);
   };
 
   const finish = (r: GameResult) => {
     result.value = { ...r, reward: grantGameCandies(correctCount, r.won) };
-    isNewBest.value = r.score > bestScore.value;
+    if (answeredCount > 0 || r.score > 0) {
+      recordGamePlayed({
+        gameId: info.id,
+        cleared: r.stars !== undefined,
+        stars: r.stars ?? 0,
+        ...(r.lettersPerMinute ? { lettersPerMinute: r.lettersPerMinute } : {}),
+        now: Date.now(),
+      });
+      trackQuest({
+        type: 'game',
+        gameId: info.id,
+        // 只有過關才會有星等
+        stageCleared: r.stars !== undefined,
+        stars: r.stars ?? 0,
+        review: reviewing.value,
+      });
+    }
+    isNewBest.value = r.ranked !== false && r.score > bestScore.value;
     if (isNewBest.value) bestScore.value = r.score;
     phase.value = 'result';
   };
@@ -51,6 +89,7 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
 
   /** 記錄答題：累計糖果，並寫入單字長期記憶（僅限設定為會記錄的遊戲） */
   const record = (word: GameWord, correct: boolean) => {
+    answeredCount++;
     if (correct) correctCount++;
     if (info.recordsProgress) recordWordAnswer(word.english, correct);
   };
@@ -66,6 +105,8 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
     canStart,
     setCategories,
     start,
+    startReview,
+    reviewing,
     finish,
     toSetup,
     record,

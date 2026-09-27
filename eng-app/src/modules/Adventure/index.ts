@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-export { candyCount, grantGameCandies, type CandyReward } from './store/candy';
+export { candyCount, grantBonusCandies, grantGameCandies, type CandyReward } from './store/candy';
 export { CORRECT_PER_CANDY } from './domain/candy';
 
 /** 字靈探險隊的路由，掛在 MainLayout 底下 */
@@ -22,4 +22,17 @@ export const adventureCard = {
   description: '答對單字收服字靈、組隊對戰，收集完整圖鑑！',
   skill: '聽力・拼字',
   color: 'green-7',
+  /** 遊戲中心卡片上的進度：拿到幾個館主徽章 */
+  progress: (): string | null => {
+    try {
+      const badges = (
+        JSON.parse(localStorage.getItem('adventure-save') ?? '{}') as {
+          badges?: string[];
+        }
+      ).badges;
+      return badges?.length ? `🏅 徽章 ${badges.length} 個` : null;
+    } catch {
+      return null;
+    }
+  },
 };

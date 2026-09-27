@@ -29,6 +29,23 @@ export const firstOpenStage = (count: number, stars: readonly number[]): number 
 export const nextStageIndex = (sel: StageSelection, won: boolean, count: number): number | null =>
   sel.kind === 'stage' && won && sel.index + 1 < count ? sel.index + 1 : null;
 
+/** 讀取 localStorage 裡的 JSON（讀不到或格式錯誤回傳 null） */
+export const readSaved = <T>(key: string): T | null => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** 遊戲中心卡片用：「⭐ 已拿星數 / 滿星」，還沒拿過星星回傳 null */
+export const starsProgress = (storageKey: string, stageCount: number) => (): string | null => {
+  const stars = readSaved<{ stars?: number[] }>(storageKey)?.stars ?? [];
+  const total = stars.reduce((sum, n) => sum + (n ?? 0), 0);
+  return total > 0 ? `⭐ ${total} / ${stageCount * 3}` : null;
+};
+
 /** 每一關拿到的最高星數，存在 localStorage */
 export function useStageProgress(storageKey: string) {
   const save = useLocalStorage<{ stars: number[] }>(

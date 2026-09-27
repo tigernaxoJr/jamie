@@ -81,7 +81,15 @@
       <PauseOverlay v-if="typing.loop.paused.value" @resume="typing.loop.resume" />
     </div>
 
-    <div class="text-caption text-muted text-center q-mt-xs">
+    <!-- 觸控裝置用螢幕鍵盤 -->
+    <LetterKeyboard
+      class="touch-keyboard q-mt-sm"
+      with-space
+      @press="typing.press"
+      @backspace="typing.unlock"
+    />
+
+    <div class="hint text-caption text-muted text-center q-mt-xs">
       打錯單字想換一個？按 <kbd>Backspace</kbd> 取消鎖定；打出有 ❄️💖💣 的字可以拿到道具
     </div>
 
@@ -104,6 +112,7 @@ import { computed, ref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import {
   GameShell,
+  LetterKeyboard,
   LivesBar,
   PauseOverlay,
   StagePicker,
@@ -304,6 +313,22 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   from {
     transform: translateX(-50%) scale(0.6);
     opacity: 0;
+  }
+}
+.touch-keyboard {
+  display: none;
+  flex-shrink: 0;
+}
+/* 手機、平板顯示螢幕鍵盤，電腦用實體鍵盤 */
+@media (pointer: coarse) {
+  .touch-keyboard {
+    display: flex;
+  }
+  .hint {
+    display: none;
+  }
+  .field {
+    min-height: 180px;
   }
 }
 kbd {

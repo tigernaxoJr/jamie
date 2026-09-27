@@ -158,15 +158,19 @@ export function useTyping(session: GameSession) {
       state.score += state.hp * 20;
     }
     const success = mode.value.kind === 'stage' ? won : state.wordsDone > 0;
+    const lpm = lettersPerMinute(state.keysHit, state.seconds);
     if (success) sfx.win();
     else sfx.lose();
     session.finish({
       won: success,
+      ranked: mode.value.kind === 'endless',
+      // 打太短的局速度不準，至少 20 秒才記錄
+      ...(state.seconds >= 20 ? { lettersPerMinute: lpm } : {}),
       headline,
       score: state.score,
       ...(result === undefined ? {} : { stars: result }),
       stats: [
-        { label: '打字速度', value: `${lettersPerMinute(state.keysHit, state.seconds)} 字母/分` },
+        { label: '打字速度', value: `${lpm} 字母/分` },
         { label: '完成單字', value: state.wordsDone },
         { label: '最高連擊', value: state.maxCombo },
       ],

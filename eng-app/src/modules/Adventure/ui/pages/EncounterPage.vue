@@ -143,6 +143,7 @@ import { computed, ref, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PageTitle from 'src/components/PageTitle.vue';
 import { WordPronunciation } from 'src/modules/Vocabulary';
+import { trackQuest } from 'src/modules/Quests';
 import { randomInt } from 'src/modules/Games/shared';
 import { getArea } from '../../domain/areas';
 import { type Rarity, type Species, RARITY_NAME, getSpecies } from '../../domain/species';
@@ -215,6 +216,7 @@ const onCaught = () => {
   const caught = store.catchCreature(wild.value.species.id, wild.value.level);
   joinedTeam.value = store.isInTeam(caught.uid);
   store.gainXp(store.partner.uid, CAPTURE_XP);
+  trackQuest({ type: 'catch' });
   phase.value = 'caught';
 };
 

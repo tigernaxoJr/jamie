@@ -1,4 +1,5 @@
-import type { GameInfo } from '../shared';
+import { type GameInfo, starsProgress } from '../shared';
+import { STAGES } from './campaign';
 
 export const spaceInfo: GameInfo = {
   id: 'space',
@@ -8,6 +9,8 @@ export const spaceInfo: GameInfo = {
   skill: '認字・反應',
   color: 'blue-9',
   minWords: 6,
+  stageBased: true,
+  progress: starsProgress('space-campaign', STAGES.length),
   recordsProgress: true,
   rules: [
     '隕石上寫著中文，點下方正確的英文按鈕把它擊落（電腦可以按 1～6）',

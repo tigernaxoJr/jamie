@@ -1,4 +1,4 @@
-import type { GameInfo } from '../shared';
+import { type GameInfo, readSaved } from '../shared';
 
 export const battleInfo: GameInfo = {
   id: 'battle',
@@ -8,6 +8,10 @@ export const battleInfo: GameInfo = {
   skill: '認字・聽力',
   color: 'deep-orange',
   minWords: 4,
+  progress: () => {
+    const floor = readSaved<{ bestFloor?: number }>('battle-tower')?.bestFloor ?? 0;
+    return floor > 0 ? `🏰 最高第 ${floor} 層` : null;
+  },
   recordsProgress: true,
   rules: [
     '看中文選英文、看英文選中文，或聽發音選單字，答對就攻擊怪物（電腦可以按 1～4）',

@@ -1,4 +1,5 @@
-import { type GameInfo, lettersOf } from '../shared';
+import { type GameInfo, lettersOf, starsProgress } from '../shared';
+import { SNAKE_STAGES } from './stages';
 
 export const snakeInfo: GameInfo = {
   id: 'snake',
@@ -8,6 +9,8 @@ export const snakeInfo: GameInfo = {
   skill: '拼字',
   color: 'green',
   minWords: 3,
+  stageBased: true,
+  progress: starsProgress('snake-stages', SNAKE_STAGES.length),
   recordsProgress: true,
   // 只挑 3～8 個字母、沒有空格符號的單字，蛇比較好拼
   wordFilter: (w) => /^[a-z]{3,8}$/i.test(w.answer) && lettersOf(w.answer).length >= 3,

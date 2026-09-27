@@ -34,6 +34,17 @@ Games/
 每天上限 30 顆），存到字靈探險（`src/modules/Adventure` 的 `grantGameCandies`），結算畫面會顯示拿到幾顆。
 不寫入測驗記錄的遊戲（`recordsProgress: false`）也可以呼叫 `record`，只會算糖果。
 
+## 出題、複習與紀錄
+
+- **弱點單字優先**：`loadGameWords` 依答題記錄給每個字權重（`Vocabulary` 的 `practiceWeight`，1～4），
+  `WordDeck`（`shared/deck.ts`）把權重高的字多放幾張進牌堆，越不熟的字越常出現。
+- **一鍵複習**：結算畫面「只練這 N 個字」會呼叫 `session.startReview(missed)`，答錯的字權重 4，
+  再補幾個其他字當干擾選項（`shared/review.ts`）。
+- **每日任務**：結算時（有作答或得分才算）回報 `trackQuest`（`src/modules/Quests`）。
+- **家長報告**：結算時寫入遊戲日誌（`shared/gameLog.ts`，localStorage `game-log`），
+  打字遊戲在結果填 `lettersPerMinute` 記錄打字速度。
+- **最高分**：關卡制遊戲（`stageBased`）只記無盡模式，關卡結果填 `ranked: false`。
+
 ## 遊戲一覽
 
 | 遊戲       | 練習                                                             | 寫入測驗記錄     |
