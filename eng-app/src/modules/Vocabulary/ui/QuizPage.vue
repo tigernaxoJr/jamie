@@ -1,221 +1,228 @@
 <template>
-  <q-page padding class="column no-wrap items-center">
-    <div class="col flex flex-center full-width q-pa-md">
-      <!-- Category Selection View -->
-      <q-card
-        v-if="isSelectingCategory"
-        flat
-        class="q-pa-lg soft-shadow rounded-borders bg-white"
-        style="width: 100%; max-width: 600px"
-      >
-        <CategorySelector
-          v-model="tempSelectedCategories"
-          :categories="store.categoryOptions"
-          confirm-label="開始測驗"
-          @confirm="confirmCategorySelection"
-        >
-          <template #title>選擇測驗類別</template>
-        </CategorySelector>
-      </q-card>
-
-      <!-- Quiz View -->
-      <q-card
-        v-else
-        flat
-        class="q-pa-lg soft-shadow rounded-borders bg-white"
-        style="width: 100%; max-width: 400px"
-      >
-        <q-card-section class="q-pa-none" v-if="currentWord">
-          <div class="text-caption text-grey-6 text-center q-mb-sm" v-if="currentCategoryInfo">
-            {{ currentCategoryInfo }}
-          </div>
-          <div class="text-h5 text-weight-bold text-center">
-            {{ currentWord?.chinese || '取得題目失敗' }}
-          </div>
-          <div
-            v-if="!anserChecked"
-            class="row justify-center text-subtitle1 text-grey-6 q-gutter-x-sm q-my-sm"
+  <q-page padding>
+    <div class="page-container page-container--narrow">
+      <!-- 選擇類別 -->
+      <template v-if="isSelectingCategory">
+        <PageTitle emoji="✏️" title="單字測驗" subtitle="看中文，拼出英文單字" />
+        <div class="app-card q-pa-lg">
+          <CategorySelector
+            v-model="tempSelectedCategories"
+            :categories="store.categoryOptions"
+            confirm-label="開始測驗"
+            @confirm="confirmCategorySelection"
           >
-            <span v-if="showLength"> ( {{ currentWord.english.length }} 字 ) </span>
-            <BtnHint v-else label="字數: 開" @click="showLength = true" />
+            <template #title>選擇測驗主題</template>
+          </CategorySelector>
+        </div>
+      </template>
 
-            <span v-if="showHint"> [ {{ currentWord.english.charAt(0).toUpperCase() }}*** ] </span>
-            <BtnHint v-else label="首字: 開" @click="showHint = true" />
+      <!-- 測驗 -->
+      <template v-else>
+        <PageTitle emoji="✏️" title="單字測驗" :subtitle="`這一輪共 ${store.meta.count} 個單字`">
+          <template #actions>
+            <q-btn flat round icon="more_vert" color="grey-8" aria-label="更多選項">
+              <q-menu anchor="bottom right" self="top right">
+                <q-list style="min-width: 240px">
+                  <q-item v-close-popup clickable @click="openCategorySelection">
+                    <q-item-section avatar
+                      ><q-icon name="category" color="primary"
+                    /></q-item-section>
+                    <q-item-section>
+                      <q-item-label>換主題</q-item-label>
+                      <q-item-label caption>保留所有答題記錄</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item v-close-popup clickable @click="confirmResetDialog = true">
+                    <q-item-section avatar>
+                      <q-icon name="restart_alt" color="orange-8" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>重新開始</q-item-label>
+                      <q-item-label caption>清除這些主題的記錄</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                  <q-item v-close-popup clickable @click="confirmClearDialog = true">
+                    <q-item-section avatar>
+                      <q-icon name="delete_forever" color="negative" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>清除所有記憶</q-item-label>
+                      <q-item-label caption>所有主題的記錄都會清掉</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+          </template>
+        </PageTitle>
 
-            <span v-if="showAnswer || anserChecked">
-              [ {{ currentWord.english }} ]
+        <div
+          class="app-card quiz-card q-pa-lg"
+          :class="{ 'quiz-card--correct': correctAns, 'quiz-card--wrong': errorAns }"
+        >
+          <template v-if="currentWord">
+            <div v-if="currentCategoryInfo" class="text-center">
+              <span class="pill">{{ currentCategoryInfo }}</span>
+            </div>
+            <div class="question">{{ currentWord.chinese }}</div>
+
+            <!-- 提示 -->
+            <div v-if="!anserChecked" class="hints">
+              <button
+                type="button"
+                class="hint"
+                :class="{ 'hint--on': showLength }"
+                @click="showLength = true"
+              >
+                <q-icon name="straighten" size="18px" />
+                {{ showLength ? `${currentWord.english.length} 個字母` : '幾個字母？' }}
+              </button>
+              <button
+                type="button"
+                class="hint"
+                :class="{ 'hint--on': showHint }"
+                @click="showHint = true"
+              >
+                <q-icon name="lightbulb" size="18px" />
+                {{
+                  showHint ? `${currentWord.english.charAt(0).toUpperCase()} 開頭` : '第一個字母'
+                }}
+              </button>
+              <button
+                type="button"
+                class="hint hint--peek"
+                :class="{ 'hint--on': showAnswer }"
+                @click="showAnswer = true"
+              >
+                <q-icon name="visibility" size="18px" />
+                {{ showAnswer ? currentWord.english : '偷看答案' }}
+              </button>
+            </div>
+            <div
+              v-if="!anserChecked && (showHint || showLength)"
+              class="text-center text-caption text-muted q-mt-xs"
+            >
+              用了提示，這題答對不會算分喔
+            </div>
+            <div v-if="showAnswer && !anserChecked" class="text-center q-mt-xs">
               <SpeechStrip :word="currentWord.english" />
-            </span>
-            <BtnHint v-else label="答案" @click="showAnswer = true" />
-          </div>
+            </div>
 
-          <div v-if="anserChecked" class="q-my-md text-center">
-            <q-chip
-              v-if="correctAns"
-              color="green"
-              text-color="white"
-              icon="check_circle"
-              label="答案正確！"
-              class="q-pa-sm"
-            />
-
-            <div v-else-if="errorAns">
-              <q-chip
-                color="red"
-                text-color="white"
-                icon="cancel"
-                label="答案錯誤"
-                class="q-pa-sm q-mb-sm"
-              />
-              <div class="text-subtitle1 text-red-8">
-                正確答案為：
-                <span class="text-weight-bold q-ml-xs">
-                  {{ currentWord.english }}
-                </span>
+            <!-- 結果 -->
+            <div v-if="anserChecked" class="feedback q-mt-md">
+              <template v-if="correctAns">
+                <div class="feedback__emoji">🎉</div>
+                <div class="feedback__title text-positive">答對了！</div>
+              </template>
+              <template v-else-if="errorAns">
+                <div class="feedback__emoji">😅</div>
+                <div class="feedback__title text-negative">差一點！</div>
+              </template>
+              <template v-else>
+                <div class="feedback__emoji">👍</div>
+                <div class="feedback__title text-primary">答對了（有用提示）</div>
+              </template>
+              <div class="q-mt-xs">
+                正確答案：<b class="feedback__answer">{{ currentWord.english }}</b>
                 <SpeechStrip :word="currentWord.english" />
               </div>
             </div>
+
+            <input
+              ref="inputEl"
+              v-model="answer"
+              class="answer-input q-mt-lg"
+              :class="{ 'answer-input--locked': anserChecked }"
+              placeholder="在這裡輸入英文"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              :readonly="anserChecked"
+              @keyup.enter="() => (anserChecked ? nextQuestion() : checkAnswer())"
+            />
+            <q-btn
+              class="btn-3d full-width q-mt-md"
+              size="lg"
+              :color="anserChecked ? 'secondary' : 'primary'"
+              :icon-right="anserChecked || showAnswer || !answer ? 'arrow_forward' : 'check'"
+              :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
+              @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
+            />
+          </template>
+
+          <div v-else class="text-center q-py-lg">
+            <div style="font-size: 3rem">📭</div>
+            <div class="text-h6 q-mt-sm">沒有題目</div>
+            <div class="text-muted q-mt-xs">請換個主題試試看</div>
+            <q-btn
+              class="btn-3d q-mt-md"
+              color="primary"
+              label="選擇主題"
+              @click="openCategorySelection"
+            />
           </div>
-          <q-input
-            v-model="answer"
-            placeholder="請輸入答案"
-            @keyup.enter="() => (anserChecked ? nextQuestion() : checkAnswer())"
-            class="q-mb-sm"
-          />
-          <q-btn
-            :label="showAnswer || !answer || anserChecked ? '下一題' : '檢查答案'"
-            @click="() => (anserChecked ? nextQuestion() : checkAnswer())"
-            class="full-width q-mb-md"
-            unelevated
-            rounded
-            color="primary"
-            size="lg"
-          />
-        </q-card-section>
-        <q-card-section v-else class="text-center q-pa-lg">
-          <div class="text-h6 text-grey-7">沒有題目</div>
-          <div class="text-caption text-grey-6 q-mt-sm">請嘗試選擇其他類別</div>
-          <q-btn
-            unelevated
-            rounded
-            color="primary"
-            label="選擇類別"
-            @click="openCategorySelection"
-            class="q-mt-md"
-          />
-        </q-card-section>
+        </div>
 
-        <q-separator class="q-my-sm" />
-
-        <q-card-actions class="column q-gutter-xs q-pa-sm">
-          <!-- 切換類別：無損失 -->
-          <q-btn
-            flat
-            no-caps
-            color="primary"
-            label="切換類別"
-            @click="openCategorySelection"
-            icon="category"
-            class="full-width"
-            align="left"
-          >
-            <q-tooltip>僅切換測驗類別，保留所有答題記錄</q-tooltip>
-            <span class="q-ml-sm text-caption text-grey-6">保留記錄</span>
-          </q-btn>
-
-          <!-- 重新開始：清除當前類別 -->
-          <q-btn
-            flat
-            no-caps
-            color="orange-8"
-            label="重新開始"
-            @click="confirmResetDialog = true"
-            icon="restart_alt"
-            class="full-width"
-            align="left"
-          >
-            <q-tooltip>清除當前類別的答題記錄，從頭開始練習</q-tooltip>
-            <span class="q-ml-sm text-caption text-grey-6">清除當前類別記錄</span>
-          </q-btn>
-
-          <!-- 清除所有記憶：全部清空 -->
-          <q-btn
-            flat
-            no-caps
-            color="deep-orange"
-            label="清除所有記憶"
-            @click="confirmClearDialog = true"
-            icon="delete_forever"
-            class="full-width"
-            align="left"
-          >
-            <q-tooltip>清除所有類別的答題記錄，無法復原</q-tooltip>
-            <span class="q-ml-sm text-caption text-grey-6">清除所有類別記錄</span>
-          </q-btn>
-        </q-card-actions>
-      </q-card>
+        <InfoStrip :meta="store.meta" class="q-mt-lg" @click-stat="showStatWords" />
+      </template>
     </div>
-    <InfoStrip :meta="store.meta" v-if="!isSelectingCategory" class="col-auto" @clickStat="showStatWords" />
 
     <!-- 重新開始確認對話框 -->
     <q-dialog v-model="confirmResetDialog" persistent>
-      <q-card style="min-width: 320px">
-        <q-card-section class="row items-center">
+      <q-card class="q-pa-sm" style="min-width: 320px; max-width: 420px">
+        <q-card-section class="row items-center no-wrap">
           <q-icon name="restart_alt" color="orange-8" size="2rem" class="q-mr-sm" />
           <span class="text-h6">確認重新開始？</span>
         </q-card-section>
-        <q-card-section>
-          此操作會清除<strong>當前所選類別</strong>的單字答題記錄（答對次數、答錯次數、連續記錄等），其他類別的記錄不會受影響。
+        <q-card-section class="q-pt-none">
+          會清除<strong>目前所選主題</strong>的答題記錄（答對、答錯次數等），其他主題不受影響。
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="取消" color="grey-7" v-close-popup />
-          <q-btn flat label="確認重新開始" color="orange-8" @click="handleResetQuiz" />
+          <q-btn label="確認重新開始" color="orange-8" @click="handleResetQuiz" />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
     <!-- 清除所有記憶確認對話框 -->
     <q-dialog v-model="confirmClearDialog" persistent>
-      <q-card style="min-width: 320px">
-        <q-card-section class="row items-center">
-          <q-icon name="warning" color="deep-orange" size="2rem" class="q-mr-sm" />
+      <q-card class="q-pa-sm" style="min-width: 320px; max-width: 420px">
+        <q-card-section class="row items-center no-wrap">
+          <q-icon name="warning" color="negative" size="2rem" class="q-mr-sm" />
           <span class="text-h6">確認清除所有記憶？</span>
         </q-card-section>
-        <q-card-section>
-          此操作會清除<strong>所有類別、所有單字</strong>的答題記錄，且無法復原。
+        <q-card-section class="q-pt-none">
+          會清除<strong>所有主題、所有單字</strong>的答題記錄，而且無法復原。
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="取消" color="grey-7" v-close-popup />
-          <q-btn flat label="確認清除全部" color="deep-orange" @click="handleClearMemory" />
+          <q-btn label="確認清除全部" color="negative" @click="handleClearMemory" />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
     <q-dialog v-model="statDialog">
-      <q-card style="width: 90vw; max-width: 900px" class="bg-grey-1">
-        <q-card-section class="row items-center q-pb-none bg-white">
-          <div class="text-h5 text-primary text-weight-bold">{{ statDialogTitle }}</div>
+      <q-card style="width: 90vw; max-width: 900px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">{{ statDialogTitle }}</div>
           <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
+          <q-btn icon="close" flat round v-close-popup aria-label="關閉" />
         </q-card-section>
-        
-        <q-card-section class="q-pa-none">
+        <q-card-section>
           <StatWordList :words="statWords" />
         </q-card-section>
-
-        <q-card-actions align="right" class="bg-white">
-          <q-btn flat label="關閉" color="primary" v-close-popup />
-        </q-card-actions>
       </q-card>
     </q-dialog>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, nextTick } from 'vue';
+import PageTitle from 'src/components/PageTitle.vue';
 import { useQuizStore } from './QuizStore';
 import { type QuizWord, WordQuizService } from '../domain';
-import BtnHint from './QuizPage/BtnHint.vue';
 import InfoStrip from './QuizPage/InfoStrip.vue';
 import SpeechStrip from './QuizPage/SpeechStrip.vue';
 import CategorySelector from './CategorySelector.vue';
@@ -230,6 +237,7 @@ const showLength = ref<boolean>(false);
 const showAnswer = ref<boolean>(false);
 const questionsAnswered = ref(0);
 const isSelectingCategory = ref(false);
+const inputEl = ref<HTMLInputElement | null>(null);
 
 // Category Selection
 const tempSelectedCategories = ref<string[]>([]);
@@ -260,7 +268,7 @@ const currentCategoryInfo = computed(() => {
 
   if (category.parentId) {
     const parent = store.categoryOptions.find((c) => c.id === category.parentId);
-    return parent ? `${parent.name} > ${category.name}` : category.name;
+    return parent ? `${parent.name} · ${category.name}` : category.name;
   }
   return category.name;
 });
@@ -291,6 +299,7 @@ const nextQuestion = () => {
   showHint.value = false;
   showLength.value = false;
   showAnswer.value = false;
+  void nextTick(() => inputEl.value?.focus());
 };
 const anserChecked = ref<boolean>(false);
 const correctAns = ref<boolean>(false);
@@ -302,8 +311,10 @@ const checkAnswer = () => {
   // 沒有題目就略過動作，照理說不會出現這個情況
   if (!currentWord.value) return;
 
-  // 計算答案是否正確
-  const correct = answer.value.trim().toLowerCase() === currentWord.value.english.toLowerCase();
+  // 計算答案是否正確；也接受去掉括號補充的寫法，例如 "shoe(s)" 可以只輸入 "shoe"
+  const english = currentWord.value.english.toLowerCase();
+  const accepted = [english, english.replace(/\s*\([^)]*\)/g, '').trim()];
+  const correct = accepted.includes(answer.value.trim().toLowerCase());
   questionsAnswered.value++;
   if (showAnswer.value) return nextQuestion();
 
@@ -318,7 +329,7 @@ const statDialogTitle = ref('');
 const statWords = ref<QuizWord[]>([]);
 
 const showStatWords = (type: string) => {
-  statWords.value = store.words.filter(w => {
+  statWords.value = store.words.filter((w) => {
     if (type === 'count') return true;
     if (type === 'e1') return w.errorRec.consecutive === 1;
     if (type === 'e2') return w.errorRec.consecutive === 2;
@@ -330,13 +341,13 @@ const showStatWords = (type: string) => {
   });
 
   const map: Record<string, string> = {
-    count: '總單字數',
-    e1: '連答錯 1 次',
-    e2: '連答錯 2 次',
-    e3: '連答錯 3+ 次',
-    c1: '連答對 1 次',
-    c2: '連答對 2 次',
-    c3: '連答對 3+ 次',
+    count: '全部單字',
+    e1: '連續答錯 1 次',
+    e2: '連續答錯 2 次',
+    e3: '連續答錯 3 次以上',
+    c1: '連續答對 1 次',
+    c2: '連續答對 2 次',
+    c3: '連續答對 3 次以上',
   };
   statDialogTitle.value = map[type] || '單字清單';
   statDialog.value = true;
@@ -361,4 +372,121 @@ const handleClearMemory = () => {
 };
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.quiz-card {
+  border: 3px solid transparent;
+  transition: border-color 0.2s;
+}
+.quiz-card--correct {
+  border-color: $positive;
+  animation: pop 0.35s;
+}
+.quiz-card--wrong {
+  border-color: $negative;
+  animation: shake 0.4s;
+}
+.question {
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 16px 0;
+  word-break: break-word;
+}
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px dashed var(--app-line);
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  color: var(--app-muted);
+  cursor: pointer;
+  &:hover {
+    border-color: $accent;
+    color: $accent;
+  }
+}
+.hint--on {
+  border-style: solid;
+  border-color: $accent;
+  background: #fff7e6;
+  color: #b45309;
+  cursor: default;
+}
+.hint--peek.hint--on {
+  font-family: monospace;
+  font-size: 1.05rem;
+}
+.feedback {
+  text-align: center;
+  font-size: 1.05rem;
+}
+.feedback__emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.feedback__title {
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+.feedback__answer {
+  font-size: 1.3rem;
+  color: $primary;
+}
+.answer-input {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: 3px solid var(--app-line);
+  border-radius: 16px;
+  font: inherit;
+  font-size: 1.6rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.04em;
+  color: var(--app-ink);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  &:focus {
+    border-color: $primary;
+  }
+  &::placeholder {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #a9b4c0;
+  }
+}
+.answer-input--locked {
+  background: #f7f7fb;
+}
+@keyframes pop {
+  50% {
+    transform: scale(1.02);
+  }
+}
+@keyframes shake {
+  25%,
+  75% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+@media (max-width: 599px) {
+  .question {
+    font-size: 1.9rem;
+  }
+}
+</style>

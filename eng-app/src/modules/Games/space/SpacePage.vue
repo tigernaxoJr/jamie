@@ -3,7 +3,7 @@
     <div class="row items-center no-wrap q-mb-sm">
       <LivesBar :lives="state.shields" :max="space.maxShields" icon="🛡️" />
       <q-space />
-      <q-chip dense color="indigo" text-color="white">第 {{ space.wave.value }} 波</q-chip>
+      <q-chip dense color="blue-9" text-color="white">第 {{ space.wave.value }} 波</q-chip>
       <div class="text-subtitle1 text-weight-bold q-ml-sm">⭐ {{ state.score }}</div>
     </div>
 
@@ -43,7 +43,7 @@
         no-caps
         unelevated
         size="lg"
-        color="indigo-6"
+        color="blue-8"
         class="option"
         :disable="state.cooldown"
         @click="space.fire(o)"
@@ -83,7 +83,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   min-height: 300px;
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(180deg, #0d1b4c 0%, #1a237e 60%, #283593 100%);
+  background: linear-gradient(180deg, #081628 0%, #0f2a4d 60%, #174077 100%);
   border-bottom: 6px solid #43a047;
   user-select: none;
 }
@@ -119,7 +119,7 @@ useEventListener(window, 'keydown', (e: KeyboardEvent) => {
   padding: 2px 8px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.92);
-  color: #1a237e;
+  color: #12335e;
   font-weight: bold;
   font-size: 0.95rem;
   text-align: center;

@@ -181,7 +181,7 @@ const onPointerUp = (e: PointerEvent) => {
 .letter {
   font-weight: 900;
   font-size: clamp(0.9rem, 3.5vw, 1.4rem);
-  color: #1a237e;
+  color: #12335e;
   background: #fff;
   border-radius: 50%;
   transform: scale(0.85);

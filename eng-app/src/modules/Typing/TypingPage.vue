@@ -1,21 +1,16 @@
 <template>
-  <q-page class="bg-black overflow-hidden">
-    <iframe
-      src="games/typing/index.html"
-      class="typing-iframe"
-      title="Typing Game"
-    ></iframe>
+  <q-page class="typing-page bg-black overflow-hidden" :style-fn="fillHeight">
+    <iframe src="games/typing/index.html" class="typing-iframe" title="Typing Game"></iframe>
   </q-page>
 </template>
 
 <script setup lang="ts">
+// 讓 iframe 填滿 header/footer 以外的高度
+const fillHeight = (offset: number) => ({ height: `calc(100vh - ${offset}px)` });
 </script>
 
 <style scoped>
-.q-page {
-  /* 強制移除可能的 min-height 限制，讓 iframe 決定高度 */
-  min-height: unset !important;
-  height: calc(100vh - 58px); /* 預估 Header 高度 */
+.typing-page {
   display: flex;
 }
 

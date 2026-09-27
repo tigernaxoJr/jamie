@@ -6,7 +6,7 @@ export const battleInfo: GameInfo = {
   icon: '⚔️',
   description: '答對單字攻擊怪物，一路打到惡龍魔王！',
   skill: '認字・聽力',
-  color: 'deep-purple',
+  color: 'deep-orange',
   minWords: 4,
   recordsProgress: true,
   rules: [

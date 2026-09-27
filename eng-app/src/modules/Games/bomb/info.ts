@@ -6,7 +6,7 @@ export const bombInfo: GameInfo = {
   icon: '💣',
   description: '在引信燒完前猜出單字的字母，拆除炸彈！',
   skill: '拼字',
-  color: 'red',
+  color: 'blue-grey-9',
   minWords: 3,
   recordsProgress: true,
   wordFilter: (w) => lettersOf(w.answer).length >= 3,

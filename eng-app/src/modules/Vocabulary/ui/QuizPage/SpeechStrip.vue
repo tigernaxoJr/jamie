@@ -1,31 +1,38 @@
 <template>
-  <q-btn
-    round
-    icon="volume_up"
-    size="sm"
-    @click="WordPronunciation(word)"
-    title="內建發音 (瀏覽器 TTS)"
-    class="q-ml-xs"
-  />
-  <q-btn
-    round
-    icon="headphones"
-    color="secondary"
-    size="sm"
-    @click="OpenGoogleTranslateTTS(word)"
-    title="Google 翻譯發音 (新分頁)"
-    class="q-ml-xs"
-  />
+  <span class="speech">
+    <q-btn
+      round
+      flat
+      dense
+      color="primary"
+      icon="volume_up"
+      title="聽發音"
+      aria-label="聽發音"
+      @click.stop="WordPronunciation(word)"
+    />
+    <q-btn
+      round
+      flat
+      dense
+      color="secondary"
+      icon="translate"
+      title="用 Google 翻譯聽發音（開新分頁）"
+      aria-label="用 Google 翻譯聽發音"
+      @click.stop="OpenGoogleTranslateTTS(word)"
+    />
+  </span>
 </template>
 
 <script setup lang="ts">
 import { OpenGoogleTranslateTTS, WordPronunciation } from '../../utils';
-interface IProps {
-  word: string;
-}
-withDefaults(defineProps<IProps>(), {
-  word: '',
-});
+
+withDefaults(defineProps<{ word?: string }>(), { word: '' });
 </script>
 
-<style scoped></style>
+<style scoped>
+.speech {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+}
+</style>

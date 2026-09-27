@@ -1,47 +1,41 @@
 <template>
   <q-page padding>
-    <div class="hub q-mx-auto">
-      <div class="text-h4 text-weight-bold q-mb-xs">🎮 遊戲中心</div>
-      <div class="text-subtitle1 text-grey-7 q-mb-lg">
-        邊玩邊背單字！遊戲會用你選的單字範圍出題。
-      </div>
+    <div class="page-container">
+      <PageTitle emoji="🎮" title="遊戲中心" subtitle="邊玩邊背單字！遊戲會用你選的主題出題" />
 
       <div class="grid">
-        <q-card
+        <router-link
           v-for="{ card, path } in gameEntries"
           :key="card.id"
-          v-ripple
-          class="game-card soft-shadow cursor-pointer"
-          @click="router.push(`/${path}`)"
+          :to="`/${path}`"
+          class="game app-card app-card--hover"
         >
-          <div class="banner" :class="`bg-${card.color}`">{{ card.icon }}</div>
-          <q-card-section>
-            <div class="row items-center no-wrap">
-              <div class="text-h6 text-weight-bold">{{ card.title }}</div>
+          <div class="game__art" :class="`bg-${card.color}`">
+            <span class="game__icon">{{ card.icon }}</span>
+          </div>
+          <div class="q-pa-md">
+            <div class="row items-center no-wrap q-mb-xs">
+              <div class="text-h6">{{ card.title }}</div>
               <q-space />
-              <q-chip dense outline :color="card.color">{{ card.skill }}</q-chip>
+              <span class="skill" :class="`text-${card.color}`">{{ card.skill }}</span>
             </div>
-            <div class="text-body2 text-grey-8 q-mt-xs">{{ card.description }}</div>
-            <div class="row items-center q-mt-sm text-caption">
+            <div class="text-muted">{{ card.description }}</div>
+            <div class="row items-center q-mt-sm text-caption text-weight-bold">
               <span v-if="card.desktopOnly" class="text-orange-9">💻 限電腦版</span>
               <q-space />
-              <span v-if="best[card.id]" class="text-weight-medium"
-                >🏅 最高分 {{ best[card.id] }}</span
-              >
+              <span v-if="best[card.id]">🏅 最高分 {{ best[card.id] }}</span>
             </div>
-          </q-card-section>
-        </q-card>
+          </div>
+        </router-link>
       </div>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import PageTitle from 'src/components/PageTitle.vue';
 import { gameEntries } from '../registry';
 import { bestScoreKey } from '../shared/useGameSession';
-
-const router = useRouter();
 
 const readBest = (id: string): number => {
   try {
@@ -54,24 +48,37 @@ const best = Object.fromEntries(gameEntries.map((e) => [e.card.id, readBest(e.ca
 </script>
 
 <style scoped>
-.hub {
-  max-width: 1000px;
-}
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
 }
-.game-card {
+.game {
+  display: block;
   overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+.game__art {
+  position: relative;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 2px, transparent 2px);
+  background-size: 18px 18px;
+}
+.game__icon {
+  font-size: 3.6rem;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.25));
   transition: transform 0.2s;
 }
-.game-card:hover {
-  transform: translateY(-4px);
+.game:hover .game__icon {
+  transform: scale(1.12) rotate(-6deg);
 }
-.banner {
-  font-size: 3.5rem;
-  text-align: center;
-  padding: 12px 0;
+.skill {
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 </style>

@@ -1,58 +1,113 @@
 <template>
-  <div class="q-pa-md full-width">
-    <q-separator inset class="q-my-md" />
-    <div class="text-subtitle1 q-mb-sm text-grey-8 text-center">測驗進度</div>
+  <div class="app-card q-pa-md">
+    <div class="row items-center q-mb-sm">
+      <div class="text-subtitle1 text-weight-bold">📊 學習狀況</div>
+      <q-space />
+      <button type="button" class="total" @click="$emit('clickStat', 'count')">
+        全部 {{ meta.count }} 字 ›
+      </button>
+    </div>
 
-    <div class="row q-col-gutter-sm justify-center">
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'count')">
-        <div class="text-caption text-grey-7">總單字數</div>
-        <div class="text-body1 text-weight-medium">{{ meta.count }}</div>
-      </div>
+    <div class="group-label text-negative">要加油 · 連續答錯</div>
+    <div class="tiles q-mb-sm">
+      <button
+        v-for="t in errorTiles"
+        :key="t.key"
+        type="button"
+        class="tile tile--bad"
+        @click="$emit('clickStat', t.key)"
+      >
+        <span class="tile__value">{{ meta[t.key] }}</span>
+        <span class="tile__label">{{ t.label }}</span>
+      </button>
+    </div>
 
-      <q-separator vertical spaced inset class="gt-sm" />
-
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'e1')">
-        <div class="text-caption text-grey-7">連答錯 1 次</div>
-        <div class="text-body1 text-negative text-weight-medium">{{ meta.e1 }}</div>
-      </div>
-
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'e2')">
-        <div class="text-caption text-grey-7">連答錯 2 次</div>
-        <div class="text-body1 text-negative text-weight-medium">{{ meta.e2 }}</div>
-      </div>
-
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'e3')">
-        <div class="text-caption text-grey-7">連答錯 3+ 次</div>
-        <div class="text-body1 text-negative text-weight-medium">{{ meta.e3 }}</div>
-      </div>
-
-      <q-separator vertical spaced inset class="gt-sm" />
-
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'c1')">
-        <div class="text-caption text-grey-7">連答對 1 次</div>
-        <div class="text-body1 text-positive text-weight-medium">{{ meta.c1 }}</div>
-      </div>
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'c2')">
-        <div class="text-caption text-grey-7">連答對 2 次</div>
-        <div class="text-body1 text-positive text-weight-medium">{{ meta.c2 }}</div>
-      </div>
-      <div class="col-6 col-md-auto text-center cursor-pointer" @click="$emit('clickStat', 'c3')">
-        <div class="text-caption text-grey-7">連答對 3+ 次</div>
-        <div class="text-body1 text-positive text-weight-medium">{{ meta.c3 }}</div>
-      </div>
+    <div class="group-label text-positive">越來越熟 · 連續答對</div>
+    <div class="tiles">
+      <button
+        v-for="t in correctTiles"
+        :key="t.key"
+        type="button"
+        class="tile tile--good"
+        @click="$emit('clickStat', t.key)"
+      >
+        <span class="tile__value">{{ meta[t.key] }}</span>
+        <span class="tile__label">{{ t.label }}</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { QuizMeta } from '../../domain';
-export interface IProps {
-  meta: QuizMeta;
-}
-withDefaults(defineProps<IProps>(), {});
+
+defineProps<{ meta: QuizMeta }>();
 defineEmits<{
   (e: 'clickStat', type: string): void;
 }>();
+
+type Key = Exclude<keyof QuizMeta, 'count'>;
+const errorTiles: { key: Key; label: string }[] = [
+  { key: 'e1', label: '1 次' },
+  { key: 'e2', label: '2 次' },
+  { key: 'e3', label: '3 次以上' },
+];
+const correctTiles: { key: Key; label: string }[] = [
+  { key: 'c1', label: '1 次' },
+  { key: 'c2', label: '2 次' },
+  { key: 'c3', label: '3 次以上 ⭐' },
+];
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.total {
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 800;
+  color: $primary;
+  cursor: pointer;
+}
+.group-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 14px;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.12s;
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+.tile--bad {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.tile--good {
+  background: #f0fdf4;
+  color: #15803d;
+}
+.tile__value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+.tile__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+</style>
