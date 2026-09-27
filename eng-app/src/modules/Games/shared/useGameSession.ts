@@ -4,6 +4,7 @@ import { recordWordAnswer } from 'src/modules/Vocabulary';
 import { grantGameCandies } from 'src/modules/Adventure';
 import type { GameInfo, GameResult, GameWord } from './types';
 import { loadGameWords, shuffle } from './words';
+import { reviewDeck } from './review';
 
 export type GamePhase = 'setup' | 'playing' | 'result';
 
@@ -25,13 +26,26 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
   const availableWords = computed(() => loadGameWords(categories.value, info.wordFilter));
   const canStart = computed(() => availableWords.value.length >= info.minWords);
 
-  const start = () => {
-    if (!canStart.value) return;
+  /** 這局是不是「只練答錯的字」 */
+  const reviewing = ref(false);
+
+  const begin = (list: GameWord[], review: boolean) => {
     result.value = null;
     isNewBest.value = false;
     correctCount = 0;
+    reviewing.value = review;
     phase.value = 'playing';
-    onStart(shuffle(availableWords.value));
+    onStart(shuffle(list));
+  };
+
+  const start = () => {
+    if (canStart.value) begin(availableWords.value, false);
+  };
+
+  /** 複習：答錯的字大量出現，再補幾個其他字，讓遊戲有足夠的選項 */
+  const startReview = (words: readonly GameWord[]) => {
+    if (words.length === 0) return start();
+    begin(reviewDeck(words, availableWords.value, info.minWords), true);
   };
 
   const finish = (r: GameResult) => {
@@ -66,6 +80,8 @@ export function useGameSession(info: GameInfo, onStart: (words: GameWord[]) => v
     canStart,
     setCategories,
     start,
+    startReview,
+    reviewing,
     finish,
     toSetup,
     record,

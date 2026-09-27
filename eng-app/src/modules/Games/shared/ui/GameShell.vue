@@ -87,6 +87,9 @@
         @click="session.phase === 'playing' ? $emit('quit') : session.toSetup()"
       />
       <div class="stage__title ellipsis">{{ info.icon }} {{ info.title }}</div>
+      <span v-if="session.reviewing && session.phase === 'playing'" class="stage__review"
+        >🔁 複習答錯的字</span
+      >
       <q-space />
       <q-btn
         flat
@@ -109,6 +112,7 @@
         :is-new-best="session.isNewBest"
         @replay="session.start"
         @setup="session.toSetup"
+        @review="session.result && session.startReview(session.result.missed)"
       >
         <template v-if="$slots['result-actions']" #actions>
           <slot name="result-actions" />
@@ -298,6 +302,15 @@ const toggleMute = () => {
 .stage__title {
   font-weight: 900;
   font-size: 1.1rem;
+}
+.stage__review {
+  flex-shrink: 0;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 .stage__body {
   flex: 1;

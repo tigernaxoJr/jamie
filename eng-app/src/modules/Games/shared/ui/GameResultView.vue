@@ -61,6 +61,14 @@
           </q-item-section>
         </q-item>
       </q-list>
+      <q-btn
+        class="full-width q-mt-sm"
+        outline
+        color="deep-orange"
+        icon="school"
+        :label="`只練這 ${result.missed.length} 個字，再玩一次`"
+        @click="$emit('review')"
+      />
     </div>
 
     <div class="column q-gutter-sm q-mt-lg">
@@ -86,7 +94,7 @@ import { CORRECT_PER_CANDY, candyCount } from 'src/modules/Adventure';
 import type { GameResult } from '../types';
 
 defineProps<{ result: GameResult; bestScore: number; isNewBest: boolean }>();
-defineEmits<{ (e: 'replay'): void; (e: 'setup'): void }>();
+defineEmits<{ (e: 'replay'): void; (e: 'setup'): void; (e: 'review'): void }>();
 </script>
 
 <style scoped>
