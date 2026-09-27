@@ -13,6 +13,7 @@
       class="stat-table"
       no-data-label="沒有單字"
       rows-per-page-label="每頁行數"
+      :rows-per-page-options="[10, 20, 50]"
     >
       <template v-slot:top-right>
         <q-input borderless dense debounce="300" v-model="filter" placeholder="搜尋單字">
