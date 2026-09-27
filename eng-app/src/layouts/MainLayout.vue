@@ -7,6 +7,17 @@
           <span class="brand__name">Jamie's English</span>
         </router-link>
         <q-space />
+        <q-btn
+          flat
+          round
+          dense
+          icon="family_restroom"
+          color="grey-7"
+          class="q-mr-sm"
+          to="/parent"
+          aria-label="家長專區"
+          title="家長專區"
+        />
         <div class="pill" :title="`已熟練 ${mastered} 個單字`">⭐ {{ mastered }}</div>
       </q-toolbar>
       <SpeechNotice />
