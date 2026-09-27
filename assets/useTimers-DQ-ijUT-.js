@@ -1,0 +1,1 @@
+import{bA as n}from"./index-1LKmb5kN.js";function i(){const e=new Set,s=(r,c)=>{const t=setTimeout(()=>{e.delete(t),r()},c);e.add(t)},o=()=>{e.forEach(clearTimeout),e.clear()};return n(o),{later:s,clearAll:o}}export{i as u};
