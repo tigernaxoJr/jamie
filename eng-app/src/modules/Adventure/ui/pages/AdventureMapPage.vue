@@ -113,7 +113,10 @@
             v-for="(area, i) in AREAS"
             :key="area.id"
             class="area app-card"
-            :class="{ 'area--locked': !store.isAreaUnlocked(area) }"
+            :class="{
+              'area--locked': !store.isAreaUnlocked(area),
+              'area--complete': store.isAreaComplete(area),
+            }"
           >
             <div class="area__scene" :style="{ background: area.background }">
               <span class="area__emoji">{{ area.emoji }}</span>
@@ -141,7 +144,21 @@
               <div class="row items-center q-mt-sm text-caption text-weight-bold">
                 <span>字靈 Lv {{ area.levels[0] }}～{{ area.levels[1] }}</span>
                 <q-space />
-                <span>已收服 {{ store.caughtInArea(area) }} / {{ area.species.length }}</span>
+                <span v-if="store.isAreaComplete(area)" class="complete-tag">👑 全收集</span>
+                <span v-else
+                  >已收服 {{ store.caughtInArea(area) }} / {{ area.species.length }}</span
+                >
+              </div>
+              <q-btn
+                v-if="store.isAreaComplete(area) && !store.hasClaimedArea(area)"
+                class="btn-3d full-width q-mt-sm"
+                color="amber-8"
+                icon="redeem"
+                :label="`領取全收集獎勵 🍬 ${AREA_COMPLETE_CANDY} 顆`"
+                @click="claim(area)"
+              />
+              <div v-if="justClaimed === area.id" class="claimed q-mt-sm">
+                🎉 拿到 🍬 {{ AREA_COMPLETE_CANDY }} 顆糖果，剛好可以孵一顆蛋！
               </div>
               <template v-if="store.isAreaUnlocked(area)">
                 <q-btn
@@ -185,6 +202,8 @@ import { WordPronunciation } from 'src/modules/Vocabulary';
 import { sfx } from 'src/modules/Games/shared';
 import { AREAS, getArea } from '../../domain/areas';
 import { LOST_MIN } from '../../domain/lost';
+import { AREA_COMPLETE_CANDY } from '../../domain/egg';
+import type { Area } from '../../domain/areas';
 import { LEGEND, isLegendUnlocked } from '../../domain/legend';
 import { SPECIES, STARTER_IDS, getSpecies } from '../../domain/species';
 import { GYM_REQUIRED_CAUGHT, STARTER_LEVEL } from '../../domain/rules';
@@ -213,9 +232,33 @@ const confirmStarter = () => {
   sfx.win();
 };
 const legendOpen = computed(() => isLegendUnlocked(store.badgeCount));
+
+/** 剛領完全收集獎勵的地區（顯示領到的糖果） */
+const justClaimed = ref<string | null>(null);
+const claim = (area: Area) => {
+  if (store.claimAreaReward(area) === null) return;
+  justClaimed.value = area.id;
+  sfx.win();
+};
 </script>
 
 <style scoped lang="scss">
+.area--complete {
+  box-shadow:
+    0 0 0 3px #f59e0b,
+    0 6px 18px rgba(245, 158, 11, 0.35);
+}
+.claimed {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+  text-align: center;
+}
+.complete-tag {
+  color: #b45309;
+}
 .legend-card {
   display: flex;
   flex-wrap: wrap;

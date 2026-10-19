@@ -4,6 +4,9 @@ import type { Rarity } from './species';
 /** 一顆字靈蛋要幾顆糖果 */
 export const EGG_COST = 15;
 
+/** 收齊一個地區所有字靈的獎勵：剛好孵一顆蛋的糖果 */
+export const AREA_COMPLETE_CANDY = EGG_COST;
+
 /** 蛋孵出來時，有多少機率優先孵出還沒收服的字靈 */
 const NEW_SPECIES_CHANCE = 0.7;
 

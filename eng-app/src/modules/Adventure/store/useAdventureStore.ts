@@ -15,7 +15,7 @@ import {
   xpToNext,
 } from '../domain/rules';
 import { CANDY_XP, RELEASE_CANDY } from '../domain/candy';
-import { EGG_COST, hatchEgg } from '../domain/egg';
+import { AREA_COMPLETE_CANDY, EGG_COST, hatchEgg } from '../domain/egg';
 import { getSpecies } from '../domain/species';
 import { rollShiny } from '../domain/shiny';
 import { addLostWord } from '../domain/lost';
@@ -49,6 +49,8 @@ interface AdventureSave {
   recentAnswers: boolean[];
   /** 探險中答錯、還沒找回的單字（迷路字靈出題用） */
   lostWords: GameWord[];
+  /** 已經領過全收集獎勵的地區 id */
+  completedAreas: string[];
 }
 
 const RECENT_SIZE = 10;
@@ -61,6 +63,7 @@ const emptySave = (): AdventureSave => ({
   seen: [],
   recentAnswers: [],
   lostWords: [],
+  completedAreas: [],
 });
 
 const STORAGE_KEY = 'adventure-save';
@@ -279,6 +282,17 @@ export const useAdventureStore = defineStore('adventure', () => {
 
   const caughtInArea = (area: Area) => area.species.filter((id) => isCaught(id)).length;
 
+  /** 這區的字靈全部收服了 */
+  const isAreaComplete = (area: Area) => caughtInArea(area) === area.species.length;
+  const hasClaimedArea = (area: Area) => save.value.completedAreas.includes(area.id);
+  /** 領取全收集獎勵，回傳拿到的糖果；還沒收齊或領過了回傳 null */
+  const claimAreaReward = (area: Area): number | null => {
+    if (!isAreaComplete(area) || hasClaimedArea(area)) return null;
+    save.value.completedAreas.push(area.id);
+    grantBonusCandies(AREA_COMPLETE_CANDY);
+    return AREA_COMPLETE_CANDY;
+  };
+
   const hasBadge = (areaId: string) => save.value.badges.includes(areaId);
   const earnBadge = (areaId: string) => {
     if (!hasBadge(areaId)) save.value.badges.push(areaId);
@@ -333,6 +347,9 @@ export const useAdventureStore = defineStore('adventure', () => {
     lostWords,
     findLostWord,
     caughtInArea,
+    isAreaComplete,
+    hasClaimedArea,
+    claimAreaReward,
     hasBadge,
     earnBadge,
     canChallengeGym,
