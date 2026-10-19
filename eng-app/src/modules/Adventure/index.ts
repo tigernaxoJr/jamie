@@ -11,6 +11,7 @@ export const adventureRoutes: RouteRecordRaw[] = [
   { path: 'adventure/team', component: () => import('./ui/pages/TeamPage.vue') },
   { path: 'adventure/gym/:areaId', component: () => import('./ui/pages/GymPage.vue') },
   { path: 'adventure/lost', component: () => import('./ui/pages/LostPage.vue') },
+  { path: 'adventure/legend', component: () => import('./ui/pages/LegendPage.vue') },
   {
     path: 'adventure/explore/:areaId',
     component: () => import('./ui/pages/EncounterPage.vue'),

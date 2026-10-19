@@ -71,6 +71,38 @@
         </div>
         <div v-else class="q-mb-lg" />
 
+        <div
+          class="legend-card app-card q-pa-md q-mb-lg"
+          :class="{ 'legend-card--open': legendOpen }"
+        >
+          <CreatureSvg
+            :species="LEGEND"
+            :size="56"
+            :silhouette="!legendOpen && !store.isSeen(LEGEND.id)"
+            :animated="legendOpen"
+          />
+          <div class="col">
+            <div class="text-subtitle1 text-weight-bold">⭐ 傳說挑戰</div>
+            <div class="text-caption text-muted">
+              {{
+                legendOpen
+                  ? `傳說字靈${LEGEND.name}在等你！所有招式都要拼字，沒有提示。`
+                  : `集滿 ${AREAS.length} 個徽章，傳說字靈就會現身（目前 ${store.badgeCount} 個）`
+              }}
+            </div>
+          </div>
+          <q-btn
+            v-if="legendOpen"
+            unelevated
+            no-caps
+            color="amber-8"
+            class="text-weight-bold"
+            icon="emoji_events"
+            label="去挑戰"
+            to="/adventure/legend"
+          />
+        </div>
+
         <div class="row items-center q-mb-sm">
           <div class="text-h6">🗺️ 探險地圖</div>
           <q-space />
@@ -153,6 +185,7 @@ import { WordPronunciation } from 'src/modules/Vocabulary';
 import { sfx } from 'src/modules/Games/shared';
 import { AREAS, getArea } from '../../domain/areas';
 import { LOST_MIN } from '../../domain/lost';
+import { LEGEND, isLegendUnlocked } from '../../domain/legend';
 import { SPECIES, STARTER_IDS, getSpecies } from '../../domain/species';
 import { GYM_REQUIRED_CAUGHT, STARTER_LEVEL } from '../../domain/rules';
 import { useAdventureStore } from '../../store/useAdventureStore';
@@ -179,9 +212,19 @@ const confirmStarter = () => {
   store.catchCreature(picked.value, STARTER_LEVEL);
   sfx.win();
 };
+const legendOpen = computed(() => isLegendUnlocked(store.badgeCount));
 </script>
 
 <style scoped lang="scss">
+.legend-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.legend-card--open {
+  border: 2px solid #f59e0b;
+}
 .lost-card {
   display: flex;
   flex-wrap: wrap;

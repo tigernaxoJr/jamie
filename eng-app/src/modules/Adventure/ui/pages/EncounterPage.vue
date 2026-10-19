@@ -178,6 +178,7 @@ import { type Rarity, type Species, RARITY_NAME, getSpecies } from '../../domain
 import { BATTLE_WIN_ENERGY, CAPTURE_XP } from '../../domain/rules';
 import { RELEASE_CANDY } from '../../domain/candy';
 import { rollShiny } from '../../domain/shiny';
+import { canAppearInWild } from '../../domain/legend';
 import { candyCount } from '../../store/candy';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
@@ -220,7 +221,7 @@ const WEIGHT: Record<Rarity, number> = { common: 6, uncommon: 3, rare: 1, legend
 /** 依稀有度權重抽出野生字靈 */
 const rollWild = () => {
   if (!area.value) return;
-  const pool = area.value.species.map(getSpecies);
+  const pool = area.value.species.map(getSpecies).filter(canAppearInWild);
   const total = pool.reduce((sum, s) => sum + WEIGHT[s.rarity], 0);
   let r = Math.random() * total;
   const species = pool.find((s) => (r -= WEIGHT[s.rarity]) < 0) ?? pool[0]!;

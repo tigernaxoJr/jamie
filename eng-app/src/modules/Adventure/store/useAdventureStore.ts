@@ -19,6 +19,7 @@ import { EGG_COST, hatchEgg } from '../domain/egg';
 import { getSpecies } from '../domain/species';
 import { rollShiny } from '../domain/shiny';
 import { addLostWord } from '../domain/lost';
+import { canAppearInWild } from '../domain/legend';
 import { trackQuest } from 'src/modules/Quests';
 import { grantBonusCandies, spendCandies } from './candy';
 
@@ -293,7 +294,9 @@ export const useAdventureStore = defineStore('adventure', () => {
   const hatch = (): { creature: OwnedCreature; isNew: boolean } | null => {
     if (!hasStarter.value) return null;
     const candidates = unlockedAreas.value.flatMap((area) =>
-      area.species.map((speciesId) => ({ speciesId, rarity: getSpecies(speciesId).rarity, area })),
+      area.species
+        .filter((id) => canAppearInWild(getSpecies(id)))
+        .map((speciesId) => ({ speciesId, rarity: getSpecies(speciesId).rarity, area })),
     );
     const result = hatchEgg(candidates, isCaught);
     if (!result || !spendCandies(EGG_COST)) return null;

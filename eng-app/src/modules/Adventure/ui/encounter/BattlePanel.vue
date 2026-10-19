@@ -162,6 +162,8 @@ const props = defineProps<{
   choicePool?: GameWord[] | undefined;
   background: string;
   mode: 'wild' | 'gym';
+  /** 困難模式：所有招式都是看中文拼英文、沒有提示（傳說挑戰） */
+  hard?: boolean | undefined;
   /** 開場訊息 */
   intro: string;
 }>();
@@ -227,13 +229,16 @@ let currentMove: Action = 'normal';
 
 const activeName = () => creatureName(activeSpecies.value, active.value.stage);
 
+/** 招式說明的題型；困難模式一律拼字 */
+const ask = (normal: string) => (props.hard ? '拼字（沒提示）' : normal);
+
 const moves = computed(() => {
   const el = ELEMENTS[activeSpecies.value.element];
   return [
     {
       kind: 'normal' as const,
       name: '撞擊',
-      desc: `看中文拼英文（有提示） · 威力 ${MOVE_POWER.normal.hit}`,
+      desc: `${ask('看中文拼英文（有提示）')} · 威力 ${MOVE_POWER.normal.hit}`,
       color: 'grey-2',
       textColor: 'dark',
       disabled: false,
@@ -241,7 +246,7 @@ const moves = computed(() => {
     {
       kind: 'element' as const,
       name: el.move,
-      desc: `聽發音選拼法 · 威力 ${MOVE_POWER.element.hit}`,
+      desc: `${ask('聽發音選拼法')} · 威力 ${MOVE_POWER.element.hit}`,
       color: 'primary',
       textColor: 'white',
       disabled: false,
@@ -260,7 +265,7 @@ const moves = computed(() => {
     {
       kind: 'guard' as const,
       name: '防禦',
-      desc: `聽發音選中文 · 下次受到的傷害 -${GUARD_REDUCTION * 100}%`,
+      desc: `${ask('聽發音選中文')} · 下次受到的傷害 -${GUARD_REDUCTION * 100}%`,
       color: 'teal',
       textColor: 'white',
       disabled: false,
@@ -288,8 +293,8 @@ const useMove = (kind: Action) => {
   currentMove = kind;
   const word = deck.draw();
   // 必殺技不給提示；撞擊依熟練度給提示
-  const streak = kind === 'ultimate' ? null : getCorrectStreak(word.english);
-  const qKind = kind === 'guard' ? GUARD_KIND : MOVE_KIND[kind];
+  const streak = kind === 'ultimate' || props.hard ? null : getCorrectStreak(word.english);
+  const qKind = props.hard ? 'zh-spell' : kind === 'guard' ? GUARD_KIND : MOVE_KIND[kind];
   question.value = makeQuestion(qKind, word, props.choicePool ?? props.words, streak);
   phase.value = 'question';
 };
