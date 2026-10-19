@@ -1,0 +1,1 @@
+import{cs as n}from"./index-3D0ntGnV.js";function i(){const e=new Set,s=(c,r)=>{const t=setTimeout(()=>{e.delete(t),c()},r);e.add(t)},o=()=>{e.forEach(clearTimeout),e.clear()};return n(o),{later:s,clearAll:o}}export{i as u};
