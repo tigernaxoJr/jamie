@@ -6,7 +6,7 @@
         class="scene__creature"
         :class="{ shaking: phase === 'throwing', gone: phase === 'caught' }"
       >
-        <CreatureSvg :species="species" :size="150" />
+        <CreatureSvg :species="species" :size="150" :shiny="shiny" />
       </div>
       <div
         v-if="phase === 'throwing' || phase === 'caught'"
@@ -157,6 +157,7 @@ const props = defineProps<{
   background: string;
   /** 打贏對戰後的額外能量 */
   bonusEnergy: number;
+  shiny?: boolean | undefined;
 }>();
 const emit = defineEmits<{ (e: 'caught'): void; (e: 'leave'): void }>();
 

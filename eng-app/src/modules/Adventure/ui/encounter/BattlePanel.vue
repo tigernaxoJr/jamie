@@ -13,6 +13,7 @@
         />
         <BattleFighter
           :species="enemy.species"
+          :shiny="enemy.shiny"
           :creature-key="enemyIdx"
           :fx="fx === 'enemyHit' ? 'hit' : ''"
           :fainted="enemyHp <= 0"
@@ -25,6 +26,7 @@
           :species="activeSpecies"
           :creature-key="active.uid"
           :evolved="(active.stage ?? 1) >= 2"
+          :shiny="active.shiny"
           flip
           :fx="fx === 'partnerHit' ? 'hit' : fx === 'attack' ? 'lunge' : ''"
           :fainted="activeHp <= 0"

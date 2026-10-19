@@ -15,6 +15,7 @@
             :species="getSpecies(c.speciesId)"
             :size="80"
             :evolved="(c.stage ?? 1) >= 2"
+            :shiny="c.shiny"
           />
           <div class="text-weight-bold ellipsis full-width text-center">
             {{ creatureName(getSpecies(c.speciesId), c.stage) }}

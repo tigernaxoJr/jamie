@@ -47,6 +47,7 @@
                 :size="60"
                 :animated="false"
                 :evolved="(c.stage ?? 1) >= 2"
+                :shiny="c.shiny"
               />
               <div class="text-caption text-weight-bold">
                 {{ creatureName(getSpecies(c.speciesId), c.stage) }} Lv {{ c.level }}

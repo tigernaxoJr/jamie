@@ -8,6 +8,7 @@
       'creature--silhouette': silhouette,
       'creature--idle': animated,
       'creature--flip': flip,
+      'creature--shiny': shiny && !silhouette,
     }"
     role="img"
     :aria-label="silhouette ? '未知的字靈' : species.name"
@@ -126,6 +127,18 @@
       stroke="rgba(0,0,0,0.3)"
       stroke-width="1.5"
     />
+    <!-- 色違的閃光 -->
+    <g
+      v-if="shiny && !silhouette"
+      class="sparkles"
+      fill="#fde68a"
+      stroke="#f59e0b"
+      stroke-width="1"
+    >
+      <path :d="starPath(16, 34, 9)" class="sparkle" />
+      <path :d="starPath(106, 60, 7)" class="sparkle sparkle--2" />
+      <path :d="starPath(20, 86, 6)" class="sparkle sparkle--3" />
+    </g>
   </svg>
 </template>
 
@@ -133,6 +146,7 @@
 import { computed } from 'vue';
 import type { Species } from '../domain/species';
 import { ELEMENTS } from '../domain/elements';
+import { shinyLook } from '../domain/shiny';
 import { GEOMETRY, LINE, darken, starPath } from './creature/geometry';
 import CreatureBackParts from './creature/CreatureBackParts.vue';
 import CreatureFrontParts from './creature/CreatureFrontParts.vue';
@@ -148,11 +162,15 @@ const props = withDefaults(
     flip?: boolean;
     /** 進化後：加上屬性光環與星星 */
     evolved?: boolean;
+    /** 色違：換顏色並加上閃光 */
+    shiny?: boolean | undefined;
   }>(),
-  { size: 120, silhouette: false, animated: true, flip: false, evolved: false },
+  { size: 120, silhouette: false, animated: true, flip: false, evolved: false, shiny: false },
 );
 
-const look = computed(() => props.species.look);
+const look = computed(() =>
+  props.shiny && !props.silhouette ? shinyLook(props.species.look) : props.species.look,
+);
 const accent = computed(() => look.value.accent ?? darken(look.value.color));
 const dark = computed(() => darken(look.value.color, 0.25));
 const g = computed(() => GEOMETRY[look.value.body]);
@@ -177,6 +195,28 @@ const elementColor = computed(() => ELEMENTS[props.species.element].color);
 }
 .creature--silhouette .aura {
   display: none;
+}
+.sparkle {
+  animation: twinkle 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.sparkle--2 {
+  animation-delay: 0.5s;
+}
+.sparkle--3 {
+  animation-delay: 1s;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 }
 .shadow {
   fill: rgba(0, 0, 0, 0.12);

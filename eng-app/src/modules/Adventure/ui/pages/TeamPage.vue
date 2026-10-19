@@ -30,6 +30,7 @@
                 :size="56"
                 :animated="false"
                 :evolved="(c.stage ?? 1) >= 2"
+                :shiny="c.shiny"
               />
               <span class="slot__name ellipsis">{{ nameOf(c) }}</span>
               <span class="row items-center no-wrap q-gutter-x-xs">
@@ -76,6 +77,7 @@
             :size="72"
             :animated="false"
             :evolved="(c.stage ?? 1) >= 2"
+            :shiny="c.shiny"
           />
           <span class="card__name ellipsis">{{ nameOf(c) }}</span>
           <span class="row items-center no-wrap q-gutter-x-xs">

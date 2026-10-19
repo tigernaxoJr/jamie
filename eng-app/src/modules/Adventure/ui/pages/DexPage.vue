@@ -1,12 +1,7 @@
 <template>
   <q-page padding>
     <div class="page-container">
-      <PageTitle
-        emoji="📖"
-        title="字靈圖鑑"
-        :subtitle="`發現 ${seenCount} 種 · 收服 ${caughtCount} / ${SPECIES.length} 種`"
-        back="/adventure"
-      />
+      <PageTitle emoji="📖" title="字靈圖鑑" :subtitle="subtitle" back="/adventure" />
 
       <q-linear-progress
         :value="caughtCount / SPECIES.length"
@@ -29,6 +24,7 @@
         >
           <span class="entry__no">No.{{ pad(s.id) }}</span>
           <span v-if="store.isCaught(s.id)" class="entry__caught" title="已收服">✔</span>
+          <span v-if="store.isShinyCaught(s.id)" class="entry__shiny" title="已收服色違">✨</span>
           <CreatureSvg
             :species="s"
             :size="84"
@@ -49,7 +45,20 @@
           <q-btn flat round icon="close" v-close-popup aria-label="關閉" />
         </div>
         <div class="text-center">
-          <CreatureSvg :species="selected" :size="160" />
+          <CreatureSvg :species="selected" :size="160" :shiny="showShiny" />
+          <div v-if="store.isShinyCaught(selected.id)" class="q-mt-xs">
+            <q-btn-toggle
+              v-model="showShiny"
+              dense
+              rounded
+              unelevated
+              toggle-color="primary"
+              :options="[
+                { label: '一般', value: false },
+                { label: '✨ 色違', value: true },
+              ]"
+            />
+          </div>
           <div class="text-h5 q-mt-sm">{{ selected.name }}</div>
           <div class="text-subtitle1 text-weight-bold">
             {{ selected.english }}
@@ -89,6 +98,7 @@
                 :size="44"
                 :animated="false"
                 :evolved="(c.stage ?? 1) >= 2"
+                :shiny="c.shiny"
               />
               <div class="q-ml-sm">
                 <div class="text-weight-bold">{{ creatureName(selected, c.stage) }}</div>
@@ -187,6 +197,11 @@ const store = useAdventureStore();
 
 const seenCount = computed(() => SPECIES.filter((s) => store.isSeen(s.id)).length);
 const caughtCount = computed(() => SPECIES.filter((s) => store.isCaught(s.id)).length);
+const subtitle = computed(
+  () =>
+    `發現 ${seenCount.value} 種 · 收服 ${caughtCount.value} / ${SPECIES.length} 種` +
+    (store.shinyCount > 0 ? ` · ✨ 色違 ${store.shinyCount} 種` : ''),
+);
 
 const pad = (n: number) => String(n).padStart(3, '0');
 
@@ -202,8 +217,11 @@ const doEvolve = (c: OwnedCreature) => {
   if (store.evolve(c.uid)) sfx.win();
 };
 
+const showShiny = ref(false);
+
 const open = (s: Species) => {
   selected.value = s;
+  showShiny.value = false;
   dialog.value = true;
   WordPronunciation(s.english);
 };
@@ -254,6 +272,12 @@ const open = (s: Species) => {
   color: #fff;
   font-size: 0.75rem;
   line-height: 22px;
+}
+.entry__shiny {
+  position: absolute;
+  top: 30px;
+  right: 8px;
+  font-size: 0.9rem;
 }
 .entry__name {
   font-weight: 800;

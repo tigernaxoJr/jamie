@@ -17,6 +17,7 @@
           :size="56"
           :animated="false"
           :evolved="(c.stage ?? 1) >= 2"
+          :shiny="c.shiny"
         />
         <span class="text-weight-bold">{{ creatureName(getSpecies(c.speciesId), c.stage) }}</span>
         <span class="text-caption">Lv {{ c.level }} · ❤️ {{ hp[c.uid] ?? 0 }}</span>

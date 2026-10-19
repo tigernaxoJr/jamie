@@ -5,6 +5,7 @@
       :species="species"
       :size="120"
       :evolved="evolved"
+      :shiny="shiny"
       :flip="flip"
     />
     <span v-if="popup" :key="popup.id" class="popup">{{ popup.text }}</span>
@@ -22,6 +23,7 @@ withDefaults(
     /** 換人上場時換 key，讓圖重新出現 */
     creatureKey: string | number;
     evolved?: boolean;
+    shiny?: boolean | undefined;
     /** 面向左邊（我方字靈） */
     flip?: boolean;
     fx: '' | 'hit' | 'lunge';
@@ -29,7 +31,7 @@ withDefaults(
     /** 換新的 id 就會重播飄字動畫 */
     popup: { id: number; text: string } | null;
   }>(),
-  { evolved: false, flip: false },
+  { evolved: false, shiny: false, flip: false },
 );
 </script>
 

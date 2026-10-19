@@ -76,6 +76,7 @@ export const STARTER_LEVEL = 3;
 export interface Opponent {
   species: Species;
   level: number;
+  shiny?: boolean;
 }
 
 export type MoveKind = 'normal' | 'element' | 'ultimate';

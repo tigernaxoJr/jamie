@@ -17,6 +17,7 @@ import {
 import { CANDY_XP, RELEASE_CANDY } from '../domain/candy';
 import { EGG_COST, hatchEgg } from '../domain/egg';
 import { getSpecies } from '../domain/species';
+import { rollShiny } from '../domain/shiny';
 import { trackQuest } from 'src/modules/Quests';
 import { grantBonusCandies, spendCandies } from './candy';
 
@@ -28,6 +29,8 @@ export interface OwnedCreature {
   caughtAt: number;
   /** 1：一般；2：進化後（舊存檔沒有這個欄位，視為 1） */
   stage?: number;
+  /** 色違字靈（舊存檔沒有這個欄位，視為 false） */
+  shiny?: boolean;
 }
 
 interface AdventureSave {
@@ -165,7 +168,13 @@ export const useAdventureStore = defineStore('adventure', () => {
     if (!save.value.seen.includes(speciesId)) save.value.seen.push(speciesId);
   };
 
-  const catchCreature = (speciesId: number, level: number): OwnedCreature => {
+  const shinyCaughtIds = computed(
+    () => new Set(save.value.creatures.filter((c) => c.shiny).map((c) => c.speciesId)),
+  );
+  const isShinyCaught = (speciesId: number) => shinyCaughtIds.value.has(speciesId);
+  const shinyCount = computed(() => shinyCaughtIds.value.size);
+
+  const catchCreature = (speciesId: number, level: number, shiny = false): OwnedCreature => {
     const c: OwnedCreature = {
       uid: newUid(),
       speciesId,
@@ -173,6 +182,7 @@ export const useAdventureStore = defineStore('adventure', () => {
       xp: 0,
       caughtAt: Date.now(),
       stage: 1,
+      ...(shiny ? { shiny: true } : {}),
     };
     save.value.creatures.push(c);
     markSeen(speciesId);
@@ -275,7 +285,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     const result = hatchEgg(candidates, isCaught);
     if (!result || !spendCandies(EGG_COST)) return null;
     const isNew = !isCaught(result.speciesId);
-    return { creature: catchCreature(result.speciesId, result.level), isNew };
+    return { creature: catchCreature(result.speciesId, result.level, rollShiny()), isNew };
   };
   const badgeCount = computed(() => save.value.badges.filter((id) => getArea(id)).length);
 
@@ -294,6 +304,8 @@ export const useAdventureStore = defineStore('adventure', () => {
     setPartner,
     isCaught,
     isSeen,
+    isShinyCaught,
+    shinyCount,
     markSeen,
     catchCreature,
     releaseDuplicate,

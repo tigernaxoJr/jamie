@@ -7,10 +7,11 @@
       <template v-if="phase === 'intro'">
         <div class="scene app-card" :style="{ background: area.background }">
           <div class="appear">
-            <CreatureSvg :species="wild.species" :size="160" />
+            <CreatureSvg :species="wild.species" :size="160" :shiny="wild.shiny" />
           </div>
         </div>
         <div class="app-card q-pa-md q-mt-md text-center">
+          <div v-if="wild.shiny" class="shiny-banner">✨ 是很少見的色違字靈！</div>
           <div class="text-h6">
             野生的
             <span class="text-primary">{{ wild.species.name }}</span>
@@ -21,7 +22,9 @@
             <ElementBadge :element="wild.species.element" />
             <span class="pill">{{ RARITY_NAME[wild.species.rarity] }}</span>
             <q-chip
-              v-if="store.isCaught(wild.species.id)"
+              v-if="
+                wild.shiny ? store.isShinyCaught(wild.species.id) : store.isCaught(wild.species.id)
+              "
               dense
               color="positive"
               text-color="white"
@@ -66,6 +69,7 @@
         :words="words"
         :background="area.background"
         :bonus-energy="bonusEnergy"
+        :shiny="wild.shiny"
         @caught="onCaught"
         @leave="nextEncounter"
       />
@@ -86,8 +90,10 @@
 
       <!-- 抓到了 -->
       <div v-else-if="phase === 'caught'" class="app-card q-pa-lg text-center">
-        <div class="text-h5">🎉 收服了{{ wild.species.name }}！</div>
-        <CreatureSvg :species="wild.species" :size="150" class="q-my-md" />
+        <div class="text-h5">
+          🎉 收服了{{ wild.shiny ? '色違的' : '' }}{{ wild.species.name }}！
+        </div>
+        <CreatureSvg :species="wild.species" :size="150" :shiny="wild.shiny" class="q-my-md" />
         <div class="text-weight-bold">
           No.{{ String(wild.species.id).padStart(3, '0') }} · {{ wild.species.english }}
           <q-btn
@@ -102,14 +108,17 @@
           （{{ wild.species.meaning }}）
         </div>
         <div v-if="isNew" class="pill q-mt-sm">📖 新登錄到圖鑑！</div>
+        <div v-if="isNewShiny" class="pill q-mt-sm q-ml-xs">✨ 圖鑑多了色違紀錄！</div>
         <div v-if="joinedTeam && releasedCandies === null" class="pill q-mt-sm q-ml-xs">
           🤝 已加入隊伍
         </div>
         <div class="text-caption text-muted q-mt-sm">{{ wild.species.description }}</div>
         <!-- 重複收服：可以放生換糖果 -->
-        <div v-if="!isNew" class="release q-mt-md">
+        <div v-if="!isNew && !wild.shiny" class="release q-mt-md">
           <template v-if="releasedCandies === null">
-            <div class="text-caption text-muted">已經有{{ wild.species.name }}了，要放生換糖果嗎？</div>
+            <div class="text-caption text-muted">
+              已經有{{ wild.species.name }}了，要放生換糖果嗎？
+            </div>
             <q-btn
               class="btn-3d q-mt-xs"
               color="pink-5"
@@ -168,6 +177,7 @@ import { getArea } from '../../domain/areas';
 import { type Rarity, type Species, RARITY_NAME, getSpecies } from '../../domain/species';
 import { BATTLE_WIN_ENERGY, CAPTURE_XP } from '../../domain/rules';
 import { RELEASE_CANDY } from '../../domain/candy';
+import { rollShiny } from '../../domain/shiny';
 import { candyCount } from '../../store/candy';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
@@ -190,9 +200,10 @@ const words = computed(() => (area.value ? wordsForArea(area.value) : []));
 
 type Phase = 'intro' | 'capture' | 'battle' | 'caught' | 'lost';
 const phase = ref<Phase>('intro');
-const wild = shallowRef<{ species: Species; level: number } | null>(null);
+const wild = shallowRef<{ species: Species; level: number; shiny: boolean } | null>(null);
 const bonusEnergy = ref(0);
 const isNew = ref(false);
+const isNewShiny = ref(false);
 const joinedTeam = ref(false);
 const caughtUid = ref<string | null>(null);
 /** 放生拿到的糖果；還沒放生是 null */
@@ -214,7 +225,7 @@ const rollWild = () => {
   let r = Math.random() * total;
   const species = pool.find((s) => (r -= WEIGHT[s.rarity]) < 0) ?? pool[0]!;
   const [min, max] = area.value.levels;
-  wild.value = { species, level: min + randomInt(max - min + 1) };
+  wild.value = { species, level: min + randomInt(max - min + 1), shiny: rollShiny() };
   store.markSeen(species.id);
 };
 
@@ -237,8 +248,10 @@ const onWon = () => {
 
 const onCaught = () => {
   if (!wild.value || !store.partner) return;
-  isNew.value = !store.isCaught(wild.value.species.id);
-  const caught = store.catchCreature(wild.value.species.id, wild.value.level);
+  const { species, level, shiny } = wild.value;
+  isNew.value = !store.isCaught(species.id);
+  isNewShiny.value = shiny && !store.isShinyCaught(species.id);
+  const caught = store.catchCreature(species.id, level, shiny);
   joinedTeam.value = store.isInTeam(caught.uid);
   caughtUid.value = caught.uid;
   releasedCandies.value = null;
@@ -274,6 +287,16 @@ rollWild();
 }
 .appear {
   animation: appear 0.6s ease-out;
+}
+.shiny-banner {
+  font-weight: 700;
+  color: #b45309;
+  animation: glow 1.4s ease-in-out infinite;
+}
+@keyframes glow {
+  50% {
+    opacity: 0.55;
+  }
 }
 .release {
   border-top: 1px dashed rgba(0, 0, 0, 0.12);

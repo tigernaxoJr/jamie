@@ -27,8 +27,15 @@
           <div class="text-h6 q-mt-md">蛋在動了……</div>
         </template>
         <template v-else-if="result">
-          <div class="text-h5">🎉 孵出了{{ species!.name }}！</div>
-          <CreatureSvg :species="species!" :size="150" class="q-my-md hatch__reveal" />
+          <div class="text-h5">
+            🎉 孵出了{{ result.creature.shiny ? '色違的' : '' }}{{ species!.name }}！
+          </div>
+          <CreatureSvg
+            :species="species!"
+            :size="150"
+            :shiny="result.creature.shiny"
+            class="q-my-md hatch__reveal"
+          />
           <div class="text-weight-bold">
             {{ species!.english }}（{{ species!.meaning }}） · Lv {{ result.creature.level }}
           </div>
