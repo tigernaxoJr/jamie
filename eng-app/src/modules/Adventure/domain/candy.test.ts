@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CORRECT_PER_CANDY,
   DAILY_CANDY_LIMIT,
+  RELEASE_CANDY,
   WIN_BONUS_CANDY,
   cappedCandies,
   candiesForGame,
@@ -22,5 +23,11 @@ describe('candy', () => {
     expect(cappedCandies(5, 0)).toBe(5);
     expect(cappedCandies(5, DAILY_CANDY_LIMIT - 2)).toBe(2);
     expect(cappedCandies(5, DAILY_CANDY_LIMIT)).toBe(0);
+  });
+
+  it('放生越稀有的字靈，換到越多糖果', () => {
+    expect(RELEASE_CANDY.common).toBeLessThan(RELEASE_CANDY.uncommon);
+    expect(RELEASE_CANDY.uncommon).toBeLessThan(RELEASE_CANDY.rare);
+    expect(RELEASE_CANDY.rare).toBeLessThan(RELEASE_CANDY.legendary);
   });
 });

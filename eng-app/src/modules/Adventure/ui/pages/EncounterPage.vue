@@ -102,8 +102,27 @@
           （{{ wild.species.meaning }}）
         </div>
         <div v-if="isNew" class="pill q-mt-sm">📖 新登錄到圖鑑！</div>
-        <div v-if="joinedTeam" class="pill q-mt-sm q-ml-xs">🤝 已加入隊伍</div>
+        <div v-if="joinedTeam && releasedCandies === null" class="pill q-mt-sm q-ml-xs">
+          🤝 已加入隊伍
+        </div>
         <div class="text-caption text-muted q-mt-sm">{{ wild.species.description }}</div>
+        <!-- 重複收服：可以放生換糖果 -->
+        <div v-if="!isNew" class="release q-mt-md">
+          <template v-if="releasedCandies === null">
+            <div class="text-caption text-muted">已經有{{ wild.species.name }}了，要放生換糖果嗎？</div>
+            <q-btn
+              class="btn-3d q-mt-xs"
+              color="pink-5"
+              icon="volunteer_activism"
+              :label="`放生，換 🍬 ${releaseReward} 顆`"
+              @click="release"
+            />
+          </template>
+          <div v-else class="text-weight-bold">
+            👋 {{ wild.species.name }}回到大自然了，拿到 🍬 {{ releasedCandies }} 顆！
+            <span class="text-caption text-muted">（共 {{ candyCount }} 顆）</span>
+          </div>
+        </div>
         <div class="column q-gutter-sm q-mt-lg">
           <q-btn
             class="btn-3d"
@@ -148,6 +167,8 @@ import { randomInt } from 'src/modules/Games/shared';
 import { getArea } from '../../domain/areas';
 import { type Rarity, type Species, RARITY_NAME, getSpecies } from '../../domain/species';
 import { BATTLE_WIN_ENERGY, CAPTURE_XP } from '../../domain/rules';
+import { RELEASE_CANDY } from '../../domain/candy';
+import { candyCount } from '../../store/candy';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureSvg from '../CreatureSvg.vue';
@@ -173,6 +194,10 @@ const wild = shallowRef<{ species: Species; level: number } | null>(null);
 const bonusEnergy = ref(0);
 const isNew = ref(false);
 const joinedTeam = ref(false);
+const caughtUid = ref<string | null>(null);
+/** 放生拿到的糖果；還沒放生是 null */
+const releasedCandies = ref<number | null>(null);
+const releaseReward = computed(() => (wild.value ? RELEASE_CANDY[wild.value.species.rarity] : 0));
 const encounterId = ref(0);
 
 const subtitle = computed(() =>
@@ -215,9 +240,16 @@ const onCaught = () => {
   isNew.value = !store.isCaught(wild.value.species.id);
   const caught = store.catchCreature(wild.value.species.id, wild.value.level);
   joinedTeam.value = store.isInTeam(caught.uid);
+  caughtUid.value = caught.uid;
+  releasedCandies.value = null;
   store.gainXp(store.partner.uid, CAPTURE_XP);
   trackQuest({ type: 'catch' });
   phase.value = 'caught';
+};
+
+const release = () => {
+  if (!caughtUid.value) return;
+  releasedCandies.value = store.releaseDuplicate(caughtUid.value);
 };
 
 rollWild();
@@ -242,6 +274,10 @@ rollWild();
 }
 .appear {
   animation: appear 0.6s ease-out;
+}
+.release {
+  border-top: 1px dashed rgba(0, 0, 0, 0.12);
+  padding-top: 12px;
 }
 .actions {
   display: grid;

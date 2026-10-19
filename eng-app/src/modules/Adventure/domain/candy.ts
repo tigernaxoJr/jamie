@@ -1,3 +1,5 @@
+import type { Rarity } from './species';
+
 // ---------- 字靈糖果：小遊戲的獎勵，帶回字靈探險使用 ----------
 
 /** 小遊戲每答對幾題換 1 顆糖果 */
@@ -12,6 +14,14 @@ export const CANDY_XP = 10;
 /** 捕捉時用糖果加能量：花幾顆、加幾格（每次遭遇限用一次） */
 export const CANDY_ENERGY_COST = 3;
 export const CANDY_ENERGY = 2;
+
+/** 放生重複收服的字靈換到的糖果，依稀有度 */
+export const RELEASE_CANDY: Record<Rarity, number> = {
+  common: 2,
+  uncommon: 3,
+  rare: 5,
+  legendary: 10,
+};
 
 /** 一局小遊戲應得的糖果（還沒扣每日上限） */
 export const candiesForGame = (correct: number, won: boolean): number =>

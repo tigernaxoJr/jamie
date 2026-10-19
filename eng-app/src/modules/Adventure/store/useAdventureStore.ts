@@ -14,11 +14,11 @@ import {
   canEvolve,
   xpToNext,
 } from '../domain/rules';
-import { CANDY_XP } from '../domain/candy';
+import { CANDY_XP, RELEASE_CANDY } from '../domain/candy';
 import { EGG_COST, hatchEgg } from '../domain/egg';
 import { getSpecies } from '../domain/species';
 import { trackQuest } from 'src/modules/Quests';
-import { spendCandies } from './candy';
+import { grantBonusCandies, spendCandies } from './candy';
 
 export interface OwnedCreature {
   uid: string;
@@ -181,6 +181,25 @@ export const useAdventureStore = defineStore('adventure', () => {
     return c;
   };
 
+  /**
+   * 放生重複的字靈換糖果，回傳拿到的糖果數。
+   * 只有同種還有別隻時才能放生（圖鑑不會少一格），隊伍至少留一隻。
+   */
+  const releaseDuplicate = (uid: string): number | null => {
+    const c = byUid(uid);
+    if (!c) return null;
+    const hasOther = save.value.creatures.some((o) => o.uid !== uid && o.speciesId === c.speciesId);
+    if (!hasOther) return null;
+    if (isInTeam(uid)) {
+      if (team.value.length <= 1) return null;
+      removeFromTeam(uid);
+    }
+    save.value.creatures = save.value.creatures.filter((o) => o.uid !== uid);
+    const candies = RELEASE_CANDY[getSpecies(c.speciesId).rarity];
+    grantBonusCandies(candies);
+    return candies;
+  };
+
   /** 增加經驗值，回傳升了幾級 */
   const gainXp = (uid: string, amount: number): number => {
     const c = byUid(uid);
@@ -277,6 +296,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     isSeen,
     markSeen,
     catchCreature,
+    releaseDuplicate,
     gainXp,
     feedCandy,
     evolveStatus,
