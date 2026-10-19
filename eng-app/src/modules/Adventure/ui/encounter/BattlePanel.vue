@@ -33,6 +33,7 @@
           :fainted="activeHp <= 0"
           :popup="popupFor('partner')"
         />
+        <div v-if="guarded" class="guard-tag"><q-icon name="shield" /> 防禦中</div>
         <FighterStatus
           :name="creatureName(activeSpecies, active.stage)"
           :level="active.level"
@@ -134,14 +135,16 @@ import {
   ULTIMATE_COMBO,
   battleXp,
   critChance,
+  GUARD_REDUCTION,
   HEAVY_MULTIPLIER,
   enemyAction,
   enemyDamage,
+  guardedDamage,
   healAmount,
   maxHp,
   playerDamage,
 } from '../../domain/rules';
-import { MOVE_KIND, type Question, makeQuestion } from '../../domain/questions';
+import { GUARD_KIND, MOVE_KIND, type Question, makeQuestion } from '../../domain/questions';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 import MatchupTag from '../MatchupTag.vue';
 import QuestionCard from '../QuestionCard.vue';
@@ -197,6 +200,8 @@ const enemyHp = ref(enemyMax.value);
 /** 館主字靈的狀態：上回合蓄力了、這隻補過血了 */
 const enemyCharged = ref(false);
 const enemyHealed = ref(false);
+/** 我方擺好防禦：對手下一次行動時，攻擊傷害減半 */
+const guarded = ref(false);
 
 const combo = ref(0);
 type Phase = 'choose' | 'question' | 'busy' | 'switch';
@@ -207,7 +212,8 @@ const message = ref(props.intro);
 const fx = ref<'' | 'enemyHit' | 'partnerHit' | 'attack'>('');
 const popup = ref<{ id: number; target: 'enemy' | 'partner'; text: string } | null>(null);
 let popupId = 0;
-let currentMove: MoveKind = 'normal';
+type Action = MoveKind | 'guard';
+let currentMove: Action = 'normal';
 
 const activeName = () => creatureName(activeSpecies.value, active.value.stage);
 
@@ -241,6 +247,14 @@ const moves = computed(() => {
       textColor: 'white',
       disabled: combo.value < ULTIMATE_COMBO,
     },
+    {
+      kind: 'guard' as const,
+      name: '防禦',
+      desc: `聽發音選中文 · 下次受到的傷害 -${GUARD_REDUCTION * 100}%`,
+      color: 'teal',
+      textColor: 'white',
+      disabled: false,
+    },
   ];
 });
 
@@ -256,12 +270,13 @@ const showPopup = (target: 'enemy' | 'partner', text: string) => {
   popup.value = { id: ++popupId, target, text };
 };
 
-const useMove = (kind: MoveKind) => {
+const useMove = (kind: Action) => {
   currentMove = kind;
   const word = deck.draw();
   // 必殺技不給提示；撞擊依熟練度給提示
   const streak = kind === 'ultimate' ? null : getCorrectStreak(word.english);
-  question.value = makeQuestion(MOVE_KIND[kind], word, props.choicePool ?? props.words, streak);
+  const qKind = kind === 'guard' ? GUARD_KIND : MOVE_KIND[kind];
+  question.value = makeQuestion(qKind, word, props.choicePool ?? props.words, streak);
   phase.value = 'question';
 };
 
@@ -272,19 +287,22 @@ const onAnswered = (correct: boolean) => {
   }
   phase.value = 'busy';
 
+  const move = currentMove;
+  if (move === 'guard') return guard(correct);
+
   const crit = correct && Math.random() < critChance(store.recentAccuracy);
   const { damage, effectiveness } = playerDamage({
     attacker: activeSpecies.value,
     attackerLevel: active.value.level,
     attackerStage: active.value.stage ?? 1,
     defender: enemy.value.species,
-    move: currentMove,
+    move,
     correct,
     crit,
   });
 
-  combo.value = currentMove === 'ultimate' || !correct ? 0 : combo.value + 1;
-  const moveName = moves.value.find((m) => m.kind === currentMove)?.name ?? '';
+  combo.value = move === 'ultimate' || !correct ? 0 : combo.value + 1;
+  const moveName = moves.value.find((m) => m.kind === move)?.name ?? '';
 
   if (damage > 0) {
     fx.value = 'attack';
@@ -311,6 +329,17 @@ const onAnswered = (correct: boolean) => {
   }, 1100);
 };
 
+/** 防禦：答對就擺好架式（不影響連擊），答錯連擊歸零 */
+const guard = (correct: boolean) => {
+  guarded.value = correct;
+  if (!correct) combo.value = 0;
+  message.value = correct
+    ? `${activeName()}擺好防禦架式！`
+    : `${activeName()}想防禦，可是來不及了！`;
+  if (correct) sfx.correct();
+  timers.later(enemyTurn, 900);
+};
+
 const enemyFainted = () => {
   const next = enemyIdx.value + 1;
   if (next >= props.enemies.length) return win();
@@ -332,6 +361,9 @@ const backToPlayer = (text: string) => {
 
 const enemyTurn = () => {
   const name = enemy.value.species.name;
+  // 防禦只擋對手的下一次行動（對手蓄力或補血就白擋了）
+  const wasGuarded = guarded.value;
+  guarded.value = false;
   const action = enemyAction({
     isLeader: props.mode === 'gym',
     hp: enemyHp.value,
@@ -359,9 +391,13 @@ const enemyTurn = () => {
   const heavy = action === 'heavy';
   enemyCharged.value = false;
   const base = enemyDamage(enemy.value.species, enemy.value.level, activeSpecies.value);
-  const dmg = heavy ? Math.round(base * HEAVY_MULTIPLIER) : base;
+  const raw = heavy ? Math.round(base * HEAVY_MULTIPLIER) : base;
+  const dmg = wasGuarded ? guardedDamage(raw) : raw;
   const eff = effectiveness(enemy.value.species.element, activeSpecies.value.element);
-  const note = eff > 1 ? '效果絕佳！' : eff < 1 ? '效果不太好…' : '';
+  const note = [
+    eff > 1 ? '效果絕佳！' : eff < 1 ? '效果不太好…' : '',
+    wasGuarded ? `${activeName()}擋下了一半的傷害！` : '',
+  ].join('');
   message.value = `${name}${heavy ? '使出重擊' : '發動攻擊'}！${note}`;
   timers.later(() => {
     fx.value = 'partnerHit';
@@ -394,6 +430,7 @@ const switchTo = (uid: string) => {
   activeUid.value = uid;
   participated.add(uid);
   combo.value = 0;
+  guarded.value = false;
   message.value = `上吧，${activeName()}！`;
   sfx.click();
   phase.value = 'busy';
@@ -436,6 +473,17 @@ const win = () => {
   flex-direction: row;
   align-items: flex-start;
 }
+.guard-tag {
+  position: absolute;
+  left: 0;
+  top: -6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #0d9488;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
 .charge-tag {
   position: absolute;
   right: 0;
@@ -476,7 +524,7 @@ const win = () => {
 }
 .moves {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 .matchups {
@@ -490,7 +538,7 @@ const win = () => {
 }
 @media (max-width: 599px) {
   .moves {
-    grid-template-columns: 1fr;
+    gap: 6px;
   }
   .move {
     min-height: 56px;

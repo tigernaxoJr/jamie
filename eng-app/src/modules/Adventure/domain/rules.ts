@@ -88,6 +88,12 @@ export const MOVE_POWER: Record<MoveKind, { hit: number; miss: number }> = {
   ultimate: { hit: 40, miss: 0 },
 };
 
+/** 防禦：答對時，對手下一次攻擊的傷害減少多少 */
+export const GUARD_REDUCTION = 0.5;
+
+export const guardedDamage = (damage: number) =>
+  Math.max(1, Math.round(damage * (1 - GUARD_REDUCTION)));
+
 /** 必殺技需要的連擊數 */
 export const ULTIMATE_COMBO = 3;
 

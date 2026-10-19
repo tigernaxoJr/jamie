@@ -14,6 +14,7 @@ import {
   type EnemyState,
   attack,
   enemyAction,
+  guardedDamage,
   canEvolve,
   captureRate,
   maxHp,
@@ -174,5 +175,12 @@ describe('enemyAction', () => {
   it('館主字靈依機率蓄力', () => {
     expect(enemyAction(leader, () => CHARGE_CHANCE / 2)).toBe('charge');
     expect(enemyAction(leader, never)).toBe('attack');
+  });
+});
+
+describe('guard', () => {
+  it('防禦讓傷害減半，至少 1 點', () => {
+    expect(guardedDamage(20)).toBe(10);
+    expect(guardedDamage(1)).toBe(1);
   });
 });

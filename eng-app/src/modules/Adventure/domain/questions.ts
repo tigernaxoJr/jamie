@@ -45,6 +45,9 @@ export const MOVE_KIND: Record<MoveKind, QuestionKind> = {
   ultimate: 'zh-spell',
 };
 
+/** 防禦 → 題型（聽發音選中文，比攻擊簡單，但這回合不會造成傷害） */
+export const GUARD_KIND: QuestionKind = 'listen-zh';
+
 /** 拼法相近的干擾選項：開頭相同、長度接近的優先 */
 const similarChoices = (target: GameWord, pool: readonly GameWord[], count: number) => {
   const t = target.answer.toLowerCase();
