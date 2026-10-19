@@ -55,3 +55,43 @@ export const effectiveness = (attacker: Element, defender: Element): number => {
   if (STRONG_AGAINST[defender].includes(attacker)) return NOT_EFFECTIVE;
   return 1;
 };
+
+export interface Matchup {
+  text: string;
+  /** 對我方有利 */
+  good: boolean;
+}
+
+/** 倍率顯示，例如 ×2、×0.5 */
+export const formatEffectiveness = (eff: number) => `×${eff}`;
+
+/** 對戰中出招前的相剋提示：我方打對手、對手打我方，只列出有相剋的 */
+export const battleMatchups = (mine: Element, theirs: Element): Matchup[] => {
+  const attackEff = effectiveness(mine, theirs);
+  const defendEff = effectiveness(theirs, mine);
+  const list: Matchup[] = [];
+  if (attackEff !== 1) {
+    list.push({
+      text: `${ELEMENTS[mine].emoji} 你的攻擊${attackEff > 1 ? '效果絕佳' : '效果不好'} ${formatEffectiveness(attackEff)}`,
+      good: attackEff > 1,
+    });
+  }
+  if (defendEff !== 1) {
+    list.push({
+      text: `${ELEMENTS[theirs].emoji} 對手的攻擊${defendEff > 1 ? '很痛' : '不太痛'} ${formatEffectiveness(defendEff)}`,
+      good: defendEff < 1,
+    });
+  }
+  return list;
+};
+
+/** 圖鑑卡片上的相剋摘要，例如「剋 ⚡ · 怕 💧」；光屬性「不怕任何屬性」 */
+export const matchupSummary = (el: Element): string => {
+  const strong = strongAgainst(el).map((e) => ELEMENTS[e].emoji);
+  const weak = weakAgainst(el).map((e) => ELEMENTS[e].emoji);
+  const parts = [
+    strong.length ? `剋 ${strong.join('')}` : '',
+    weak.length ? `怕 ${weak.join('')}` : '',
+  ];
+  return parts.filter(Boolean).join(' · ') || '不怕任何屬性';
+};

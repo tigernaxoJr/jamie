@@ -3,84 +3,42 @@
     <!-- 戰場 -->
     <div class="arena app-card" :style="{ background }">
       <div class="side side--enemy">
-        <div class="status">
-          <div class="row items-center no-wrap q-gutter-x-xs">
-            <b>{{ enemy.species.name }}</b>
-            <span class="text-caption">Lv {{ enemy.level }}</span>
-            <ElementBadge :element="enemy.species.element" />
-          </div>
-          <q-linear-progress
-            :value="enemyHp / enemyMax"
-            :color="hpColor(enemyHp / enemyMax)"
-            track-color="grey-3"
-            size="10px"
-            rounded
-            class="q-mt-xs"
-          />
-          <div class="row items-center text-caption">
-            <span>{{ enemyHp }} / {{ enemyMax }}</span>
-            <q-space />
-            <span v-if="enemies.length > 1" class="pips">
-              <span
-                v-for="(e, i) in enemies"
-                :key="i"
-                class="pip"
-                :class="{ 'pip--down': i < enemyIdx }"
-              />
-            </span>
-          </div>
-        </div>
-        <div class="fighter" :class="{ hit: fx === 'enemyHit', faint: enemyHp <= 0 }">
-          <CreatureSvg :key="enemyIdx" :species="enemy.species" :size="120" />
-          <span v-if="popup && popup.target === 'enemy'" :key="popup.id" class="popup">{{
-            popup.text
-          }}</span>
-        </div>
+        <FighterStatus
+          :name="enemy.species.name"
+          :level="enemy.level"
+          :element="enemy.species.element"
+          :hp="enemyHp"
+          :max="enemyMax"
+          :pips="enemies.map((e, i) => ({ key: i, down: i < enemyIdx }))"
+        />
+        <BattleFighter
+          :species="enemy.species"
+          :creature-key="enemyIdx"
+          :fx="fx === 'enemyHit' ? 'hit' : ''"
+          :fainted="enemyHp <= 0"
+          :popup="popupFor('enemy')"
+        />
       </div>
 
       <div class="side side--partner">
-        <div
-          class="fighter"
-          :class="{ hit: fx === 'partnerHit', faint: activeHp <= 0, lunge: fx === 'attack' }"
-        >
-          <CreatureSvg
-            :key="active.uid"
-            :species="activeSpecies"
-            :size="120"
-            :evolved="(active.stage ?? 1) >= 2"
-            flip
-          />
-          <span v-if="popup && popup.target === 'partner'" :key="popup.id" class="popup">{{
-            popup.text
-          }}</span>
-        </div>
-        <div class="status">
-          <div class="row items-center no-wrap q-gutter-x-xs">
-            <b>{{ creatureName(activeSpecies, active.stage) }}</b>
-            <span class="text-caption">Lv {{ active.level }}</span>
-            <ElementBadge :element="activeSpecies.element" />
-          </div>
-          <q-linear-progress
-            :value="activeHp / activeMax"
-            :color="hpColor(activeHp / activeMax)"
-            track-color="grey-3"
-            size="10px"
-            rounded
-            class="q-mt-xs"
-          />
-          <div class="row items-center text-caption">
-            <span>{{ activeHp }} / {{ activeMax }}</span>
-            <q-space />
-            <span v-if="team.length > 1" class="pips">
-              <span
-                v-for="c in team"
-                :key="c.uid"
-                class="pip pip--mine"
-                :class="{ 'pip--down': (hp[c.uid] ?? 0) <= 0 }"
-              />
-            </span>
-          </div>
-        </div>
+        <BattleFighter
+          :species="activeSpecies"
+          :creature-key="active.uid"
+          :evolved="(active.stage ?? 1) >= 2"
+          flip
+          :fx="fx === 'partnerHit' ? 'hit' : fx === 'attack' ? 'lunge' : ''"
+          :fainted="activeHp <= 0"
+          :popup="popupFor('partner')"
+        />
+        <FighterStatus
+          :name="creatureName(activeSpecies, active.stage)"
+          :level="active.level"
+          :element="activeSpecies.element"
+          :hp="activeHp"
+          :max="activeMax"
+          :pips="team.map((c) => ({ key: c.uid, down: (hp[c.uid] ?? 0) <= 0 }))"
+          mine
+        />
       </div>
     </div>
 
@@ -135,33 +93,16 @@
     </div>
 
     <!-- 換字靈 -->
-    <div v-else-if="phase === 'switch'" class="app-card q-pa-md q-mt-md">
-      <div class="text-weight-bold q-mb-sm">
-        {{ forcedSwitch ? '要派誰上場？' : '要換誰上場？（會用掉這一回合）' }}
-      </div>
-      <div class="bench">
-        <button
-          v-for="c in team"
-          :key="c.uid"
-          type="button"
-          class="bench__member"
-          :disabled="c.uid === active.uid || (hp[c.uid] ?? 0) <= 0"
-          @click="switchTo(c.uid)"
-        >
-          <CreatureSvg
-            :species="speciesOf(c)"
-            :size="56"
-            :animated="false"
-            :evolved="(c.stage ?? 1) >= 2"
-          />
-          <span class="text-weight-bold">{{ creatureName(speciesOf(c), c.stage) }}</span>
-          <span class="text-caption">Lv {{ c.level }} · ❤️ {{ hp[c.uid] ?? 0 }}</span>
-        </button>
-      </div>
-      <div v-if="!forcedSwitch" class="text-right q-mt-sm">
-        <q-btn flat color="grey-7" label="取消" @click="phase = 'choose'" />
-      </div>
-    </div>
+    <SwitchBench
+      v-else-if="phase === 'switch'"
+      :team="team"
+      :hp="hp"
+      :active-uid="activeUid"
+      :forced="forcedSwitch"
+      class="q-mt-md"
+      @pick="switchTo"
+      @cancel="phase = 'choose'"
+    />
 
     <QuestionCard
       v-else-if="phase === 'question' && question"
@@ -176,7 +117,12 @@
 import { computed, reactive, ref } from 'vue';
 import { type GameWord, WordDeck, sfx, useTimers } from 'src/modules/Games/shared';
 import { getCorrectStreak } from 'src/modules/Vocabulary';
-import { ELEMENTS, effectiveness } from '../../domain/elements';
+import {
+  ELEMENTS,
+  battleMatchups,
+  effectiveness,
+  formatEffectiveness as times,
+} from '../../domain/elements';
 import { creatureName, getSpecies } from '../../domain/species';
 import {
   type MoveKind,
@@ -191,10 +137,11 @@ import {
 } from '../../domain/rules';
 import { MOVE_KIND, type Question, makeQuestion } from '../../domain/questions';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
-import ElementBadge from '../ElementBadge.vue';
 import MatchupTag from '../MatchupTag.vue';
 import QuestionCard from '../QuestionCard.vue';
+import BattleFighter from './BattleFighter.vue';
+import FighterStatus from './FighterStatus.vue';
+import SwitchBench from './SwitchBench.vue';
 
 const props = defineProps<{
   /** 對手：野生字靈只有一隻；館主有好幾隻，依序上場 */
@@ -285,32 +232,13 @@ const moves = computed(() => {
   ];
 });
 
-/** 倍率顯示，例如 ×2、×0.5 */
-const times = (eff: number) => `×${eff}`;
+/** 出招前提示屬性相剋 */
+const matchups = computed(() =>
+  battleMatchups(activeSpecies.value.element, enemy.value.species.element),
+);
 
-/** 出招前提示屬性相剋：我方打對手、對手打我方，只列出有相剋的 */
-const matchups = computed(() => {
-  const mine = activeSpecies.value.element;
-  const theirs = enemy.value.species.element;
-  const attackEff = effectiveness(mine, theirs);
-  const defendEff = effectiveness(theirs, mine);
-  const list: { text: string; good: boolean }[] = [];
-  if (attackEff !== 1) {
-    list.push({
-      text: `${ELEMENTS[mine].emoji} 你的攻擊${attackEff > 1 ? '效果絕佳' : '效果不好'} ${times(attackEff)}`,
-      good: attackEff > 1,
-    });
-  }
-  if (defendEff !== 1) {
-    list.push({
-      text: `${ELEMENTS[theirs].emoji} 對手的攻擊${defendEff > 1 ? '很痛' : '不太痛'} ${times(defendEff)}`,
-      good: defendEff < 1,
-    });
-  }
-  return list;
-});
-
-const hpColor = (ratio: number) => (ratio > 0.5 ? 'positive' : ratio > 0.2 ? 'orange' : 'negative');
+const popupFor = (target: 'enemy' | 'partner') =>
+  popup.value?.target === target ? popup.value : null;
 
 const showPopup = (target: 'enemy' | 'partner', text: string) => {
   popup.value = { id: ++popupId, target, text };
@@ -466,57 +394,6 @@ const win = () => {
   bottom: 8px;
   left: 12px;
 }
-.status {
-  min-width: 150px;
-  padding: 6px 10px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-}
-.pips {
-  display: inline-flex;
-  gap: 3px;
-}
-.pip {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: $negative;
-}
-.pip--mine {
-  background: $positive;
-}
-.pip--down {
-  background: #cbd5e1;
-}
-.fighter {
-  position: relative;
-  transition:
-    transform 0.25s,
-    opacity 0.4s;
-}
-.fighter.hit {
-  animation: hit 0.4s;
-}
-.fighter.lunge {
-  transform: translate(30px, -20px);
-}
-.fighter.faint {
-  opacity: 0;
-  transform: translateY(20px) scale(0.8);
-}
-.popup {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: #dc2626;
-  text-shadow: 0 2px 0 #fff;
-  white-space: nowrap;
-  animation: float 1s forwards;
-}
 .message {
   min-height: 56px;
   font-weight: 800;
@@ -548,58 +425,12 @@ const win = () => {
   min-height: 72px;
   padding: 6px 4px;
 }
-.bench {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.bench__member {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 4px;
-  border: 2px solid var(--app-line);
-  border-radius: 14px;
-  background: #fff;
-  font: inherit;
-  cursor: pointer;
-  &:hover:not(:disabled) {
-    border-color: $primary;
-  }
-  &:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-}
-@keyframes hit {
-  0%,
-  100% {
-    transform: none;
-    filter: none;
-  }
-  30% {
-    transform: translateX(10px);
-    filter: brightness(2);
-  }
-  60% {
-    transform: translateX(-6px);
-  }
-}
-@keyframes float {
-  to {
-    transform: translate(-50%, -40px);
-    opacity: 0;
-  }
-}
 @media (max-width: 599px) {
   .moves {
     grid-template-columns: 1fr;
   }
   .move {
     min-height: 56px;
-  }
-  .status {
-    min-width: 130px;
   }
 }
 </style>

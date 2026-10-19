@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { AREAS, leaderLevels } from './areas';
-import { effectiveness, strongAgainst, weakAgainst } from './elements';
+import {
+  battleMatchups,
+  effectiveness,
+  matchupSummary,
+  strongAgainst,
+  weakAgainst,
+} from './elements';
 import {
   EVOLVE_LEVEL,
   EVOLVE_MASTERED,
@@ -54,6 +60,21 @@ describe('element matchups', () => {
       expect(effectiveness('light', el)).toBe(1);
       expect(effectiveness(el, 'light')).toBe(1);
     }
+  });
+
+  it('對戰提示只列出有相剋的方向', () => {
+    expect(battleMatchups('fire', 'grass')).toEqual([
+      { text: '🔥 你的攻擊效果絕佳 ×2', good: true },
+      { text: expect.stringContaining('對手的攻擊不太痛 ×0.5') as string, good: true },
+    ]);
+    expect(battleMatchups('grass', 'fire').map((m) => m.good)).toEqual([false, false]);
+    expect(battleMatchups('fire', 'thunder')).toEqual([]);
+  });
+
+  it('相剋摘要', () => {
+    expect(matchupSummary('water')).toBe('剋 🔥 · 怕 🌿⚡');
+    expect(matchupSummary('earth')).toBe('剋 ⚡');
+    expect(matchupSummary('light')).toBe('不怕任何屬性');
   });
 
   it('查詢剋誰、怕誰', () => {
