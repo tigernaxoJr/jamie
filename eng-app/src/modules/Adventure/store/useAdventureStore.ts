@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
+import { readJson } from 'src/utils/storage';
 import { getMasteredCount, recordWordAnswer } from 'src/modules/Vocabulary';
 import type { GameWord } from 'src/modules/Games/shared';
 import { type Area, AREAS, getArea, homeAreaOf } from '../domain/areas';
@@ -63,10 +64,8 @@ const STORAGE_KEY = 'adventure-save';
  */
 const migrateLegacySave = (): Partial<AdventureSave> | null => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const old = JSON.parse(raw) as Partial<AdventureSave>;
-    if ('badges' in old) return null;
+    const old = readJson<Partial<AdventureSave>>(STORAGE_KEY);
+    if (!old || 'badges' in old) return null;
     const creatures = old.creatures ?? [];
     const caught = new Set(creatures.map((c) => c.speciesId));
     const badges = AREAS.filter(

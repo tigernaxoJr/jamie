@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router';
+import { readJson } from 'src/utils/storage';
 
 export { candyCount, grantBonusCandies, grantGameCandies, type CandyReward } from './store/candy';
 export { CORRECT_PER_CANDY } from './domain/candy';
@@ -25,15 +26,7 @@ export const adventureCard = {
   color: 'green-7',
   /** 遊戲中心卡片上的進度：拿到幾個館主徽章 */
   progress: (): string | null => {
-    try {
-      const badges = (
-        JSON.parse(localStorage.getItem('adventure-save') ?? '{}') as {
-          badges?: string[];
-        }
-      ).badges;
-      return badges?.length ? `🏅 徽章 ${badges.length} 個` : null;
-    } catch {
-      return null;
-    }
+    const badges = readJson<{ badges?: string[] }>('adventure-save')?.badges;
+    return badges?.length ? `🏅 徽章 ${badges.length} 個` : null;
   },
 };

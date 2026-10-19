@@ -9,5 +9,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
+    // 快取轉譯結果，重複跑測試時省下大部分轉譯時間
+    fsModuleCache: true,
   },
 });

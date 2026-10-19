@@ -1,3 +1,4 @@
+import { readJson } from 'src/utils/storage';
 import { type AnswerRecord, applyAnswer, emptyAnswerRecord } from '../domain/QuizWord';
 
 const STORAGE_KEY = 'word-metadata';
@@ -22,13 +23,7 @@ export const WordMetaStorage = {
    * 從 localStorage 載入所有已儲存的單字 metadata。
    */
   loadAll(): WordMetaMap {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return {};
-      return JSON.parse(raw) as WordMetaMap;
-    } catch {
-      return {};
-    }
+    return readJson<WordMetaMap>(STORAGE_KEY) ?? {};
   },
 
   /**

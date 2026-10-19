@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
+import { readJson } from 'src/utils/storage';
 import type { QuizMeta, QuizWord } from '../domain';
 import { loadQuizWords } from '../infra/WordBank';
 import { WordMetaStorage } from '../infra/WordMetaStorage';
@@ -15,9 +16,8 @@ const LEGACY_WORDS_KEY = 'words';
  */
 const migrateLegacyWords = () => {
   try {
-    const raw = localStorage.getItem(LEGACY_WORDS_KEY);
-    if (!raw) return;
-    const legacy = JSON.parse(raw) as Partial<QuizWord>[];
+    const legacy = readJson<Partial<QuizWord>[]>(LEGACY_WORDS_KEY);
+    if (legacy === null) return;
     if (Array.isArray(legacy)) {
       const map = WordMetaStorage.loadAll();
       for (const w of legacy) {

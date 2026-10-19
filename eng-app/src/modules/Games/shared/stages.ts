@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
+import { readJson } from 'src/utils/storage';
 
 /** 關卡制遊戲的選擇：第 index 關，或無盡模式 */
 export type StageSelection = { kind: 'stage'; index: number } | { kind: 'endless' };
@@ -29,19 +30,9 @@ export const firstOpenStage = (count: number, stars: readonly number[]): number 
 export const nextStageIndex = (sel: StageSelection, won: boolean, count: number): number | null =>
   sel.kind === 'stage' && won && sel.index + 1 < count ? sel.index + 1 : null;
 
-/** 讀取 localStorage 裡的 JSON（讀不到或格式錯誤回傳 null） */
-export const readSaved = <T>(key: string): T | null => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
-  } catch {
-    return null;
-  }
-};
-
 /** 遊戲中心卡片用：「⭐ 已拿星數 / 滿星」，還沒拿過星星回傳 null */
 export const starsProgress = (storageKey: string, stageCount: number) => (): string | null => {
-  const stars = readSaved<{ stars?: number[] }>(storageKey)?.stars ?? [];
+  const stars = readJson<{ stars?: number[] }>(storageKey)?.stars ?? [];
   const total = stars.reduce((sum, n) => sum + (n ?? 0), 0);
   return total > 0 ? `⭐ ${total} / ${stageCount * 3}` : null;
 };

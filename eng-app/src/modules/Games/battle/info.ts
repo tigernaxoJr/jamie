@@ -1,4 +1,5 @@
-import { type GameInfo, readSaved } from '../shared';
+import { readJson } from 'src/utils/storage';
+import type { GameInfo } from '../shared';
 
 export const battleInfo: GameInfo = {
   id: 'battle',
@@ -9,7 +10,7 @@ export const battleInfo: GameInfo = {
   color: 'deep-orange',
   minWords: 4,
   progress: () => {
-    const floor = readSaved<{ bestFloor?: number }>('battle-tower')?.bestFloor ?? 0;
+    const floor = readJson<{ bestFloor?: number }>('battle-tower')?.bestFloor ?? 0;
     return floor > 0 ? `🏰 最高第 ${floor} 層` : null;
   },
   recordsProgress: true,
