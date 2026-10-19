@@ -18,6 +18,7 @@ import { CANDY_XP, RELEASE_CANDY } from '../domain/candy';
 import { EGG_COST, hatchEgg } from '../domain/egg';
 import { getSpecies } from '../domain/species';
 import { rollShiny } from '../domain/shiny';
+import { addLostWord } from '../domain/lost';
 import { trackQuest } from 'src/modules/Quests';
 import { grantBonusCandies, spendCandies } from './candy';
 
@@ -45,6 +46,8 @@ interface AdventureSave {
   seen: number[];
   /** 最近 10 題的對錯，用來計算暴擊率 */
   recentAnswers: boolean[];
+  /** 探險中答錯、還沒找回的單字（迷路字靈出題用） */
+  lostWords: GameWord[];
 }
 
 const RECENT_SIZE = 10;
@@ -56,6 +59,7 @@ const emptySave = (): AdventureSave => ({
   badges: [],
   seen: [],
   recentAnswers: [],
+  lostWords: [],
 });
 
 const STORAGE_KEY = 'adventure-save';
@@ -261,6 +265,15 @@ export const useAdventureStore = defineStore('adventure', () => {
     r.push(correct);
     if (r.length > RECENT_SIZE) r.splice(0, r.length - RECENT_SIZE);
     recordWordAnswer(word.english, correct, 'adventure');
+    if (!correct) save.value.lostWords = addLostWord(save.value.lostWords, word);
+  };
+
+  const lostWords = computed(() => save.value.lostWords);
+  /** 在迷路字靈對戰中答對，單字就找回來了 */
+  const findLostWord = (english: string): boolean => {
+    const before = save.value.lostWords.length;
+    save.value.lostWords = save.value.lostWords.filter((w) => w.english !== english);
+    return save.value.lostWords.length < before;
   };
 
   const caughtInArea = (area: Area) => area.species.filter((id) => isCaught(id)).length;
@@ -314,6 +327,8 @@ export const useAdventureStore = defineStore('adventure', () => {
     evolveStatus,
     evolve,
     recordAnswer,
+    lostWords,
+    findLostWord,
     caughtInArea,
     hasBadge,
     earnBadge,

@@ -150,6 +150,8 @@ const props = defineProps<{
   enemies: Opponent[];
   team: OwnedCreature[];
   words: GameWord[];
+  /** 選擇題的干擾選項從這裡挑；沒給就用 words（words 很少時要另外給） */
+  choicePool?: GameWord[] | undefined;
   background: string;
   mode: 'wild' | 'gym';
   /** 開場訊息 */
@@ -159,6 +161,7 @@ const emit = defineEmits<{
   (e: 'won', summary: string): void;
   (e: 'lost'): void;
   (e: 'leave'): void;
+  (e: 'answered', word: GameWord, correct: boolean): void;
 }>();
 
 const store = useAdventureStore();
@@ -251,12 +254,15 @@ const useMove = (kind: MoveKind) => {
   const word = deck.draw();
   // 必殺技不給提示；撞擊依熟練度給提示
   const streak = kind === 'ultimate' ? null : getCorrectStreak(word.english);
-  question.value = makeQuestion(MOVE_KIND[kind], word, props.words, streak);
+  question.value = makeQuestion(MOVE_KIND[kind], word, props.choicePool ?? props.words, streak);
   phase.value = 'question';
 };
 
 const onAnswered = (correct: boolean) => {
-  if (question.value) store.recordAnswer(question.value.word, correct);
+  if (question.value) {
+    store.recordAnswer(question.value.word, correct);
+    emit('answered', question.value.word, correct);
+  }
   phase.value = 'busy';
 
   const crit = correct && Math.random() < critChance(store.recentAccuracy);

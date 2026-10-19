@@ -49,7 +49,27 @@
 
       <template v-else>
         <TeamCard class="q-mb-md" />
-        <EggCard class="q-mb-lg" />
+        <EggCard class="q-mb-md" />
+        <div v-if="store.lostWords.length >= LOST_MIN" class="lost-card app-card q-pa-md q-mb-lg">
+          <div class="lost-card__icon" aria-hidden="true">🔦</div>
+          <div class="col">
+            <div class="text-subtitle1 text-weight-bold">迷路字靈出現了！</div>
+            <div class="text-caption text-muted">
+              有
+              {{ store.lostWords.length }} 個答錯的單字迷路了，打贏迷路字靈把它們找回來，還有糖果！
+            </div>
+          </div>
+          <q-btn
+            unelevated
+            no-caps
+            color="blue-grey-6"
+            class="text-weight-bold"
+            icon="search"
+            label="去找回來"
+            to="/adventure/lost"
+          />
+        </div>
+        <div v-else class="q-mb-lg" />
 
         <div class="row items-center q-mb-sm">
           <div class="text-h6">🗺️ 探險地圖</div>
@@ -132,6 +152,7 @@ import PageTitle from 'src/components/PageTitle.vue';
 import { WordPronunciation } from 'src/modules/Vocabulary';
 import { sfx } from 'src/modules/Games/shared';
 import { AREAS, getArea } from '../../domain/areas';
+import { LOST_MIN } from '../../domain/lost';
 import { SPECIES, STARTER_IDS, getSpecies } from '../../domain/species';
 import { GYM_REQUIRED_CAUGHT, STARTER_LEVEL } from '../../domain/rules';
 import { useAdventureStore } from '../../store/useAdventureStore';
@@ -161,6 +182,15 @@ const confirmStarter = () => {
 </script>
 
 <style scoped lang="scss">
+.lost-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.lost-card__icon {
+  font-size: 2.4rem;
+}
 .starters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
