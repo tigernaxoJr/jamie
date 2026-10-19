@@ -7,7 +7,7 @@
       <template v-if="phase === 'intro'">
         <div class="scene app-card" :style="{ background: BACKGROUND }">
           <div class="appear">
-            <CreatureSvg :species="opponent.species" :size="150" class="lost__ghost" />
+            <CreatureView :species="opponent.species" :size="150" class="lost__ghost" />
           </div>
         </div>
         <div class="app-card q-pa-md q-mt-md">
@@ -108,7 +108,7 @@ import { lostRewardCandies } from '../../domain/lost';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import { candyCount, grantBonusCandies } from '../../store/candy';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 
 const BACKGROUND = 'linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 55%, #94a3b8 100%)';

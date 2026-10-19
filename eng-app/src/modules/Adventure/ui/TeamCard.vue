@@ -11,7 +11,7 @@
         <template v-if="c">
           <span v-if="i === 0" class="member__leader">隊長</span>
           <span v-if="store.evolveStatus(c).canEvolve" class="member__evolve">可以進化！</span>
-          <CreatureSvg
+          <CreatureView
             :species="getSpecies(c.speciesId)"
             :size="80"
             :evolved="(c.stage ?? 1) >= 2"
@@ -67,7 +67,7 @@ import { MAX_LEVEL, TEAM_SIZE, xpToNext } from '../domain/rules';
 import { CANDY_XP } from '../domain/candy';
 import { candyCount } from '../store/candy';
 import { useAdventureStore } from '../store/useAdventureStore';
-import CreatureSvg from './CreatureSvg.vue';
+import CreatureView from './CreatureView.vue';
 import ElementBadge from './ElementBadge.vue';
 
 const store = useAdventureStore();

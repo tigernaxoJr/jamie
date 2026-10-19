@@ -25,7 +25,7 @@
           >
             <template v-if="c">
               <span v-if="i === 0" class="tag tag--leader">隊長</span>
-              <CreatureSvg
+              <CreatureView
                 :species="getSpecies(c.speciesId)"
                 :size="56"
                 :animated="false"
@@ -72,7 +72,7 @@
           <span v-if="store.partner?.uid === c.uid" class="tag tag--leader">隊長</span>
           <span v-else-if="store.isInTeam(c.uid)" class="tag tag--team">隊伍中</span>
           <span v-if="store.evolveStatus(c).canEvolve" class="tag tag--evolve">可以進化！</span>
-          <CreatureSvg
+          <CreatureView
             :species="getSpecies(c.speciesId)"
             :size="72"
             :animated="false"
@@ -103,7 +103,7 @@ import { type Element, ELEMENTS, matchupSummary } from '../../domain/elements';
 import { creatureName, getSpecies } from '../../domain/species';
 import { TEAM_SIZE } from '../../domain/rules';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
 import CreatureFilterBar from '../team/CreatureFilterBar.vue';
 import TeamActionBar from '../team/TeamActionBar.vue';

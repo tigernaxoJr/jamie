@@ -11,7 +11,7 @@
       <!-- 開場 -->
       <template v-if="phase === 'intro'">
         <div class="scene app-card q-pa-lg text-center" :style="{ background: BACKGROUND }">
-          <CreatureSvg :species="LEGEND" :size="160" evolved />
+          <CreatureView :species="LEGEND" :size="160" evolved />
           <div class="speech q-mt-sm">
             集滿 {{ AREAS.length }} 個徽章的探險家，你終於來了！<br />
             我只接受<b>沒有提示的拼字</b>，所有招式都要自己拼出來喔！
@@ -58,7 +58,7 @@
       <div v-else-if="phase === 'won'" class="app-card q-pa-lg text-center">
         <template v-if="!caughtBefore">
           <div class="text-h5">🎉 {{ LEGEND.name }}認同你了，收服成功！</div>
-          <CreatureSvg :species="LEGEND" :size="150" class="q-my-md" />
+          <CreatureView :species="LEGEND" :size="150" class="q-my-md" />
           <div class="pill">📖 傳說字靈登錄到圖鑑！</div>
           <div v-if="joinedTeam" class="pill q-ml-xs">🤝 已加入隊伍</div>
         </template>
@@ -107,7 +107,7 @@ import { LEGEND, LEGEND_LEVEL, LEGEND_REPEAT_CANDY, isLegendUnlocked } from '../
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import { candyCount, grantBonusCandies } from '../../store/candy';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 
 const BACKGROUND = 'linear-gradient(180deg, #0f172a 0%, #1e3a8a 55%, #f59e0b 100%)';

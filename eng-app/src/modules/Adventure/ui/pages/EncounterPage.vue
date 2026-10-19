@@ -7,7 +7,7 @@
       <template v-if="phase === 'intro'">
         <div class="scene app-card" :style="{ background: area.background }">
           <div class="appear">
-            <CreatureSvg :species="wild.species" :size="160" :shiny="wild.shiny" />
+            <CreatureView :species="wild.species" :size="160" :shiny="wild.shiny" />
           </div>
         </div>
         <div class="app-card q-pa-md q-mt-md text-center">
@@ -93,7 +93,7 @@
         <div class="text-h5">
           🎉 收服了{{ wild.shiny ? '色違的' : '' }}{{ wild.species.name }}！
         </div>
-        <CreatureSvg :species="wild.species" :size="150" :shiny="wild.shiny" class="q-my-md" />
+        <CreatureView :species="wild.species" :size="150" :shiny="wild.shiny" class="q-my-md" />
         <div class="text-weight-bold">
           No.{{ String(wild.species.id).padStart(3, '0') }} · {{ wild.species.english }}
           <q-btn
@@ -182,7 +182,7 @@ import { canAppearInWild } from '../../domain/legend';
 import { candyCount } from '../../store/candy';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
 import CapturePanel from '../encounter/CapturePanel.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';

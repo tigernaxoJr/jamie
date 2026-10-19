@@ -9,8 +9,13 @@
         track-color="grey-3"
         size="12px"
         rounded
-        class="q-mb-lg"
+        class="q-mb-md"
       />
+
+      <div class="row items-center justify-end q-gutter-sm q-mb-md">
+        <span class="text-caption text-muted">字靈外觀</span>
+        <CreatureStyleToggle />
+      </div>
 
       <div class="dex">
         <button
@@ -25,7 +30,7 @@
           <span class="entry__no">No.{{ pad(s.id) }}</span>
           <span v-if="store.isCaught(s.id)" class="entry__caught" title="已收服">✔</span>
           <span v-if="store.isShinyCaught(s.id)" class="entry__shiny" title="已收服色違">✨</span>
-          <CreatureSvg
+          <CreatureView
             :species="s"
             :size="84"
             :silhouette="!store.isSeen(s.id)"
@@ -45,7 +50,7 @@
           <q-btn flat round icon="close" v-close-popup aria-label="關閉" />
         </div>
         <div class="text-center">
-          <CreatureSvg :species="selected" :size="160" :shiny="showShiny" />
+          <CreatureView :species="selected" :size="160" :shiny="showShiny" />
           <div v-if="store.isShinyCaught(selected.id)" class="q-mt-xs">
             <q-btn-toggle
               v-model="showShiny"
@@ -93,7 +98,7 @@
           </div>
           <div v-for="c in owned" :key="c.uid" class="owned">
             <div class="row items-center no-wrap">
-              <CreatureSvg
+              <CreatureView
                 :species="selected"
                 :size="44"
                 :animated="false"
@@ -190,7 +195,8 @@ import { RARITY_NAME, SPECIES, type Species, creatureName } from '../../domain/s
 import { TEAM_SIZE } from '../../domain/rules';
 import { sfx } from 'src/modules/Games/shared';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
+import CreatureStyleToggle from '../creature/CreatureStyleToggle.vue';
 import ElementBadge from '../ElementBadge.vue';
 
 const store = useAdventureStore();

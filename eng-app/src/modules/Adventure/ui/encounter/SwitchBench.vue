@@ -12,7 +12,7 @@
         :disabled="c.uid === activeUid || (hp[c.uid] ?? 0) <= 0"
         @click="$emit('pick', c.uid)"
       >
-        <CreatureSvg
+        <CreatureView
           :species="getSpecies(c.speciesId)"
           :size="56"
           :animated="false"
@@ -32,7 +32,7 @@
 <script setup lang="ts">
 import { creatureName, getSpecies } from '../../domain/species';
 import type { OwnedCreature } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 
 /** 換字靈：場上的和已倒下的不能選；被迫換人（目前的倒下）時不能取消 */
 defineProps<{

@@ -3,6 +3,7 @@
     <div class="page-container">
       <PageTitle emoji="🧭" title="字靈探險隊" subtitle="答對單字，收服各地的字靈！" back="/games">
         <template #actions>
+          <CreatureStyleToggle class="q-mr-sm" />
           <q-btn
             class="btn-3d"
             color="accent"
@@ -27,7 +28,7 @@
             :class="{ 'starter--on': picked === s.id }"
             @click="pick(s.id)"
           >
-            <CreatureSvg :species="s" :size="120" />
+            <CreatureView :species="s" :size="120" />
             <div class="text-h6">{{ s.name }}</div>
             <div class="text-weight-bold text-muted">
               {{ s.english }}
@@ -75,7 +76,7 @@
           class="legend-card app-card q-pa-md q-mb-lg"
           :class="{ 'legend-card--open': legendOpen }"
         >
-          <CreatureSvg
+          <CreatureView
             :species="LEGEND"
             :size="56"
             :silhouette="!legendOpen && !store.isSeen(LEGEND.id)"
@@ -123,7 +124,7 @@
             <div class="area__scene" :style="{ background: area.background }">
               <span class="area__emoji">{{ area.emoji }}</span>
               <div class="area__peek">
-                <CreatureSvg
+                <CreatureView
                   v-for="id in area.species.slice(0, 3)"
                   :key="id"
                   :species="getSpecies(id)"
@@ -212,7 +213,8 @@ import { LEGEND, isLegendUnlocked } from '../../domain/legend';
 import { SPECIES, STARTER_IDS, getSpecies } from '../../domain/species';
 import { GYM_REQUIRED_CAUGHT, STARTER_LEVEL } from '../../domain/rules';
 import { useAdventureStore } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
+import CreatureStyleToggle from '../creature/CreatureStyleToggle.vue';
 import ElementBadge from '../ElementBadge.vue';
 import TeamCard from '../TeamCard.vue';
 import EggCard from '../EggCard.vue';

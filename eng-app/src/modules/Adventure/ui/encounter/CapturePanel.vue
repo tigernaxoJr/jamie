@@ -6,7 +6,7 @@
         class="scene__creature"
         :class="{ shaking: phase === 'throwing', gone: phase === 'caught' }"
       >
-        <CreatureSvg :species="species" :size="150" :shiny="shiny" />
+        <CreatureView :species="species" :size="150" :shiny="shiny" />
       </div>
       <div
         v-if="phase === 'throwing' || phase === 'caught'"
@@ -151,7 +151,7 @@ import { bankWordFor } from '../../domain/words';
 import { CANDY_ENERGY, CANDY_ENERGY_COST } from '../../domain/candy';
 import { candyCount, spendCandies } from '../../store/candy';
 import { useAdventureStore } from '../../store/useAdventureStore';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
 import QuestionCard from '../QuestionCard.vue';
 

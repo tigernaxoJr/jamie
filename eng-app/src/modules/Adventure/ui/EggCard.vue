@@ -30,7 +30,7 @@
           <div class="text-h5">
             🎉 孵出了{{ result.creature.shiny ? '色違的' : '' }}{{ species!.name }}！
           </div>
-          <CreatureSvg
+          <CreatureView
             :species="species!"
             :size="150"
             :shiny="result.creature.shiny"
@@ -58,7 +58,7 @@ import { EGG_COST } from '../domain/egg';
 import { getSpecies } from '../domain/species';
 import { candyCount } from '../store/candy';
 import { useAdventureStore } from '../store/useAdventureStore';
-import CreatureSvg from './CreatureSvg.vue';
+import CreatureView from './CreatureView.vue';
 
 const store = useAdventureStore();
 const timers = useTimers();

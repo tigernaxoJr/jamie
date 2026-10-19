@@ -1,0 +1,1504 @@
+[
+  {
+    "id": 1,
+    "english": "Ember",
+    "look": {
+      "body": "round",
+      "color": "#44403c",
+      "belly": "#78716c",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "flame"
+      ],
+      "cheeks": true,
+      "surface": "charcoal"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#c99e1d",
+      "belly": "#c99e1d",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "flame"
+      ],
+      "cheeks": true,
+      "surface": "charcoal"
+    }
+  },
+  {
+    "id": 2,
+    "english": "Bubble",
+    "look": {
+      "body": "drop",
+      "color": "#38bdf8",
+      "belly": "#bae6fd",
+      "eyes": "big",
+      "mouth": "smile",
+      "parts": [
+        "bubbles"
+      ],
+      "cheeks": true,
+      "surface": "jelly"
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#f8385d",
+      "belly": "#fdbac5",
+      "eyes": "big",
+      "mouth": "smile",
+      "parts": [
+        "bubbles"
+      ],
+      "cheeks": true,
+      "surface": "jelly"
+    }
+  },
+  {
+    "id": 3,
+    "english": "Moss",
+    "look": {
+      "body": "round",
+      "color": "#a16207",
+      "belly": "#fde68a",
+      "eyes": "dot",
+      "mouth": "cat",
+      "parts": [
+        "ears",
+        "moss"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#0793a1",
+      "belly": "#8adbfd",
+      "eyes": "dot",
+      "mouth": "cat",
+      "parts": [
+        "ears",
+        "moss"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 4,
+    "english": "Pebble",
+    "look": {
+      "body": "bean",
+      "color": "#fef3c7",
+      "belly": "#fffbeb",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#78716c",
+      "parts": [
+        "cap"
+      ],
+      "surface": "stone"
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#c7edfe",
+      "belly": "#ebf9ff",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#c99e1d",
+      "parts": [
+        "cap"
+      ],
+      "surface": "stone"
+    }
+  },
+  {
+    "id": 5,
+    "english": "Seed",
+    "look": {
+      "body": "bean",
+      "color": "#86efac",
+      "belly": "#dcfce7",
+      "eyes": "happy",
+      "mouth": "smile",
+      "parts": [
+        "sprout"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#e186ef",
+      "belly": "#f7dcfc",
+      "eyes": "happy",
+      "mouth": "smile",
+      "parts": [
+        "sprout"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 6,
+    "english": "Spark",
+    "look": {
+      "body": "round",
+      "color": "#fde047",
+      "belly": "#fef9c3",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#f59e0b",
+      "parts": [
+        "wings",
+        "bulb"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#47bffd",
+      "belly": "#c3e5fe",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#0bd7f5",
+      "parts": [
+        "wings",
+        "bulb"
+      ]
+    }
+  },
+  {
+    "id": 7,
+    "english": "Button",
+    "look": {
+      "body": "bean",
+      "color": "#dc2626",
+      "belly": "#fecaca",
+      "eyes": "dot",
+      "mouth": "tiny",
+      "accent": "#111827",
+      "parts": [
+        "antenna",
+        "shell"
+      ]
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#26dc81",
+      "belly": "#cafee4",
+      "eyes": "dot",
+      "mouth": "tiny",
+      "accent": "#271511",
+      "parts": [
+        "antenna",
+        "shell"
+      ]
+    }
+  },
+  {
+    "id": 8,
+    "english": "Sun",
+    "look": {
+      "body": "round",
+      "color": "#fbbf24",
+      "belly": "#fef3c7",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#f59e0b",
+      "parts": [
+        "crown"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#24ccfb",
+      "belly": "#c7edfe",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#0bd7f5",
+      "parts": [
+        "crown"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 9,
+    "english": "Leaf",
+    "look": {
+      "body": "tall",
+      "color": "#bbf7d0",
+      "belly": "#f0fdf4",
+      "eyes": "dot",
+      "mouth": "cat",
+      "parts": [
+        "leafEars"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#eebbf7",
+      "belly": "#fbf0fd",
+      "eyes": "dot",
+      "mouth": "cat",
+      "parts": [
+        "leafEars"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 10,
+    "english": "Acorn",
+    "look": {
+      "body": "drop",
+      "color": "#b45309",
+      "belly": "#fcd34d",
+      "eyes": "big",
+      "mouth": "tiny",
+      "accent": "#78350f",
+      "parts": [
+        "cap"
+      ]
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#09b4a9",
+      "belly": "#4dcefc",
+      "eyes": "big",
+      "mouth": "tiny",
+      "accent": "#0f786a",
+      "parts": [
+        "cap"
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "english": "Glow",
+    "look": {
+      "body": "round",
+      "color": "#a7f3d0",
+      "belly": "#ecfdf5",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#34d399",
+      "parts": [
+        "antenna",
+        "wings",
+        "bulb"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#f3a7f0",
+      "belly": "#fdecfd",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#d334bd",
+      "parts": [
+        "antenna",
+        "wings",
+        "bulb"
+      ]
+    }
+  },
+  {
+    "id": 12,
+    "english": "Candle",
+    "look": {
+      "body": "tall",
+      "color": "#fef2f2",
+      "belly": "#fee2e2",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#fb923c",
+      "parts": [
+        "flame"
+      ]
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#f2fef8",
+      "belly": "#e2fef0",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#3cfbf1",
+      "parts": [
+        "flame"
+      ]
+    }
+  },
+  {
+    "id": 13,
+    "english": "Cloud",
+    "look": {
+      "body": "blob",
+      "color": "#e2e8f0",
+      "belly": "#f8fafc",
+      "eyes": "dot",
+      "mouth": "open",
+      "accent": "#facc15",
+      "parts": [
+        "horns"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#f0e3e2",
+      "belly": "#fcf8f8",
+      "eyes": "dot",
+      "mouth": "open",
+      "accent": "#15b5fa",
+      "parts": [
+        "horns"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 14,
+    "english": "Shell",
+    "look": {
+      "body": "bean",
+      "color": "#fb923c",
+      "belly": "#ffedd5",
+      "eyes": "big",
+      "mouth": "tiny",
+      "accent": "#fde68a",
+      "parts": [
+        "shell",
+        "antenna"
+      ]
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#3cfbf1",
+      "belly": "#d5fcff",
+      "eyes": "big",
+      "mouth": "tiny",
+      "accent": "#8adbfd",
+      "parts": [
+        "shell",
+        "antenna"
+      ]
+    }
+  },
+  {
+    "id": 15,
+    "english": "Coral",
+    "look": {
+      "body": "drop",
+      "color": "#f9a8d4",
+      "belly": "#fce7f3",
+      "eyes": "dot",
+      "mouth": "smile",
+      "accent": "#f472b6",
+      "parts": [
+        "horns",
+        "fins"
+      ],
+      "surface": "jelly"
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#acf9a8",
+      "belly": "#e8fce7",
+      "eyes": "dot",
+      "mouth": "smile",
+      "accent": "#75f472",
+      "parts": [
+        "horns",
+        "fins"
+      ],
+      "surface": "jelly"
+    }
+  },
+  {
+    "id": 16,
+    "english": "Sand",
+    "look": {
+      "body": "blob",
+      "color": "#fde68a",
+      "belly": "#fef9c3",
+      "eyes": "sleepy",
+      "mouth": "cat",
+      "parts": [
+        "ears"
+      ],
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#8adbfd",
+      "belly": "#c3e5fe",
+      "eyes": "sleepy",
+      "mouth": "cat",
+      "parts": [
+        "ears"
+      ],
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 17,
+    "english": "Kite",
+    "look": {
+      "body": "round",
+      "color": "#60a5fa",
+      "belly": "#dbeafe",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#1d4ed8",
+      "parts": [
+        "wings",
+        "antenna"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#fa6860",
+      "belly": "#fededb",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#d8491d",
+      "parts": [
+        "wings",
+        "antenna"
+      ]
+    }
+  },
+  {
+    "id": 18,
+    "english": "Star",
+    "look": {
+      "body": "blob",
+      "color": "#fefce8",
+      "belly": "#ffffff",
+      "eyes": "happy",
+      "mouth": "cat",
+      "accent": "#facc15",
+      "parts": [
+        "horns",
+        "star"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#e8f5fe",
+      "belly": "#f2dfa6",
+      "eyes": "happy",
+      "mouth": "cat",
+      "accent": "#15b5fa",
+      "parts": [
+        "horns",
+        "star"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 19,
+    "english": "Cup",
+    "look": {
+      "body": "tall",
+      "color": "#e0f2fe",
+      "belly": "#bae6fd",
+      "eyes": "big",
+      "mouth": "smile",
+      "accent": "#0284c7",
+      "parts": [
+        "handle",
+        "bubbles"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#fee0e3",
+      "belly": "#fdbac5",
+      "eyes": "big",
+      "mouth": "smile",
+      "accent": "#c70221",
+      "parts": [
+        "handle",
+        "bubbles"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 20,
+    "english": "Key",
+    "look": {
+      "body": "round",
+      "color": "#fde047",
+      "belly": "#fef9c3",
+      "eyes": "dot",
+      "mouth": "cat",
+      "accent": "#a16207",
+      "parts": [
+        "horns",
+        "tail"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#47bffd",
+      "belly": "#c3e5fe",
+      "eyes": "dot",
+      "mouth": "cat",
+      "accent": "#0793a1",
+      "parts": [
+        "horns",
+        "tail"
+      ]
+    }
+  },
+  {
+    "id": 21,
+    "english": "Toast",
+    "look": {
+      "body": "bean",
+      "color": "#f59e0b",
+      "belly": "#fde68a",
+      "eyes": "sleepy",
+      "mouth": "smile",
+      "parts": [
+        "flame"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#0bd7f5",
+      "belly": "#8adbfd",
+      "eyes": "sleepy",
+      "mouth": "smile",
+      "parts": [
+        "flame"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 22,
+    "english": "Pillow",
+    "look": {
+      "body": "blob",
+      "color": "#f8fafc",
+      "belly": "#e2e8f0",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#f472b6",
+      "parts": [
+        "bow",
+        "star"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#fcf8f8",
+      "belly": "#f0e3e2",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#75f472",
+      "parts": [
+        "bow",
+        "star"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 23,
+    "english": "Clock",
+    "look": {
+      "body": "tall",
+      "color": "#d6d3d1",
+      "belly": "#ffffff",
+      "eyes": "big",
+      "mouth": "tiny",
+      "accent": "#57534e",
+      "parts": [
+        "clock",
+        "antenna"
+      ]
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#f2dfa6",
+      "belly": "#f2dfa6",
+      "eyes": "big",
+      "mouth": "tiny",
+      "accent": "#c99e1d",
+      "parts": [
+        "clock",
+        "antenna"
+      ]
+    }
+  },
+  {
+    "id": 24,
+    "english": "Candy",
+    "look": {
+      "body": "round",
+      "color": "#fbcfe8",
+      "belly": "#ffffff",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#ec4899",
+      "parts": [
+        "bow",
+        "stripes"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#d2fbcf",
+      "belly": "#f2dfa6",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#48ec49",
+      "parts": [
+        "bow",
+        "stripes"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 25,
+    "english": "Cookie",
+    "look": {
+      "body": "bean",
+      "color": "#d97706",
+      "belly": "#fcd34d",
+      "eyes": "dot",
+      "mouth": "cat",
+      "accent": "#451a03",
+      "parts": [
+        "spots"
+      ]
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#06d1d9",
+      "belly": "#4dcefc",
+      "eyes": "dot",
+      "mouth": "cat",
+      "accent": "#03453b",
+      "parts": [
+        "spots"
+      ]
+    }
+  },
+  {
+    "id": 26,
+    "english": "Jelly",
+    "look": {
+      "body": "bean",
+      "color": "#5eead4",
+      "belly": "#ccfbf1",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "cherry"
+      ],
+      "cheeks": true,
+      "surface": "jelly"
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#ea5eba",
+      "belly": "#fbccee",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "cherry"
+      ],
+      "cheeks": true,
+      "surface": "jelly"
+    }
+  },
+  {
+    "id": 27,
+    "english": "Pepper",
+    "look": {
+      "body": "tall",
+      "color": "#ef4444",
+      "belly": "#fecaca",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "sprout",
+        "brows"
+      ]
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#44ef9a",
+      "belly": "#cafee4",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "sprout",
+        "brows"
+      ]
+    }
+  },
+  {
+    "id": 28,
+    "english": "Cake",
+    "look": {
+      "body": "bean",
+      "color": "#fef3c7",
+      "belly": "#fbcfe8",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#f59e0b",
+      "parts": [
+        "tiara",
+        "stripes"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#c7edfe",
+      "belly": "#d2fbcf",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#0bd7f5",
+      "parts": [
+        "tiara",
+        "stripes"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 29,
+    "english": "Rain",
+    "look": {
+      "body": "drop",
+      "color": "#3b82f6",
+      "belly": "#bfdbfe",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "parts": [
+        "cloud"
+      ],
+      "surface": "jelly"
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#f6523b",
+      "belly": "#fec3bf",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "parts": [
+        "cloud"
+      ],
+      "surface": "jelly"
+    }
+  },
+  {
+    "id": 30,
+    "english": "Rock",
+    "look": {
+      "body": "blob",
+      "color": "#a8a29e",
+      "belly": "#d6d3d1",
+      "eyes": "dot",
+      "mouth": "tiny",
+      "accent": "#57534e",
+      "parts": [
+        "spikes"
+      ],
+      "surface": "stone"
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#e8c55e",
+      "belly": "#f2dfa6",
+      "eyes": "dot",
+      "mouth": "tiny",
+      "accent": "#c99e1d",
+      "parts": [
+        "spikes"
+      ],
+      "surface": "stone"
+    }
+  },
+  {
+    "id": 31,
+    "english": "Wind",
+    "look": {
+      "body": "round",
+      "color": "#e0f2fe",
+      "belly": "#ffffff",
+      "eyes": "happy",
+      "mouth": "open",
+      "accent": "#0ea5e9",
+      "parts": [
+        "swirl",
+        "wings"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#fee0e3",
+      "belly": "#f2dfa6",
+      "eyes": "happy",
+      "mouth": "open",
+      "accent": "#e90e38",
+      "parts": [
+        "swirl",
+        "wings"
+      ]
+    }
+  },
+  {
+    "id": 32,
+    "english": "Snow",
+    "look": {
+      "body": "round",
+      "color": "#ffffff",
+      "belly": "#e0f2fe",
+      "eyes": "dot",
+      "mouth": "smile",
+      "accent": "#ef4444",
+      "parts": [
+        "snowflake",
+        "scarf"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#f2dfa6",
+      "belly": "#fee0e3",
+      "eyes": "dot",
+      "mouth": "smile",
+      "accent": "#44ef9a",
+      "parts": [
+        "snowflake",
+        "scarf"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 33,
+    "english": "Rainbow",
+    "look": {
+      "body": "blob",
+      "color": "#ffffff",
+      "belly": "#fef9c3",
+      "eyes": "happy",
+      "mouth": "smile",
+      "parts": [
+        "rainbow"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#f2dfa6",
+      "belly": "#c3e5fe",
+      "eyes": "happy",
+      "mouth": "smile",
+      "parts": [
+        "rainbow"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 34,
+    "english": "Ball",
+    "look": {
+      "body": "round",
+      "color": "#f97316",
+      "belly": "#fed7aa",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#7c2d12",
+      "parts": [
+        "stripes"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#16f9e5",
+      "belly": "#aafbfe",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#127c62",
+      "parts": [
+        "stripes"
+      ]
+    }
+  },
+  {
+    "id": 35,
+    "english": "Kick",
+    "look": {
+      "body": "tall",
+      "color": "#fb7185",
+      "belly": "#ffe4e6",
+      "eyes": "dot",
+      "mouth": "smile",
+      "accent": "#dc2626",
+      "parts": [
+        "headband"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#71fba2",
+      "belly": "#e4ffef",
+      "eyes": "dot",
+      "mouth": "smile",
+      "accent": "#26dc81",
+      "parts": [
+        "headband"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 36,
+    "english": "Swim",
+    "look": {
+      "body": "bean",
+      "color": "#0ea5e9",
+      "belly": "#e0f2fe",
+      "eyes": "big",
+      "mouth": "smile",
+      "accent": "#fde047",
+      "parts": [
+        "headband",
+        "fins"
+      ]
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#e90e38",
+      "belly": "#fee0e3",
+      "eyes": "big",
+      "mouth": "smile",
+      "accent": "#47bffd",
+      "parts": [
+        "headband",
+        "fins"
+      ]
+    }
+  },
+  {
+    "id": 37,
+    "english": "Jump",
+    "look": {
+      "body": "tall",
+      "color": "#84cc16",
+      "belly": "#ecfccb",
+      "eyes": "big",
+      "mouth": "cat",
+      "accent": "#3f6212",
+      "parts": [
+        "antenna",
+        "wings"
+      ]
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#1629cc",
+      "belly": "#cbd3fc",
+      "eyes": "big",
+      "mouth": "cat",
+      "accent": "#121762",
+      "parts": [
+        "antenna",
+        "wings"
+      ]
+    }
+  },
+  {
+    "id": 38,
+    "english": "Hero",
+    "look": {
+      "body": "round",
+      "color": "#fde68a",
+      "belly": "#ffffff",
+      "eyes": "big",
+      "mouth": "smile",
+      "accent": "#dc2626",
+      "parts": [
+        "cape",
+        "headband"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#8adbfd",
+      "belly": "#f2dfa6",
+      "eyes": "big",
+      "mouth": "smile",
+      "accent": "#26dc81",
+      "parts": [
+        "cape",
+        "headband"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 39,
+    "english": "Frog",
+    "look": {
+      "body": "bean",
+      "color": "#22c55e",
+      "belly": "#bbf7d0",
+      "eyes": "big",
+      "mouth": "cat",
+      "parts": [
+        "ears"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#af22c5",
+      "belly": "#eebbf7",
+      "eyes": "big",
+      "mouth": "cat",
+      "parts": [
+        "ears"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 40,
+    "english": "Monkey",
+    "look": {
+      "body": "round",
+      "color": "#a16207",
+      "belly": "#fde68a",
+      "eyes": "dot",
+      "mouth": "smile",
+      "parts": [
+        "ears",
+        "tail"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#0793a1",
+      "belly": "#8adbfd",
+      "eyes": "dot",
+      "mouth": "smile",
+      "parts": [
+        "ears",
+        "tail"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 41,
+    "english": "Panda",
+    "look": {
+      "body": "round",
+      "color": "#ffffff",
+      "belly": "#f1f5f9",
+      "eyes": "dot",
+      "mouth": "cat",
+      "accent": "#1f2937",
+      "parts": [
+        "patches"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#f2dfa6",
+      "belly": "#f9f1f1",
+      "eyes": "dot",
+      "mouth": "cat",
+      "accent": "#37211f",
+      "parts": [
+        "patches"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 42,
+    "english": "Tiger",
+    "look": {
+      "body": "round",
+      "color": "#fb923c",
+      "belly": "#fff7ed",
+      "eyes": "big",
+      "mouth": "cat",
+      "accent": "#431407",
+      "parts": [
+        "ears",
+        "stripes"
+      ],
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#3cfbf1",
+      "belly": "#edfeff",
+      "eyes": "big",
+      "mouth": "cat",
+      "accent": "#074332",
+      "parts": [
+        "ears",
+        "stripes"
+      ],
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 43,
+    "english": "Dragon",
+    "look": {
+      "body": "tall",
+      "color": "#fbbf24",
+      "belly": "#fef3c7",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#b45309",
+      "parts": [
+        "spikes",
+        "horns",
+        "wings",
+        "tail"
+      ]
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#24ccfb",
+      "belly": "#c7edfe",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#09b4a9",
+      "parts": [
+        "spikes",
+        "horns",
+        "wings",
+        "tail"
+      ]
+    }
+  },
+  {
+    "id": 44,
+    "english": "Crown",
+    "look": {
+      "body": "bean",
+      "color": "#fcd34d",
+      "belly": "#fef9c3",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#dc2626",
+      "parts": [
+        "tiara"
+      ]
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#4dcefc",
+      "belly": "#c3e5fe",
+      "eyes": "sleepy",
+      "mouth": "tiny",
+      "accent": "#26dc81",
+      "parts": [
+        "tiara"
+      ]
+    }
+  },
+  {
+    "id": 45,
+    "english": "Shadow",
+    "look": {
+      "body": "blob",
+      "color": "#475569",
+      "belly": "#64748b",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#facc15",
+      "parts": [
+        "horns"
+      ]
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#c99e1d",
+      "belly": "#d1a41e",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#15b5fa",
+      "parts": [
+        "horns"
+      ]
+    }
+  },
+  {
+    "id": 46,
+    "english": "Knight",
+    "look": {
+      "body": "tall",
+      "color": "#94a3b8",
+      "belly": "#cbd5e1",
+      "eyes": "dot",
+      "mouth": "tiny",
+      "accent": "#64748b",
+      "parts": [
+        "helmet"
+      ]
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#b89794",
+      "belly": "#e1cccb",
+      "eyes": "dot",
+      "mouth": "tiny",
+      "accent": "#d1a41e",
+      "parts": [
+        "helmet"
+      ]
+    }
+  },
+  {
+    "id": 47,
+    "english": "Moon",
+    "look": {
+      "body": "round",
+      "color": "#fef9c3",
+      "belly": "#ffffff",
+      "eyes": "sleepy",
+      "mouth": "smile",
+      "accent": "#facc15",
+      "parts": [
+        "crescent",
+        "star"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#c3e5fe",
+      "belly": "#f2dfa6",
+      "eyes": "sleepy",
+      "mouth": "smile",
+      "accent": "#15b5fa",
+      "parts": [
+        "crescent",
+        "star"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 48,
+    "english": "Comet",
+    "look": {
+      "body": "drop",
+      "color": "#fb923c",
+      "belly": "#fde68a",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#dc2626",
+      "parts": [
+        "flame",
+        "tail"
+      ]
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#3cfbf1",
+      "belly": "#8adbfd",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#26dc81",
+      "parts": [
+        "flame",
+        "tail"
+      ]
+    }
+  },
+  {
+    "id": 49,
+    "english": "Gift",
+    "look": {
+      "body": "bean",
+      "color": "#34d399",
+      "belly": "#d1fae5",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#ef4444",
+      "parts": [
+        "bow",
+        "stripes"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "bean",
+      "color": "#d334bd",
+      "belly": "#fad1fa",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#44ef9a",
+      "parts": [
+        "bow",
+        "stripes"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 50,
+    "english": "Lantern",
+    "look": {
+      "body": "tall",
+      "color": "#ef4444",
+      "belly": "#fecaca",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#facc15",
+      "parts": [
+        "stripes",
+        "flame"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "tall",
+      "color": "#44ef9a",
+      "belly": "#cafee4",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#15b5fa",
+      "parts": [
+        "stripes",
+        "flame"
+      ],
+      "cheeks": true
+    }
+  },
+  {
+    "id": 51,
+    "english": "Bell",
+    "look": {
+      "body": "drop",
+      "color": "#fbbf24",
+      "belly": "#fef3c7",
+      "eyes": "dot",
+      "mouth": "open",
+      "accent": "#dc2626",
+      "parts": [
+        "bow"
+      ]
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#24ccfb",
+      "belly": "#c7edfe",
+      "eyes": "dot",
+      "mouth": "open",
+      "accent": "#26dc81",
+      "parts": [
+        "bow"
+      ]
+    }
+  },
+  {
+    "id": 52,
+    "english": "Firework",
+    "look": {
+      "body": "round",
+      "color": "#1e3a8a",
+      "belly": "#3b82f6",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#f472b6",
+      "parts": [
+        "crown",
+        "star"
+      ]
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#8a381e",
+      "belly": "#f6523b",
+      "eyes": "big",
+      "mouth": "open",
+      "accent": "#75f472",
+      "parts": [
+        "crown",
+        "star"
+      ]
+    }
+  },
+  {
+    "id": 53,
+    "english": "Wish",
+    "look": {
+      "body": "blob",
+      "color": "#fff7ed",
+      "belly": "#ffffff",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#fbbf24",
+      "parts": [
+        "crown",
+        "halo",
+        "wings",
+        "star"
+      ],
+      "cheeks": true
+    },
+    "shiny": {
+      "body": "blob",
+      "color": "#edfeff",
+      "belly": "#f2dfa6",
+      "eyes": "happy",
+      "mouth": "smile",
+      "accent": "#24ccfb",
+      "parts": [
+        "crown",
+        "halo",
+        "wings",
+        "star"
+      ],
+      "cheeks": true
+    }
+  }
+]

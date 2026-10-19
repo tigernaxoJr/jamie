@@ -24,7 +24,7 @@
           </div>
           <div class="row justify-center q-gutter-md q-mt-md">
             <div v-for="(o, i) in opponents" :key="i" class="opponent">
-              <CreatureSvg :species="o.species" :size="72" :animated="false" />
+              <CreatureView :species="o.species" :size="72" :animated="false" />
               <div class="text-caption text-weight-bold">{{ o.species.name }} Lv {{ o.level }}</div>
               <ElementBadge :element="o.species.element" />
             </div>
@@ -46,7 +46,7 @@
           </div>
           <div class="row q-gutter-md">
             <div v-for="c in store.team" :key="c.uid" class="text-center">
-              <CreatureSvg
+              <CreatureView
                 :species="getSpecies(c.speciesId)"
                 :size="60"
                 :animated="false"
@@ -155,7 +155,7 @@ import { type Opponent, TEAM_SIZE } from '../../domain/rules';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import { type Element, effectiveness } from '../../domain/elements';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
 import MatchupTag from '../MatchupTag.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';

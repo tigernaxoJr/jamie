@@ -145,7 +145,17 @@ export default defineConfig((/* ctx */) => {
     pwa: {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       extendGenerateSWOptions(cfg) {
+        // 字靈的立體圖與 3D 模型共十幾 MB，不在安裝時預先下載，看到時才快取（重新算圖後會在背景更新）
+        cfg.globIgnores = [...(cfg.globIgnores ?? []), '**/creatures/**'];
         cfg.runtimeCaching = [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/creatures/'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'creatures',
+              expiration: { maxEntries: 300 },
+            },
+          },
           // Google Fonts：樣式表常更新，字型檔案不會變
           {
             urlPattern: ({ url }) => url.origin === 'https://fonts.googleapis.com',

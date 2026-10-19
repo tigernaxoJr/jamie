@@ -1,6 +1,6 @@
 <template>
   <div class="fighter" :class="{ hit: fx === 'hit', lunge: fx === 'lunge', faint: fainted }">
-    <CreatureSvg
+    <CreatureView
       :key="creatureKey"
       :species="species"
       :size="120"
@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import type { Species } from '../../domain/species';
-import CreatureSvg from '../CreatureSvg.vue';
+import CreatureView from '../CreatureView.vue';
 
 /** 對戰場上的字靈：受擊、衝撞、倒下的動畫，以及飄出來的傷害數字 */
 withDefaults(

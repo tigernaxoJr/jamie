@@ -2,7 +2,11 @@
 
 類似收集養成的探險遊戲：用題庫單字答題來捕捉、對戰「字靈」，收集圖鑑。
 共 10 個地區（對應題庫第 1～10 級）、53 種字靈（含 1 隻傳說字靈，集滿徽章後挑戰）。
-所有字靈都是原創，外觀由 SVG 部件組合（`ui/CreatureSvg.vue`），不需要任何圖片素材。
+所有字靈都是原創，外觀由 SVG 部件組合（`ui/CreatureSvg.vue`）。
+同一份部件資料也用 Blender 程序化建成 3D 模型（`tools/blender`），算出立體圖（`public/creatures/*.webp`）與
+即時 3D 用的 GLB（`public/creatures/*.glb`）。畫面用 `ui/CreatureView.vue`，依玩家選的「字靈外觀」
+顯示插畫、立體圖或即時 3D（`ui/creature/style.ts`；3D 只用在尺寸 110 以上的地方，其餘用立體圖）。
+改了 `species.ts` 的外觀後要重新產生，見 `tools/blender/README.md`。
 
 ## 結構
 
@@ -19,8 +23,10 @@ Adventure/
 │   └── words.ts          # 取得地區出題用的單字
 ├── store/                # 存檔（localStorage 'adventure-save'）
 └── ui/
-    ├── CreatureSvg.vue   # 字靈外觀產生器（身體與臉）
-    ├── creature/         # 部件：身體後方 / 前方的配件、共用幾何資料
+    ├── CreatureView.vue  # 字靈外觀：依設定切換插畫 / 立體圖 / 即時 3D
+    ├── CreatureSvg.vue   # 平面插畫產生器（身體與臉）
+    ├── creature/         # 部件：身體後方 / 前方的配件、共用幾何資料、顯示方式設定
+    │   └── three/        # 即時 3D（共用一個 WebGL renderer，動態載入 three.js）、色違換色
     ├── QuestionCard.vue  # 捕捉、對戰共用的答題卡
     ├── encounter/        # 捕捉面板、對戰面板
     ├── MatchupTag.vue    # 屬性相剋提示標籤
