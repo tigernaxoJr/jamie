@@ -1,0 +1,1 @@
+import{cr as n}from"./index-CCbglHTV.js";function i(){const e=new Set,r=(s,c)=>{const t=setTimeout(()=>{e.delete(t),s()},c);e.add(t)},o=()=>{e.forEach(clearTimeout),e.clear()};return n(o),{later:r,clearAll:o}}export{i as u};
