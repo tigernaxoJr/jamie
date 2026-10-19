@@ -1,6 +1,16 @@
 /** 每日任務：任務清單、每天挑哪幾個、進度怎麼算（純資料與規則） */
 
-export type QuestId = 'goal' | 'quiz' | 'play' | 'stage' | 'stars' | 'review' | 'catch' | 'feed';
+export type QuestId =
+  | 'goal'
+  | 'quiz'
+  | 'play'
+  | 'stage'
+  | 'stars'
+  | 'review'
+  | 'catch'
+  | 'feed'
+  | 'win'
+  | 'spell';
 
 export interface Quest {
   id: QuestId;
@@ -20,6 +30,8 @@ export const QUESTS: Record<QuestId, Quest> = {
   review: { id: 'review', icon: '🔁', text: '用「只練答錯的字」玩一局', target: 1, reward: 3 },
   catch: { id: 'catch', icon: '🧭', text: '在字靈探險收服 1 隻字靈', target: 1, reward: 3 },
   feed: { id: 'feed', icon: '🍬', text: '餵字靈 3 顆糖果', target: 3, reward: 2 },
+  win: { id: 'win', icon: '⚔️', text: '在字靈探險打贏 2 場對戰', target: 2, reward: 3 },
+  spell: { id: 'spell', icon: '✏️', text: '在字靈探險拼對 10 個字', target: 10, reward: 4 },
 };
 
 /** 3 個任務都完成的額外獎勵 */
@@ -27,7 +39,7 @@ export const ALL_DONE_BONUS = 5;
 
 /** 第一個任務一定是背單字，後兩個從玩的任務裡挑 */
 const LEARN: QuestId[] = ['goal', 'quiz'];
-const PLAY: QuestId[] = ['play', 'stage', 'stars', 'review', 'catch', 'feed'];
+const PLAY: QuestId[] = ['play', 'stage', 'stars', 'review', 'catch', 'feed', 'win', 'spell'];
 
 /** 由日期字串產生固定的亂數種子（同一天每次打開都是同樣的任務） */
 const seedOf = (day: string) => [...day].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -57,6 +69,10 @@ export interface QuestCounts {
   review: number;
   catch: number;
   feed: number;
+  /** 字靈探險打贏的對戰 */
+  win: number;
+  /** 字靈探險拼對的字 */
+  spell: number;
 }
 
 export const emptyCounts = (): QuestCounts => ({
@@ -66,6 +82,8 @@ export const emptyCounts = (): QuestCounts => ({
   review: 0,
   catch: 0,
   feed: 0,
+  win: 0,
+  spell: 0,
 });
 
 /** 從學習日誌即時算出來的進度 */
@@ -85,6 +103,8 @@ export const questProgress = (q: Quest, counts: QuestCounts, live: LiveProgress)
     review: counts.review,
     catch: counts.catch,
     feed: counts.feed,
+    win: counts.win,
+    spell: counts.spell,
   };
   return Math.min(q.target, raw[q.id]);
 };

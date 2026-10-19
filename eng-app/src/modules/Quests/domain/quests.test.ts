@@ -29,4 +29,11 @@ describe('daily quests', () => {
     expect(questProgress(QUESTS.play, counts, live)).toBe(1);
     expect(questProgress(QUESTS.goal, counts, { ...live, goalDone: true })).toBe(1);
   });
+
+  it('字靈探險的對戰、拼字任務照次數算', () => {
+    const live = { goalDone: false, quizAnswers: 0 };
+    const counts = { ...emptyCounts(), win: 5, spell: 4 };
+    expect(questProgress(QUESTS.win, counts, live)).toBe(QUESTS.win.target);
+    expect(questProgress(QUESTS.spell, counts, live)).toBe(4);
+  });
 });

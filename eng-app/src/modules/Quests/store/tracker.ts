@@ -31,6 +31,8 @@ const save = useLocalStorage<QuestSave>('daily-quests', emptySave(''), { mergeDe
 const today = (): QuestSave => {
   const day = dayKey(Date.now());
   if (save.value.day !== day) save.value = emptySave(day);
+  // 舊版存檔的 counts 沒有新加的任務欄位（mergeDefaults 只合併第一層）
+  else save.value.counts = { ...emptyCounts(), ...save.value.counts };
   return save.value;
 };
 
@@ -38,7 +40,9 @@ const today = (): QuestSave => {
 export type QuestEvent =
   | { type: 'game'; gameId: string; stageCleared: boolean; stars: number; review: boolean }
   | { type: 'catch' }
-  | { type: 'feed' };
+  | { type: 'feed' }
+  | { type: 'win' }
+  | { type: 'spell' };
 
 export const trackQuest = (e: QuestEvent): void => {
   const c = today().counts;

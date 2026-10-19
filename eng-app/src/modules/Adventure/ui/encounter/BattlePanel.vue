@@ -145,7 +145,14 @@ import {
   maxHp,
   playerDamage,
 } from '../../domain/rules';
-import { GUARD_KIND, MOVE_KIND, type Question, makeQuestion } from '../../domain/questions';
+import {
+  GUARD_KIND,
+  MOVE_KIND,
+  type Question,
+  isSpelling,
+  makeQuestion,
+} from '../../domain/questions';
+import { trackQuest } from 'src/modules/Quests';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 import MatchupTag from '../MatchupTag.vue';
 import QuestionCard from '../QuestionCard.vue';
@@ -301,7 +308,7 @@ const useMove = (kind: Action) => {
 
 const onAnswered = (correct: boolean) => {
   if (question.value) {
-    store.recordAnswer(question.value.word, correct);
+    store.recordAnswer(question.value.word, correct, isSpelling(question.value.kind));
     emit('answered', question.value.word, correct);
   }
   phase.value = 'busy';
@@ -480,6 +487,7 @@ const win = () => {
   }
   const summary = `打贏了！隊伍得到 ${total} 經驗值${levelUps.length ? `，${levelUps.join('、')}！` : ''}`;
   message.value = summary;
+  trackQuest({ type: 'win' });
   sfx.win();
   timers.later(() => emit('won', summary), 1500);
 };

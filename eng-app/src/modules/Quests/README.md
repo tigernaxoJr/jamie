@@ -20,6 +20,7 @@ Quests/
 | 每日目標                 | Vocabulary 學習日誌（`getTodayProgress`）     |
 | 單字測驗答題             | Vocabulary 學習日誌（今天 `sources.quiz`）    |
 | 玩遊戲、過關、3 星、複習 | Games 的 `useGameSession` 結算時 `trackQuest` |
-| 收服、餵糖果             | Adventure store 呼叫 `trackQuest`             |
+| 收服、餵糖果、拼對字     | Adventure store 呼叫 `trackQuest`             |
+| 打贏字靈對戰             | Adventure 的 `BattlePanel` 呼叫 `trackQuest`  |
 
 卡片不直接發糖果（避免 Quests 和 Adventure 互相依賴），由使用的頁面傳入 `grant`。

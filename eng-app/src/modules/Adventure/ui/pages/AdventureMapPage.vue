@@ -103,6 +103,8 @@
           />
         </div>
 
+        <DailyQuestsCard :grant="grantBonusCandies" class="q-mb-lg" />
+
         <div class="row items-center q-mb-sm">
           <div class="text-h6">🗺️ 探險地圖</div>
           <q-space />
@@ -202,6 +204,8 @@ import { WordPronunciation } from 'src/modules/Vocabulary';
 import { sfx } from 'src/modules/Games/shared';
 import { AREAS, getArea } from '../../domain/areas';
 import { LOST_MIN } from '../../domain/lost';
+import { DailyQuestsCard } from 'src/modules/Quests';
+import { grantBonusCandies } from '../../store/candy';
 import { AREA_COMPLETE_CANDY } from '../../domain/egg';
 import type { Area } from '../../domain/areas';
 import { LEGEND, isLegendUnlocked } from '../../domain/legend';

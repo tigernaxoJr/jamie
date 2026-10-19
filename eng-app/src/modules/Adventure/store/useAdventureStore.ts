@@ -263,13 +263,17 @@ export const useAdventureStore = defineStore('adventure', () => {
     return true;
   };
 
-  /** 記錄答題：更新暴擊率，並寫入單字記憶（影響單字測驗出題） */
-  const recordAnswer = (word: GameWord, correct: boolean) => {
+  /**
+   * 記錄答題：更新暴擊率，並寫入單字記憶（影響單字測驗出題）。
+   * spelled：這題是拼字題（拼對算每日任務）。
+   */
+  const recordAnswer = (word: GameWord, correct: boolean, spelled = false) => {
     const r = save.value.recentAnswers;
     r.push(correct);
     if (r.length > RECENT_SIZE) r.splice(0, r.length - RECENT_SIZE);
     recordWordAnswer(word.english, correct, 'adventure');
     if (!correct) save.value.lostWords = addLostWord(save.value.lostWords, word);
+    else if (spelled) trackQuest({ type: 'spell' });
   };
 
   const lostWords = computed(() => save.value.lostWords);

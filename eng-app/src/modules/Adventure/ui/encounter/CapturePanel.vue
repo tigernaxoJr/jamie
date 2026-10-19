@@ -142,7 +142,7 @@ import {
   DAILY_BONUS_ENERGY,
   captureRate,
 } from '../../domain/rules';
-import { CAPTURE_KIND, type Question, makeQuestion } from '../../domain/questions';
+import { CAPTURE_KIND, type Question, isSpelling, makeQuestion } from '../../domain/questions';
 import { CANDY_ENERGY, CANDY_ENERGY_COST } from '../../domain/candy';
 import { candyCount, spendCandies } from '../../store/candy';
 import { useAdventureStore } from '../../store/useAdventureStore';
@@ -197,7 +197,9 @@ const ask = (d: CaptureDifficulty) => {
 };
 
 const onAnswered = (correct: boolean) => {
-  if (question.value) store.recordAnswer(question.value.word, correct);
+  if (question.value) {
+    store.recordAnswer(question.value.word, correct, isSpelling(question.value.kind));
+  }
   if (correct) energy.value = Math.min(MAX_ENERGY, energy.value + CAPTURE_ENERGY[difficulty]);
   round.value++;
   // 能量滿了捕捉率已經最高，不用再答題
