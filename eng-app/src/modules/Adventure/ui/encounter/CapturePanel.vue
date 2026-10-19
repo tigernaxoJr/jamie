@@ -79,6 +79,9 @@
       <div class="text-center text-weight-bold q-mb-sm">
         第 {{ round + 1 }} / {{ CAPTURE_ROUNDS }} 題：選擇挑戰難度
       </div>
+      <div v-if="isNameRound" class="name-round q-mb-sm">
+        ✨ 最後一題考{{ species.name }}自己的英文名字！
+      </div>
       <div class="difficulties">
         <q-btn
           v-for="d in difficulties"
@@ -143,6 +146,8 @@ import {
   captureRate,
 } from '../../domain/rules';
 import { CAPTURE_KIND, type Question, isSpelling, makeQuestion } from '../../domain/questions';
+import { nameWordOf } from '../../domain/nameWord';
+import { bankWordFor } from '../../domain/words';
 import { CANDY_ENERGY, CANDY_ENERGY_COST } from '../../domain/candy';
 import { candyCount, spendCandies } from '../../store/candy';
 import { useAdventureStore } from '../../store/useAdventureStore';
@@ -189,16 +194,22 @@ const difficulties: { key: CaptureDifficulty; label: string; desc: string; color
   { key: 'hard', label: '困難', desc: '看中文拼英文', color: 'deep-orange' },
 ];
 
+/** 最後一題考這隻字靈的英文名字；題庫沒有這個字時不寫入單字記憶 */
+const nameInBank = bankWordFor(props.species.english);
+const nameWord = nameWordOf(props.species, nameInBank);
+const isNameRound = computed(() => round.value === CAPTURE_ROUNDS - 1);
+
 const ask = (d: CaptureDifficulty) => {
   difficulty = d;
-  const word = deck.draw();
+  const word = isNameRound.value ? nameWord : deck.draw();
   question.value = makeQuestion(CAPTURE_KIND[d], word, props.words, getCorrectStreak(word.english));
   phase.value = 'question';
 };
 
 const onAnswered = (correct: boolean) => {
-  if (question.value) {
-    store.recordAnswer(question.value.word, correct, isSpelling(question.value.kind));
+  const q = question.value;
+  if (q && (q.word !== nameWord || nameInBank)) {
+    store.recordAnswer(q.word, correct, isSpelling(q.kind));
   }
   if (correct) energy.value = Math.min(MAX_ENERGY, energy.value + CAPTURE_ENERGY[difficulty]);
   round.value++;
@@ -238,6 +249,14 @@ const restart = () => {
 </script>
 
 <style scoped lang="scss">
+.name-round {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #e0f2fe;
+  color: #075985;
+  font-weight: 800;
+  text-align: center;
+}
 .scene {
   position: relative;
   height: clamp(170px, 30vh, 230px);
