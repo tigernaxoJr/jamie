@@ -19,6 +19,7 @@
           :fainted="enemyHp <= 0"
           :popup="popupFor('enemy')"
         />
+        <div v-if="enemyCharged" class="charge-tag">⚡ 蓄力中</div>
       </div>
 
       <div class="side side--partner">
@@ -133,7 +134,10 @@ import {
   ULTIMATE_COMBO,
   battleXp,
   critChance,
+  HEAVY_MULTIPLIER,
+  enemyAction,
   enemyDamage,
+  healAmount,
   maxHp,
   playerDamage,
 } from '../../domain/rules';
@@ -190,6 +194,9 @@ const enemyIdx = ref(0);
 const enemy = computed(() => props.enemies[enemyIdx.value]!);
 const enemyMax = computed(() => maxHp(enemy.value.species, enemy.value.level));
 const enemyHp = ref(enemyMax.value);
+/** 館主字靈的狀態：上回合蓄力了、這隻補過血了 */
+const enemyCharged = ref(false);
+const enemyHealed = ref(false);
 
 const combo = ref(0);
 type Phase = 'choose' | 'question' | 'busy' | 'switch';
@@ -312,15 +319,50 @@ const enemyFainted = () => {
   timers.later(() => {
     enemyIdx.value = next;
     enemyHp.value = enemyMax.value;
+    enemyCharged.value = false;
+    enemyHealed.value = false;
     phase.value = 'choose';
   }, 1300);
 };
 
+const backToPlayer = (text: string) => {
+  message.value = text;
+  phase.value = 'choose';
+};
+
 const enemyTurn = () => {
-  const dmg = enemyDamage(enemy.value.species, enemy.value.level, activeSpecies.value);
+  const name = enemy.value.species.name;
+  const action = enemyAction({
+    isLeader: props.mode === 'gym',
+    hp: enemyHp.value,
+    maxHp: enemyMax.value,
+    charged: enemyCharged.value,
+    healed: enemyHealed.value,
+  });
+
+  if (action === 'charge') {
+    enemyCharged.value = true;
+    message.value = `${name}正在蓄力！下一回合會使出重擊！`;
+    timers.later(() => backToPlayer('趁現在打倒牠，或是換上耐打的字靈！'), 1300);
+    return;
+  }
+  if (action === 'heal') {
+    enemyHealed.value = true;
+    const amount = Math.min(healAmount(enemyMax.value), enemyMax.value - enemyHp.value);
+    enemyHp.value += amount;
+    message.value = `${name}吃了一顆樹果，恢復了體力！`;
+    showPopup('enemy', `+${amount}`);
+    timers.later(() => backToPlayer('輪到你了！要用什麼招式？'), 1300);
+    return;
+  }
+
+  const heavy = action === 'heavy';
+  enemyCharged.value = false;
+  const base = enemyDamage(enemy.value.species, enemy.value.level, activeSpecies.value);
+  const dmg = heavy ? Math.round(base * HEAVY_MULTIPLIER) : base;
   const eff = effectiveness(enemy.value.species.element, activeSpecies.value.element);
   const note = eff > 1 ? '效果絕佳！' : eff < 1 ? '效果不太好…' : '';
-  message.value = `${enemy.value.species.name}發動攻擊！${note}`;
+  message.value = `${name}${heavy ? '使出重擊' : '發動攻擊'}！${note}`;
   timers.later(() => {
     fx.value = 'partnerHit';
     hp[activeUid.value] = Math.max(0, activeHp.value - dmg);
@@ -329,11 +371,7 @@ const enemyTurn = () => {
   }, 400);
   timers.later(() => {
     fx.value = '';
-    if (activeHp.value > 0) {
-      message.value = '輪到你了！要用什麼招式？';
-      phase.value = 'choose';
-      return;
-    }
+    if (activeHp.value > 0) return backToPlayer('輪到你了！要用什麼招式？');
     // 目前的字靈倒下：還有隊友就換人，沒有就輸了
     if (aliveBench.value.length > 0) {
       message.value = `${activeName()}累倒了！`;
@@ -397,6 +435,23 @@ const win = () => {
   right: 12px;
   flex-direction: row;
   align-items: flex-start;
+}
+.charge-tag {
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f97316;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.1);
+  }
 }
 .side--partner {
   bottom: 8px;

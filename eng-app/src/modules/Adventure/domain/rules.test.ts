@@ -10,7 +10,10 @@ import {
 import {
   EVOLVE_LEVEL,
   EVOLVE_MASTERED,
+  CHARGE_CHANCE,
+  type EnemyState,
   attack,
+  enemyAction,
   canEvolve,
   captureRate,
   maxHp,
@@ -146,5 +149,30 @@ describe('areas', () => {
       if (i === 0) expect(area.unlockAfter).toBeUndefined();
       else expect(area.unlockAfter).toBe(AREAS[i - 1]!.id);
     });
+  });
+});
+
+describe('enemyAction', () => {
+  const leader: EnemyState = { isLeader: true, hp: 100, maxHp: 100, charged: false, healed: false };
+  const never = () => 0.99;
+  const always = () => 0;
+
+  it('野生字靈只會普通攻擊', () => {
+    expect(enemyAction({ ...leader, isLeader: false, hp: 10 }, always)).toBe('attack');
+  });
+
+  it('蓄力後下一回合一定重擊', () => {
+    expect(enemyAction({ ...leader, charged: true }, never)).toBe('heavy');
+    expect(enemyAction({ ...leader, isLeader: false, charged: true }, never)).toBe('heavy');
+  });
+
+  it('館主字靈血量低時補血，每隻只補一次', () => {
+    expect(enemyAction({ ...leader, hp: 30 }, never)).toBe('heal');
+    expect(enemyAction({ ...leader, hp: 30, healed: true }, never)).toBe('attack');
+  });
+
+  it('館主字靈依機率蓄力', () => {
+    expect(enemyAction(leader, () => CHARGE_CHANCE / 2)).toBe('charge');
+    expect(enemyAction(leader, never)).toBe('attack');
   });
 });

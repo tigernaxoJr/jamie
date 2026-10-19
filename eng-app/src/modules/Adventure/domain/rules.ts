@@ -128,6 +128,43 @@ export const enemyDamage = (enemy: Species, level: number, target: Species) => {
   return Math.max(1, Math.round(attack(enemy, level) * 0.6 * eff * roll));
 };
 
+// ---------- 館主字靈的行動 ----------
+
+/**
+ * 對手這回合做什麼：
+ * attack 普通攻擊；charge 蓄力（這回合不攻擊，下回合重擊）；heavy 重擊；heal 補血。
+ * 野生字靈只會普通攻擊，館主字靈會蓄力和補血。
+ */
+export type EnemyAction = 'attack' | 'charge' | 'heavy' | 'heal';
+
+/** 館主字靈每回合蓄力的機率 */
+export const CHARGE_CHANCE = 0.25;
+/** 重擊的傷害倍率 */
+export const HEAVY_MULTIPLIER = 1.8;
+/** 血量低於這個比例時補血（每隻只補一次） */
+export const HEAL_THRESHOLD = 0.35;
+/** 補血量（最大血量的比例） */
+export const HEAL_RATIO = 0.3;
+
+export interface EnemyState {
+  isLeader: boolean;
+  hp: number;
+  maxHp: number;
+  /** 上回合蓄力了 */
+  charged: boolean;
+  /** 這隻已經補過血 */
+  healed: boolean;
+}
+
+export const enemyAction = (s: EnemyState, rng = Math.random): EnemyAction => {
+  if (s.charged) return 'heavy';
+  if (!s.isLeader) return 'attack';
+  if (!s.healed && s.hp > 0 && s.hp <= s.maxHp * HEAL_THRESHOLD) return 'heal';
+  return rng() < CHARGE_CHANCE ? 'charge' : 'attack';
+};
+
+export const healAmount = (max: number) => Math.round(max * HEAL_RATIO);
+
 /** 打贏野生字靈得到的經驗值 */
 export const battleXp = (enemyLevel: number) => enemyLevel * 8 + 5;
 export const CAPTURE_XP = 5;
