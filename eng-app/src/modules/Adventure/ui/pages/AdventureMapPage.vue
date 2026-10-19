@@ -125,7 +125,7 @@
                   outline
                   :color="store.hasBadge(area.id) ? 'grey-7' : 'deep-orange'"
                   icon="emoji_events"
-                  :label="`${store.hasBadge(area.id) ? '再次挑戰' : '挑戰'}館主 ${area.leader.emoji} ${area.leader.name}`"
+                  :label="`${store.hasBadge(area.id) ? '重賽' : '挑戰'}館主 ${area.leader.emoji} ${area.leader.name}`"
                   :to="`/adventure/gym/${area.id}`"
                 />
                 <div v-else class="gym-hint q-mt-sm">

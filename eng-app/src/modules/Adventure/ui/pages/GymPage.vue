@@ -4,7 +4,7 @@
       <PageTitle
         :emoji="area.emoji"
         :title="`${area.name}館主`"
-        :subtitle="area.leader.badge"
+        :subtitle="rematch ? `重賽 · ${area.leader.badge}` : area.leader.badge"
         back="/adventure"
       />
 
@@ -12,7 +12,11 @@
       <template v-if="phase === 'intro'">
         <div class="leader app-card q-pa-lg text-center" :style="{ background: area.background }">
           <div class="leader__avatar">{{ area.leader.emoji }}</div>
-          <div class="leader__speech">
+          <div v-if="rematch" class="leader__speech">
+            又見面了！我的字靈變強了 {{ REMATCH_LEVEL_BONUS }} 級，<br />
+            這次專考你<b>還不熟的單字</b>！打贏我送你 🍬 {{ REMATCH_CANDY }} 顆！
+          </div>
+          <div v-else class="leader__speech">
             我是館主<b>{{ area.leader.name }}</b
             >！<br />
             打贏我的 {{ opponents.length }} 隻字靈，就把<b>{{ area.leader.badge }}</b
@@ -85,7 +89,8 @@
         :team="store.team"
         mode="gym"
         :intro="`館主${area.leader.name}派出了${opponents[0]?.species.name}！`"
-        :words="words"
+        :words="battleWords"
+        :choice-pool="words"
         :background="area.background"
         @won="onWon"
         @lost="phase = 'lost'"
@@ -94,8 +99,9 @@
 
       <!-- 勝利 -->
       <div v-else-if="phase === 'won'" class="app-card q-pa-lg text-center">
-        <div class="badge-icon">🏅</div>
-        <div class="text-h5 q-mt-sm">得到了{{ area.leader.badge }}！</div>
+        <div class="badge-icon">{{ rematch ? '🏆' : '🏅' }}</div>
+        <div v-if="rematch" class="text-h5 q-mt-sm">重賽勝利！拿到 🍬 {{ REMATCH_CANDY }} 顆</div>
+        <div v-else class="text-h5 q-mt-sm">得到了{{ area.leader.badge }}！</div>
         <div class="text-muted q-mt-xs">{{ summary }}</div>
         <div v-if="nextArea && firstWin" class="pill q-mt-md">
           🔓 解鎖新地區：{{ nextArea.emoji }} {{ nextArea.name }}
@@ -137,6 +143,13 @@ import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PageTitle from 'src/components/PageTitle.vue';
 import { AREAS, getArea, leaderLevels } from '../../domain/areas';
+import {
+  REMATCH_CANDY,
+  REMATCH_LEVEL_BONUS,
+  rematchLevels,
+  rematchWords,
+} from '../../domain/rematch';
+import { grantBonusCandies } from '../../store/candy';
 import { creatureName, getSpecies } from '../../domain/species';
 import { type Opponent, TEAM_SIZE } from '../../domain/rules';
 import { wordsForArea } from '../../domain/words';
@@ -162,10 +175,15 @@ if (
   void router.replace('/adventure');
 }
 
+/** 已經拿到徽章就是重賽（進頁面時決定，打贏後拿到徽章也不會變） */
+const rematch = !!area.value && store.hasBadge(area.value.id);
+
 const words = computed(() => (area.value ? wordsForArea(area.value) : []));
+/** 對戰出題：重賽只出不熟的字 */
+const battleWords = computed(() => (rematch ? rematchWords(words.value) : words.value));
 const opponents = computed<Opponent[]>(() => {
   if (!area.value) return [];
-  const levels = leaderLevels(area.value);
+  const levels = rematch ? rematchLevels(area.value) : leaderLevels(area.value);
   return area.value.leader.team.map((id, i) => ({ species: getSpecies(id), level: levels[i]! }));
 });
 
@@ -192,6 +210,7 @@ const onWon = (text: string) => {
   if (!area.value) return;
   firstWin.value = !store.hasBadge(area.value.id);
   store.earnBadge(area.value.id);
+  if (rematch) grantBonusCandies(REMATCH_CANDY);
   summary.value = text;
   phase.value = 'won';
 };
