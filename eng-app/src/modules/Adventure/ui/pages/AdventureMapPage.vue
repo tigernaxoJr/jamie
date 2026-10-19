@@ -3,7 +3,6 @@
     <div class="page-container">
       <PageTitle emoji="🧭" title="字靈探險隊" subtitle="答對單字，收服各地的字靈！" back="/games">
         <template #actions>
-          <CreatureStyleToggle class="q-mr-sm" />
           <q-btn
             class="btn-3d"
             color="accent"
@@ -14,6 +13,11 @@
           />
         </template>
       </PageTitle>
+
+      <div class="row items-center justify-end q-gutter-sm q-mb-md style-row">
+        <span class="text-caption text-muted">字靈外觀</span>
+        <CreatureStyleToggle />
+      </div>
 
       <!-- 第一次玩：選夥伴 -->
       <section v-if="!store.hasStarter" class="app-card q-pa-lg">
@@ -249,6 +253,9 @@ const claim = (area: Area) => {
 </script>
 
 <style scoped lang="scss">
+.style-row {
+  margin-top: -12px;
+}
 .area--complete {
   box-shadow:
     0 0 0 3px #f59e0b,
