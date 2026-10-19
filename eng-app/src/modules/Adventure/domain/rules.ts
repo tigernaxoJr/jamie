@@ -94,6 +94,25 @@ export const GUARD_REDUCTION = 0.5;
 export const guardedDamage = (damage: number) =>
   Math.max(1, Math.round(damage * (1 - GUARD_REDUCTION)));
 
+/**
+ * 打中時的畫面回饋：連擊越多、暴擊、必殺、效果絕佳，傷害數字越大；夠大就震動畫面。
+ * 只影響畫面，不影響傷害。
+ */
+export const hitImpact = (o: {
+  combo: number;
+  crit: boolean;
+  ultimate: boolean;
+  superEffective: boolean;
+}) => {
+  const scale =
+    1 +
+    0.15 * Math.min(o.combo, 4) +
+    (o.crit ? 0.3 : 0) +
+    (o.ultimate ? 0.5 : 0) +
+    (o.superEffective ? 0.2 : 0);
+  return { scale: Math.round(scale * 100) / 100, shake: scale >= 1.5 };
+};
+
 /** 必殺技需要的連擊數 */
 export const ULTIMATE_COMBO = 3;
 

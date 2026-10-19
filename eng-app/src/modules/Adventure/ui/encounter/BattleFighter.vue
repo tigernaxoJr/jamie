@@ -8,7 +8,14 @@
       :shiny="shiny"
       :flip="flip"
     />
-    <span v-if="popup" :key="popup.id" class="popup">{{ popup.text }}</span>
+    <span
+      v-if="popup"
+      :key="popup.id"
+      class="popup"
+      :class="{ 'popup--heal': popup.heal }"
+      :style="{ fontSize: `${1.4 * (popup.scale ?? 1)}rem` }"
+      >{{ popup.text }}</span
+    >
   </div>
 </template>
 
@@ -29,7 +36,7 @@ withDefaults(
     fx: '' | 'hit' | 'lunge';
     fainted: boolean;
     /** 換新的 id 就會重播飄字動畫 */
-    popup: { id: number; text: string } | null;
+    popup: { id: number; text: string; scale?: number; heal?: boolean } | null;
   }>(),
   { evolved: false, shiny: false, flip: false },
 );
@@ -51,6 +58,9 @@ withDefaults(
 .fighter.faint {
   opacity: 0;
   transform: translateY(20px) scale(0.8);
+}
+.popup--heal {
+  color: #16a34a;
 }
 .popup {
   position: absolute;

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 戰場 -->
-    <div class="arena app-card" :style="{ background }">
+    <div class="arena app-card" :class="{ 'arena--shake': shake }" :style="{ background }">
       <div class="side side--enemy">
         <FighterStatus
           :name="enemy.species.name"
@@ -136,6 +136,7 @@ import {
   battleXp,
   critChance,
   GUARD_REDUCTION,
+  hitImpact,
   HEAVY_MULTIPLIER,
   enemyAction,
   enemyDamage,
@@ -210,7 +211,16 @@ const forcedSwitch = ref(false);
 const question = ref<Question | null>(null);
 const message = ref(props.intro);
 const fx = ref<'' | 'enemyHit' | 'partnerHit' | 'attack'>('');
-const popup = ref<{ id: number; target: 'enemy' | 'partner'; text: string } | null>(null);
+interface Popup {
+  id: number;
+  target: 'enemy' | 'partner';
+  text: string;
+  scale?: number;
+  heal?: boolean;
+}
+const popup = ref<Popup | null>(null);
+/** 重擊時震動戰場 */
+const shake = ref(false);
 let popupId = 0;
 type Action = MoveKind | 'guard';
 let currentMove: Action = 'normal';
@@ -266,8 +276,12 @@ const matchups = computed(() =>
 const popupFor = (target: 'enemy' | 'partner') =>
   popup.value?.target === target ? popup.value : null;
 
-const showPopup = (target: 'enemy' | 'partner', text: string) => {
-  popup.value = { id: ++popupId, target, text };
+const showPopup = (
+  target: 'enemy' | 'partner',
+  text: string,
+  extra: Pick<Popup, 'scale' | 'heal'> = {},
+) => {
+  popup.value = { id: ++popupId, target, text, ...extra };
 };
 
 const useMove = (kind: Action) => {
@@ -305,15 +319,26 @@ const onAnswered = (correct: boolean) => {
   const moveName = moves.value.find((m) => m.kind === move)?.name ?? '';
 
   if (damage > 0) {
+    const impact = hitImpact({
+      combo: combo.value,
+      crit,
+      ultimate: move === 'ultimate',
+      superEffective: effectiveness > 1,
+    });
     fx.value = 'attack';
     timers.later(() => {
       fx.value = 'enemyHit';
       enemyHp.value = Math.max(0, enemyHp.value - damage);
       const effText = effectiveness === 1 ? '' : ` ${times(effectiveness)}`;
-      showPopup('enemy', `-${damage}${effText}${crit ? ' 暴擊！' : ''}`);
+      showPopup('enemy', `-${damage}${effText}${crit ? ' 暴擊！' : ''}`, { scale: impact.scale });
       sfx.hit();
+      if (impact.shake) {
+        shake.value = true;
+        timers.later(() => (shake.value = false), 450);
+      }
     }, 250);
     const notes = [
+      combo.value >= 2 ? `${combo.value} 連擊！` : '',
       crit ? '暴擊！' : '',
       effectiveness > 1 ? '效果絕佳！' : effectiveness < 1 ? '效果不太好…' : '',
     ].join(' ');
@@ -383,7 +408,7 @@ const enemyTurn = () => {
     const amount = Math.min(healAmount(enemyMax.value), enemyMax.value - enemyHp.value);
     enemyHp.value += amount;
     message.value = `${name}吃了一顆樹果，恢復了體力！`;
-    showPopup('enemy', `+${amount}`);
+    showPopup('enemy', `+${amount}`, { heal: true });
     timers.later(() => backToPlayer('輪到你了！要用什麼招式？'), 1300);
     return;
   }
@@ -456,6 +481,27 @@ const win = () => {
 </script>
 
 <style scoped lang="scss">
+.arena--shake {
+  animation: shake 0.45s;
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translate(-6px, 2px);
+  }
+  40% {
+    transform: translate(6px, -2px);
+  }
+  60% {
+    transform: translate(-4px, 1px);
+  }
+  80% {
+    transform: translate(3px, 0);
+  }
+}
 .arena {
   position: relative;
   height: clamp(230px, 38vh, 280px);

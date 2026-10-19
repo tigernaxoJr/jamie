@@ -15,6 +15,7 @@ import {
   attack,
   enemyAction,
   guardedDamage,
+  hitImpact,
   canEvolve,
   captureRate,
   maxHp,
@@ -182,5 +183,24 @@ describe('guard', () => {
   it('防禦讓傷害減半，至少 1 點', () => {
     expect(guardedDamage(20)).toBe(10);
     expect(guardedDamage(1)).toBe(1);
+  });
+});
+
+describe('hitImpact', () => {
+  const plain = { combo: 0, crit: false, ultimate: false, superEffective: false };
+
+  it('普通一擊不放大、不震動', () => {
+    expect(hitImpact(plain)).toEqual({ scale: 1, shake: false });
+  });
+
+  it('連擊越多數字越大，連擊夠多就震動', () => {
+    expect(hitImpact({ ...plain, combo: 2 }).scale).toBeGreaterThan(
+      hitImpact({ ...plain, combo: 1 }).scale,
+    );
+    expect(hitImpact({ ...plain, combo: 4 }).shake).toBe(true);
+  });
+
+  it('必殺技一定震動', () => {
+    expect(hitImpact({ ...plain, ultimate: true }).shake).toBe(true);
   });
 });
