@@ -31,7 +31,7 @@ Adventure/
     │   └── three/        # 即時 3D（共用一個 WebGL renderer，動態載入 three.js）、色違換色
     ├── QuestionCard.vue  # 捕捉、對戰共用的答題卡
     ├── AreaScene.vue     # 地區場景（SVG 遠景、中景、地面和會動的小東西）
-    ├── encounter/        # 捕捉面板、字靈網動畫、對戰面板
+    ├── encounter/        # 捕捉面板、字靈網動畫、對戰面板、攻擊特效
     ├── MatchupTag.vue    # 屬性相剋提示標籤
     ├── TraitTag.vue      # 特性標籤
     └── pages/            # 地圖、遭遇、圖鑑、隊伍管理、館主

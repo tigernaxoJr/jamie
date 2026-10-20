@@ -3,6 +3,7 @@
     <!-- 戰場 -->
     <div class="arena app-card" :class="{ 'arena--shake': shake }" :style="{ background }">
       <AreaScene v-if="scene" :scene="scene" />
+      <AttackFx :shot="shot" />
       <div class="side side--enemy">
         <FighterStatus
           :name="enemy.species.name"
@@ -164,6 +165,8 @@ import MatchupTag from '../MatchupTag.vue';
 import QuestionCard from '../QuestionCard.vue';
 import BattleFighter from './BattleFighter.vue';
 import AreaScene from '../AreaScene.vue';
+import AttackFx from './AttackFx.vue';
+import type { AttackShot } from './attackShot';
 import FighterStatus from './FighterStatus.vue';
 import SwitchBench from './SwitchBench.vue';
 
@@ -252,6 +255,10 @@ const popup = ref<Popup | null>(null);
 /** 重擊時震動戰場 */
 const shake = ref(false);
 let popupId = 0;
+/** 攻擊特效：屬性技、必殺技飛出屬性粒子，撞擊只有打中的爆開 */
+const shot = ref<AttackShot | null>(null);
+let shotId = 0;
+const fire = (o: Omit<AttackShot, 'id'>) => (shot.value = { id: ++shotId, ...o });
 type Action = MoveKind | 'guard';
 let currentMove: Action = 'normal';
 
@@ -365,6 +372,13 @@ const onAnswered = (correct: boolean) => {
       superEffective: effectiveness > 1,
     });
     fx.value = 'attack';
+    fire({
+      element: move === 'normal' ? 'normal' : activeSpecies.value.element,
+      from: 'partner',
+      scale: impact.scale,
+      big: move === 'ultimate',
+      delay: 0,
+    });
     timers.later(() => {
       fx.value = 'enemyHit';
       enemyHp.value = hit.hp;
@@ -475,6 +489,13 @@ const enemyTurn = () => {
     hit.endured ? `${activeName()}撐住了！（💪 頑強）` : '',
   ].join('');
   message.value = `${name}${heavy ? '使出重擊' : '發動攻擊'}！${note}`;
+  fire({
+    element: enemy.value.species.element,
+    from: 'enemy',
+    scale: (heavy ? 1.3 : 1) + (eff > 1 ? 0.2 : 0),
+    big: false,
+    delay: 100,
+  });
   timers.later(() => {
     fx.value = 'partnerHit';
     hp[uid] = hit.hp;
