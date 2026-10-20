@@ -1,1 +1,0 @@
-import{cv as n}from"./index-Va0-s6vu.js";function i(){const e=new Set,s=(c,r)=>{const t=setTimeout(()=>{e.delete(t),c()},r);e.add(t)},o=()=>{e.forEach(clearTimeout),e.clear()};return n(o),{later:s,clearAll:o}}export{i as u};
