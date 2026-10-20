@@ -80,7 +80,7 @@
         第 {{ round + 1 }} / {{ CAPTURE_ROUNDS }} 題：選擇挑戰難度
       </div>
       <div v-if="isNameRound" class="name-round q-mb-sm">
-        ✨ 最後一題考{{ species.name }}自己的英文名字！
+        ✨ {{ energy >= MAX_ENERGY ? '能量滿了！' : '' }}最後一題考{{ species.name }}自己的英文名字！
       </div>
       <div class="difficulties">
         <q-btn
@@ -206,6 +206,16 @@ const ask = (d: CaptureDifficulty) => {
   phase.value = 'question';
 };
 
+/** 答完 3 題就丟網；能量先滿了，剩下的題目只考名字題 */
+const nextStep = () => {
+  if (round.value >= CAPTURE_ROUNDS) {
+    phase.value = 'ready';
+    return;
+  }
+  if (energy.value >= MAX_ENERGY) round.value = CAPTURE_ROUNDS - 1;
+  phase.value = 'choose';
+};
+
 const onAnswered = (correct: boolean) => {
   const q = question.value;
   if (q && (q.word !== nameWord || nameInBank)) {
@@ -213,16 +223,14 @@ const onAnswered = (correct: boolean) => {
   }
   if (correct) energy.value = Math.min(MAX_ENERGY, energy.value + CAPTURE_ENERGY[difficulty]);
   round.value++;
-  // 能量滿了捕捉率已經最高，不用再答題
-  const done = round.value >= CAPTURE_ROUNDS || energy.value >= MAX_ENERGY;
-  phase.value = done ? 'ready' : 'choose';
+  nextStep();
 };
 
 const boostWithCandy = () => {
   if (candyUsed.value || !spendCandies(CANDY_ENERGY_COST)) return;
   candyUsed.value = true;
   energy.value = Math.min(MAX_ENERGY, energy.value + CANDY_ENERGY);
-  if (energy.value >= MAX_ENERGY) phase.value = 'ready';
+  if (phase.value === 'choose') nextStep();
   sfx.correct();
 };
 

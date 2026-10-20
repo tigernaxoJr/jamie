@@ -77,8 +77,8 @@ describe('element matchups', () => {
   });
 
   it('相剋摘要', () => {
-    expect(matchupSummary('water')).toBe('剋 🔥 · 怕 🌿⚡');
-    expect(matchupSummary('earth')).toBe('剋 ⚡');
+    expect(matchupSummary('water')).toBe('剋 🔥🗻 · 怕 🌿⚡');
+    expect(matchupSummary('earth')).toBe('剋 ⚡ · 怕 💧');
     expect(matchupSummary('light')).toBe('不怕任何屬性');
   });
 
@@ -87,6 +87,14 @@ describe('element matchups', () => {
     expect(weakAgainst('water')).toEqual(['grass', 'thunder']);
     expect(strongAgainst('light')).toEqual([]);
     expect(weakAgainst('light')).toEqual([]);
+  });
+
+  it('除了光，每個屬性都有剋的、也有怕的（沒有穩贏的屬性）', () => {
+    for (const el of ['fire', 'water', 'grass', 'thunder', 'earth'] as const) {
+      expect(strongAgainst(el).length).toBeGreaterThan(0);
+      expect(weakAgainst(el).length).toBeGreaterThan(0);
+    }
+    expect(effectiveness('water', 'earth')).toBe(2);
   });
 
   it('撞擊也吃屬性相剋', () => {

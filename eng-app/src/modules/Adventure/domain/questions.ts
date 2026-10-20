@@ -38,10 +38,10 @@ export const CAPTURE_KIND: Record<CaptureDifficulty, QuestionKind> = {
   hard: 'zh-spell',
 };
 
-/** 招式 → 題型 */
+/** 招式 → 題型：題目越難、威力越大（撞擊選擇題、屬性技拼字有提示、必殺技拼字沒提示） */
 export const MOVE_KIND: Record<MoveKind, QuestionKind> = {
-  normal: 'zh-spell',
-  element: 'listen-en',
+  normal: 'listen-en',
+  element: 'zh-spell',
   ultimate: 'zh-spell',
 };
 

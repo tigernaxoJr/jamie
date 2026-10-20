@@ -245,7 +245,7 @@ const moves = computed(() => {
     {
       kind: 'normal' as const,
       name: '撞擊',
-      desc: `${ask('看中文拼英文（有提示）')} · 威力 ${MOVE_POWER.normal.hit}`,
+      desc: `${ask('聽發音選拼法')} · 威力 ${MOVE_POWER.normal.hit}`,
       color: 'grey-2',
       textColor: 'dark',
       disabled: false,
@@ -253,7 +253,7 @@ const moves = computed(() => {
     {
       kind: 'element' as const,
       name: el.move,
-      desc: `${ask('聽發音選拼法')} · 威力 ${MOVE_POWER.element.hit}`,
+      desc: `${ask('看中文拼英文（有提示）')} · 威力 ${MOVE_POWER.element.hit}`,
       color: 'primary',
       textColor: 'white',
       disabled: false,
@@ -299,7 +299,7 @@ const showPopup = (
 const useMove = (kind: Action) => {
   currentMove = kind;
   const word = deck.draw();
-  // 必殺技不給提示；撞擊依熟練度給提示
+  // 必殺技不給提示；屬性技依熟練度給提示
   const streak = kind === 'ultimate' || props.hard ? null : getCorrectStreak(word.english);
   const qKind = props.hard ? 'zh-spell' : kind === 'guard' ? GUARD_KIND : MOVE_KIND[kind];
   question.value = makeQuestion(qKind, word, props.choicePool ?? props.words, streak);

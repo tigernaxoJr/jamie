@@ -32,7 +32,8 @@ export const ELEMENTS: Record<Element, ElementInfo> = {
 const STRONG_AGAINST: Record<Element, Element[]> = {
   fire: ['grass'],
   grass: ['water'],
-  water: ['fire'],
+  // 水怕草和雷兩種，所以也剋兩種；土因此也有弱點
+  water: ['fire', 'earth'],
   thunder: ['water'],
   earth: ['thunder'],
   // 光不剋任何屬性，但也沒有屬性剋得了光
