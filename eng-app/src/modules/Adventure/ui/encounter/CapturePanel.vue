@@ -2,41 +2,15 @@
   <div>
     <!-- 場景 -->
     <div class="scene app-card" :style="{ background }">
-      <div
-        class="scene__creature"
-        :class="{ shaking: phase === 'throwing', gone: phase === 'caught' }"
-      >
+      <div class="scene__creature" :class="netStage && `creature--${netStage}`">
         <CreatureView :species="species" :size="150" :shiny="shiny" />
       </div>
-      <div
-        v-if="phase === 'throwing' || phase === 'caught'"
-        class="net"
-        :class="{ 'net--shake': phase === 'throwing' }"
-      >
-        <svg viewBox="0 0 100 100" width="120" height="120">
-          <circle
-            cx="50"
-            cy="50"
-            r="40"
-            fill="rgba(255,255,255,0.35)"
-            stroke="#fff"
-            stroke-width="4"
-          />
-          <path
-            d="M10 50 H90 M50 10 V90 M22 22 L78 78 M78 22 L22 78"
-            stroke="#fff"
-            stroke-width="2.5"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="10"
-            :fill="phase === 'caught' ? '#22c55e' : '#ffb020'"
-            stroke="#fff"
-            stroke-width="3"
-          />
-        </svg>
-      </div>
+      <CaptureNet
+        v-if="netStage || phase === 'ready'"
+        :tier="tier"
+        :stage="netStage ?? 'idle'"
+        :shake-key="shakeKey"
+      />
       <div class="scene__label">
         <b>{{ species.name }}</b> Lv {{ level }}
         <ElementBadge :element="species.element" class="q-ml-xs" />
@@ -71,6 +45,14 @@
       </div>
       <div class="text-caption text-muted q-mt-xs">
         答對越難的題目，能量越多、越容易抓到！（{{ RARITY_NAME[species.rarity] }}字靈）
+      </div>
+      <div class="net-tier q-mt-xs" :class="`net-tier--${tier}`">
+        現在是{{ NET_TIER_NAME[tier]
+        }}<span v-if="tier !== 'ultra'" class="text-muted">
+          ・能量 {{ tier === 'basic' ? 4 : 7 }} 格變{{
+            NET_TIER_NAME[tier === 'basic' ? 'great' : 'ultra']
+          }}</span
+        >
       </div>
     </div>
 
@@ -110,7 +92,7 @@
         color="accent"
         text-color="dark"
         icon="track_changes"
-        label="丟出字靈網！"
+        :label="`丟出${NET_TIER_NAME[tier]}！`"
         @click="throwNet"
       />
     </div>
@@ -141,7 +123,11 @@ import {
   type CaptureDifficulty,
   MAX_ENERGY,
   DAILY_BONUS_ENERGY,
+  NET_TIER_NAME,
+  type NetStage,
   captureRate,
+  netShakes,
+  netTier,
 } from '../../domain/rules';
 import { CAPTURE_KIND, type Question, isSpelling, makeQuestion } from '../../domain/questions';
 import { nameWordOf } from '../../domain/nameWord';
@@ -152,6 +138,7 @@ import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
 import QuestionCard from '../QuestionCard.vue';
+import CaptureNet from './CaptureNet.vue';
 
 const props = defineProps<{
   species: Species;
@@ -182,6 +169,9 @@ const question = ref<Question | null>(null);
 let difficulty: CaptureDifficulty = 'easy';
 
 const rate = computed(() => captureRate(props.species.rarity, energy.value));
+const tier = computed(() => netTier(energy.value));
+const netStage = ref<NetStage | null>(null);
+const shakeKey = ref(0);
 const rateClass = computed(() =>
   rate.value >= 0.7 ? 'text-positive' : rate.value >= 0.4 ? 'text-orange-8' : 'text-negative',
 );
@@ -237,22 +227,55 @@ const boostWithCandy = () => {
   sfx.correct();
 };
 
+/** 丟網的時間軸（毫秒）：飛過去 → 罩住 → 落地 → 搖 N 下 → 抓到或掙脫 */
+const FLY_MS = 700;
+const WRAP_MS = 800;
+const DROP_MS = 450;
+const SHAKE_MS = 750;
+const CAUGHT_MS = 1400;
+
 const throwNet = () => {
   phase.value = 'throwing';
   const success = Math.random() < rate.value;
+  const shakes = netShakes(rate.value, success);
+  netStage.value = 'fly';
+  sfx.toss();
   timers.later(() => {
-    if (success) {
-      phase.value = 'caught';
-      sfx.win();
-      timers.later(() => emit('caught'), 900);
-    } else {
-      phase.value = 'failed';
-      sfx.wrong();
-    }
-  }, 2000);
+    netStage.value = 'wrap';
+    sfx.pop();
+  }, FLY_MS);
+  timers.later(() => (netStage.value = 'drop'), FLY_MS + WRAP_MS);
+  const shakeStart = FLY_MS + WRAP_MS + DROP_MS;
+  for (let i = 0; i < shakes; i++) {
+    timers.later(
+      () => {
+        netStage.value = 'shake';
+        shakeKey.value++;
+        sfx.tick();
+      },
+      shakeStart + i * SHAKE_MS,
+    );
+  }
+  timers.later(
+    () => {
+      if (success) {
+        netStage.value = 'caught';
+        phase.value = 'caught';
+        sfx.win();
+        timers.later(() => emit('caught'), CAUGHT_MS);
+      } else {
+        netStage.value = 'broke';
+        phase.value = 'failed';
+        sfx.pop();
+        sfx.wrong();
+      }
+    },
+    shakeStart + shakes * SHAKE_MS,
+  );
 };
 
 const restart = () => {
+  netStage.value = null;
   round.value = 0;
   energy.value = startEnergy();
   phase.value = 'choose';
@@ -281,18 +304,17 @@ const restart = () => {
   width: min(150px, 22vh);
   height: min(150px, 22vh);
 }
-.scene__creature {
-  transition:
-    transform 0.4s,
-    opacity 0.4s;
+/* 字靈被吸進網裡、掙脫時跳出來甩頭 */
+.creature--wrap {
+  animation: suck-in 0.8s ease-in forwards;
 }
-.scene__creature.shaking {
-  transform: scale(0.4);
-  opacity: 0.4;
-}
-.scene__creature.gone {
-  transform: scale(0);
+.creature--drop,
+.creature--shake,
+.creature--caught {
   opacity: 0;
+}
+.creature--broke {
+  animation: break-out 1s ease-out;
 }
 .scene__label {
   position: absolute;
@@ -303,14 +325,15 @@ const restart = () => {
   background: rgba(255, 255, 255, 0.9);
   font-weight: 700;
 }
-.net {
-  position: absolute;
-  bottom: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.net--shake {
-  animation: net-shake 0.6s ease-in-out 3;
+.net-tier {
+  font-size: 0.8rem;
+  font-weight: 800;
+  &--great {
+    color: #1d4ed8;
+  }
+  &--ultra {
+    color: #b45309;
+  }
 }
 .daily-bonus {
   font-size: 0.8rem;
@@ -344,16 +367,40 @@ const restart = () => {
   min-height: 72px;
   padding: 6px 4px;
 }
-@keyframes net-shake {
+@keyframes suck-in {
   0%,
-  100% {
-    transform: translateX(-50%) rotate(0);
-  }
   25% {
-    transform: translateX(-50%) rotate(-18deg);
+    transform: scale(1);
+    filter: brightness(1);
+    opacity: 1;
   }
-  75% {
-    transform: translateX(-50%) rotate(18deg);
+  100% {
+    transform: translateY(-20%) scale(0);
+    filter: brightness(3);
+    opacity: 0;
+  }
+}
+@keyframes break-out {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(-14%) scale(1.15);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1);
+  }
+  60%,
+  85% {
+    transform: rotate(-10deg);
+  }
+  70% {
+    transform: rotate(10deg);
+  }
+  100% {
+    transform: rotate(0);
   }
 }
 @media (max-width: 599px) {

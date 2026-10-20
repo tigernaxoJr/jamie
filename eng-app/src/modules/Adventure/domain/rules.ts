@@ -29,6 +29,30 @@ export const captureRate = (rarity: Rarity, energy: number): number => {
   return min + (max - min) * ratio;
 };
 
+/** 字靈網的等級：能量越高網越高級（只影響外觀，捕捉率照 captureRate） */
+export type NetTier = 'basic' | 'great' | 'ultra';
+
+/** 丟網動畫的階段（idle：還沒丟，在左下角輕輕跳） */
+export type NetStage = 'idle' | 'fly' | 'wrap' | 'drop' | 'shake' | 'caught' | 'broke';
+
+export const NET_TIER_NAME: Record<NetTier, string> = {
+  basic: '字靈網',
+  great: '藍色字靈網',
+  ultra: '金色字靈網',
+};
+
+export const netTier = (energy: number): NetTier =>
+  energy >= 7 ? 'ultra' : energy >= 4 ? 'great' : 'basic';
+
+/**
+ * 網落地後搖幾下。抓到時越有把握搖越少（捕捉率 70% 以上 1 下、40% 以上 2 下、其他 3 下）；
+ * 掙脫時隨機在第 1～3 下彈開，讓每次都有懸念。
+ */
+export const netShakes = (rate: number, success: boolean, rand: number = Math.random()): number => {
+  if (!success) return 1 + Math.min(2, Math.floor(rand * 3));
+  return rate >= 0.7 ? 1 : rate >= 0.4 ? 2 : 3;
+};
+
 /** 當天達成每日單字目標時，捕捉的額外能量 */
 export const DAILY_BONUS_ENERGY = 2;
 

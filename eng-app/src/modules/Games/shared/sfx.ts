@@ -58,5 +58,14 @@ export const sfx = {
   hit: () => tone(300, 0.12, 'sawtooth', 0, 0.1),
   explode: () => noise(0.5),
   win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.2, 'triangle', i * 0.12)),
+  /** 丟東西出去的咻一聲 */
+  toss: () => [300, 450, 650].forEach((f, i) => tone(f, 0.08, 'sine', i * 0.05, 0.08)),
+  /** 小小的喀一聲（例如字靈網搖晃） */
+  tick: () => tone(880, 0.04, 'square', 0, 0.05),
+  /** 啵一聲彈開 */
+  pop: () => {
+    tone(700, 0.06, 'triangle');
+    tone(350, 0.12, 'triangle', 0.05);
+  },
   lose: () => [392, 330, 262].forEach((f, i) => tone(f, 0.3, 'triangle', i * 0.18)),
 };

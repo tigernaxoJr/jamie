@@ -18,6 +18,8 @@ import {
   hitImpact,
   canEvolve,
   captureRate,
+  netShakes,
+  netTier,
   maxHp,
   playerDamage,
 } from './rules';
@@ -136,6 +138,26 @@ describe('capture', () => {
   it('能量越多越好抓，傳說字靈最難抓', () => {
     expect(captureRate('common', 9)).toBeGreaterThan(captureRate('common', 0));
     expect(captureRate('legendary', 9)).toBeLessThan(captureRate('rare', 9));
+  });
+
+  it('能量越高網越高級', () => {
+    expect([0, 3, 4, 6, 7, 9].map(netTier)).toEqual([
+      'basic',
+      'basic',
+      'great',
+      'great',
+      'ultra',
+      'ultra',
+    ]);
+  });
+
+  it('抓到時越有把握搖越少，掙脫時在第 1～3 下彈開', () => {
+    expect(netShakes(0.9, true)).toBe(1);
+    expect(netShakes(0.5, true)).toBe(2);
+    expect(netShakes(0.2, true)).toBe(3);
+    expect(netShakes(0.9, false, 0)).toBe(1);
+    expect(netShakes(0.9, false, 0.5)).toBe(2);
+    expect(netShakes(0.9, false, 0.99)).toBe(3);
   });
 });
 
