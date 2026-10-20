@@ -27,6 +27,7 @@
               <CreatureView :species="o.species" :size="72" :animated="false" />
               <div class="text-caption text-weight-bold">{{ o.species.name }} Lv {{ o.level }}</div>
               <ElementBadge :element="o.species.element" />
+              <TraitTag :trait="o.species.trait" class="q-mt-xs" />
             </div>
           </div>
         </div>
@@ -157,6 +158,7 @@ import { useAdventureStore } from '../../store/useAdventureStore';
 import { type Element, effectiveness } from '../../domain/elements';
 import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
+import TraitTag from '../TraitTag.vue';
 import MatchupTag from '../MatchupTag.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 

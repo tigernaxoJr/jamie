@@ -85,6 +85,7 @@
             <ElementBadge :element="getSpecies(c.speciesId).element" />
           </span>
           <span class="card__matchup">{{ matchupSummary(getSpecies(c.speciesId).element) }}</span>
+          <TraitTag :trait="getSpecies(c.speciesId).trait" />
         </button>
       </div>
       <div v-if="list.length === 0" class="text-center text-muted q-pa-lg">
@@ -105,6 +106,7 @@ import { TEAM_SIZE } from '../../domain/rules';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
+import TraitTag from '../TraitTag.vue';
 import CreatureFilterBar from '../team/CreatureFilterBar.vue';
 import TeamActionBar from '../team/TeamActionBar.vue';
 

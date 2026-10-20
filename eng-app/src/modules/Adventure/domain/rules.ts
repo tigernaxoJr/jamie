@@ -1,4 +1,5 @@
 import type { Rarity, Species } from './species';
+import type { Trait } from './traits';
 import { effectiveness } from './elements';
 
 // ---------- 捕捉 ----------
@@ -34,6 +35,24 @@ export const DAILY_BONUS_ENERGY = 2;
 /** 打贏字靈後捕捉的額外能量 */
 export const BATTLE_WIN_ENERGY = 3;
 
+// ---------- 特性（名稱與說明在 domain/traits.ts） ----------
+
+/** 強壯：血量倍率 */
+export const TOUGH_HP = 1.2;
+/** 大力：攻擊倍率 */
+export const STRONG_ATTACK = 1.15;
+/** 堅硬：受到的傷害倍率 */
+export const ARMOR_DAMAGE = 0.85;
+/** 閃耀：暴擊率加成 */
+export const BRIGHT_CRIT = 0.2;
+/** 靈巧：連擊幾次就能用必殺技 */
+export const QUICK_COMBO = 2;
+/** 療癒：防禦成功時回復最大血量的比例 */
+export const COZY_HEAL = 0.15;
+
+/** 有這個特性時乘上倍率，沒有就是 1 */
+const traitBonus = (s: Species, trait: Trait, bonus: number) => (s.trait === trait ? bonus : 1);
+
 // ---------- 能力值與成長 ----------
 
 /** 進化後能力提升的倍率 */
@@ -44,9 +63,11 @@ const stageBonus = (stage: number) => (stage >= 2 ? EVOLVED_BONUS : 1);
 export const HP_SCALE = 2;
 
 export const maxHp = (s: Species, level: number, stage = 1) =>
-  Math.round((s.baseHp + level * 4) * HP_SCALE * stageBonus(stage));
+  Math.round(
+    (s.baseHp + level * 4) * HP_SCALE * stageBonus(stage) * traitBonus(s, 'tough', TOUGH_HP),
+  );
 export const attack = (s: Species, level: number, stage = 1) =>
-  Math.round((s.baseAtk + level * 2) * stageBonus(stage));
+  Math.round((s.baseAtk + level * 2) * stageBonus(stage) * traitBonus(s, 'strong', STRONG_ATTACK));
 
 // ---------- 進化與隊伍 ----------
 
@@ -116,8 +137,12 @@ export const hitImpact = (o: {
 /** 必殺技需要的連擊數 */
 export const ULTIMATE_COMBO = 3;
 
-/** 最近答對率越高，暴擊率越高（最高 30%） */
-export const critChance = (recentAccuracy: number) => recentAccuracy * 0.3;
+/** 這隻字靈要連擊幾次才能用必殺技（靈巧的比較少） */
+export const ultimateCombo = (s: Species) => (s.trait === 'quick' ? QUICK_COMBO : ULTIMATE_COMBO);
+
+/** 最近答對率越高，暴擊率越高（最高 30%，閃耀的字靈再加） */
+export const critChance = (recentAccuracy: number, s?: Species) =>
+  recentAccuracy * 0.3 + (s?.trait === 'bright' ? BRIGHT_CRIT : 0);
 export const CRIT_MULTIPLIER = 1.5;
 
 export interface DamageInput {
@@ -142,7 +167,11 @@ export const playerDamage = ({
   const power = correct ? MOVE_POWER[move].hit : MOVE_POWER[move].miss;
   const eff = effectiveness(attacker.element, defender.element);
   const base = (power * attack(attacker, attackerLevel, attackerStage)) / 10;
-  return { damage: Math.round(base * eff * (crit ? CRIT_MULTIPLIER : 1)), effectiveness: eff };
+  const armor = traitBonus(defender, 'armor', ARMOR_DAMAGE);
+  return {
+    damage: Math.round(base * eff * (crit ? CRIT_MULTIPLIER : 1) * armor),
+    effectiveness: eff,
+  };
 };
 
 /** 野生字靈的攻擊，帶一點隨機 */
@@ -150,8 +179,22 @@ export const enemyDamage = (enemy: Species, level: number, target: Species) => {
   // 目標進化與否不影響受到的傷害；進化的好處是血量與攻擊力
   const eff = effectiveness(enemy.element, target.element);
   const roll = 0.8 + Math.random() * 0.4;
-  return Math.max(1, Math.round(attack(enemy, level) * 0.6 * eff * roll));
+  const armor = traitBonus(target, 'armor', ARMOR_DAMAGE);
+  return Math.max(1, Math.round(attack(enemy, level) * 0.6 * eff * roll * armor));
 };
+
+/**
+ * 被打之後的血量。頑強的字靈每場對戰一次，被打倒時撐住剩 1 點血。
+ * canEndure：這隻是頑強的字靈，而且這場還沒撐過。
+ */
+export const hpAfterHit = (hp: number, damage: number, canEndure: boolean) =>
+  canEndure && damage >= hp
+    ? { hp: 1, endured: true }
+    : { hp: Math.max(0, hp - damage), endured: false };
+
+/** 防禦成功時回復的血量（療癒的字靈才有） */
+export const guardHeal = (s: Species, max: number) =>
+  s.trait === 'cozy' ? Math.round(max * COZY_HEAL) : 0;
 
 // ---------- 館主字靈的行動 ----------
 

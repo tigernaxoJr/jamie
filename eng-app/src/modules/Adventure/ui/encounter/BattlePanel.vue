@@ -52,10 +52,12 @@
     <div v-if="phase === 'choose'" class="q-mt-md">
       <div class="row items-center q-mb-sm text-weight-bold">
         <span>連擊</span>
-        <span v-for="n in ULTIMATE_COMBO" :key="n" class="combo" :class="{ on: n <= combo }" />
+        <span v-for="n in neededCombo" :key="n" class="combo" :class="{ on: n <= combo }" />
         <q-space />
         <span class="text-caption text-muted"
-          >暴擊率 {{ Math.round(critChance(store.recentAccuracy) * 100) }}%（看最近答對率）</span
+          >暴擊率 {{ Math.round(critRate * 100) }}%（看最近答對率{{
+            activeSpecies.trait === 'bright' ? '＋🌟閃耀' : ''
+          }}）</span
         >
       </div>
       <div v-if="matchups.length" class="matchups q-mb-sm">
@@ -127,12 +129,11 @@ import {
   effectiveness,
   formatEffectiveness as times,
 } from '../../domain/elements';
-import { creatureName, getSpecies } from '../../domain/species';
+import { type Species, creatureName, getSpecies } from '../../domain/species';
 import {
   type MoveKind,
   type Opponent,
   MOVE_POWER,
-  ULTIMATE_COMBO,
   battleXp,
   critChance,
   GUARD_REDUCTION,
@@ -140,10 +141,13 @@ import {
   HEAVY_MULTIPLIER,
   enemyAction,
   enemyDamage,
+  guardHeal,
   guardedDamage,
   healAmount,
+  hpAfterHit,
   maxHp,
   playerDamage,
+  ultimateCombo,
 } from '../../domain/rules';
 import {
   GUARD_KIND,
@@ -215,8 +219,18 @@ const enemyCharged = ref(false);
 const enemyHealed = ref(false);
 /** 我方擺好防禦：對手下一次行動時，攻擊傷害減半 */
 const guarded = ref(false);
+/** 這場撐過一次的字靈（頑強每場一次）：我方用 uid，對手用出場順序 */
+const endured = new Set<string>();
+const takeHit = (key: string, species: Species, hp: number, damage: number) => {
+  const hit = hpAfterHit(hp, damage, species.trait === 'tenacious' && !endured.has(key));
+  if (hit.endured) endured.add(key);
+  return hit;
+};
 
 const combo = ref(0);
+/** 上場字靈的特性會影響必殺技要的連擊數與暴擊率 */
+const neededCombo = computed(() => ultimateCombo(activeSpecies.value));
+const critRate = computed(() => critChance(store.recentAccuracy, activeSpecies.value));
 type Phase = 'choose' | 'question' | 'busy' | 'switch';
 const phase = ref<Phase>('choose');
 const forcedSwitch = ref(false);
@@ -265,12 +279,12 @@ const moves = computed(() => {
       kind: 'ultimate' as const,
       name: `必殺・${el.ultimate}`,
       desc:
-        combo.value >= ULTIMATE_COMBO
+        combo.value >= neededCombo.value
           ? `看中文拼英文（沒提示） · 威力 ${MOVE_POWER.ultimate.hit}`
-          : `連擊 ${ULTIMATE_COMBO} 次解鎖`,
+          : `連擊 ${neededCombo.value} 次解鎖`,
       color: 'deep-orange',
       textColor: 'white',
-      disabled: combo.value < ULTIMATE_COMBO,
+      disabled: combo.value < neededCombo.value,
     },
     {
       kind: 'guard' as const,
@@ -322,7 +336,7 @@ const onAnswered = (correct: boolean) => {
   const move = currentMove;
   if (move === 'guard') return guard(correct);
 
-  const crit = correct && Math.random() < critChance(store.recentAccuracy);
+  const crit = correct && Math.random() < critRate.value;
   const { damage, effectiveness } = playerDamage({
     attacker: activeSpecies.value,
     attackerLevel: active.value.level,
@@ -337,6 +351,7 @@ const onAnswered = (correct: boolean) => {
   const moveName = moves.value.find((m) => m.kind === move)?.name ?? '';
 
   if (damage > 0) {
+    const hit = takeHit(`enemy-${enemyIdx.value}`, enemy.value.species, enemyHp.value, damage);
     const impact = hitImpact({
       combo: combo.value,
       crit,
@@ -346,7 +361,7 @@ const onAnswered = (correct: boolean) => {
     fx.value = 'attack';
     timers.later(() => {
       fx.value = 'enemyHit';
-      enemyHp.value = Math.max(0, enemyHp.value - damage);
+      enemyHp.value = hit.hp;
       const effText = effectiveness === 1 ? '' : ` ${times(effectiveness)}`;
       showPopup('enemy', `-${damage}${effText}${crit ? ' 暴擊！' : ''}`, { scale: impact.scale });
       sfx.hit();
@@ -359,6 +374,7 @@ const onAnswered = (correct: boolean) => {
       combo.value >= 2 ? `${combo.value} 連擊！` : '',
       crit ? '暴擊！' : '',
       effectiveness > 1 ? '效果絕佳！' : effectiveness < 1 ? '效果不太好…' : '',
+      hit.endured ? `${enemy.value.species.name}撐住了！（💪 頑強）` : '',
     ].join(' ');
     message.value = `${activeName()}使出${moveName}！${correct ? '' : '（答錯了，威力減半）'}${notes}`;
   } else {
@@ -372,12 +388,19 @@ const onAnswered = (correct: boolean) => {
   }, 1100);
 };
 
-/** 防禦：答對就擺好架式（不影響連擊），答錯連擊歸零 */
+/** 防禦：答對就擺好架式（不影響連擊），答錯連擊歸零；療癒的字靈答對還會回血 */
 const guard = (correct: boolean) => {
   guarded.value = correct;
   if (!correct) combo.value = 0;
+  const heal = correct
+    ? Math.min(guardHeal(activeSpecies.value, activeMax.value), activeMax.value - activeHp.value)
+    : 0;
+  if (heal > 0) {
+    hp[activeUid.value] = activeHp.value + heal;
+    showPopup('partner', `+${heal}`, { heal: true });
+  }
   message.value = correct
-    ? `${activeName()}擺好防禦架式！`
+    ? `${activeName()}擺好防禦架式！${heal > 0 ? '還回復了體力！（🍵 療癒）' : ''}`
     : `${activeName()}想防禦，可是來不及了！`;
   if (correct) sfx.correct();
   timers.later(enemyTurn, 900);
@@ -438,14 +461,17 @@ const enemyTurn = () => {
   const raw = heavy ? Math.round(base * HEAVY_MULTIPLIER) : base;
   const dmg = wasGuarded ? guardedDamage(raw) : raw;
   const eff = effectiveness(enemy.value.species.element, activeSpecies.value.element);
+  const uid = activeUid.value;
+  const hit = takeHit(uid, activeSpecies.value, activeHp.value, dmg);
   const note = [
     eff > 1 ? '效果絕佳！' : eff < 1 ? '效果不太好…' : '',
     wasGuarded ? `${activeName()}擋下了一半的傷害！` : '',
+    hit.endured ? `${activeName()}撐住了！（💪 頑強）` : '',
   ].join('');
   message.value = `${name}${heavy ? '使出重擊' : '發動攻擊'}！${note}`;
   timers.later(() => {
     fx.value = 'partnerHit';
-    hp[activeUid.value] = Math.max(0, activeHp.value - dmg);
+    hp[uid] = hit.hp;
     showPopup('partner', `-${dmg}${eff === 1 ? '' : ` ${times(eff)}`}`);
     sfx.hit();
   }, 400);

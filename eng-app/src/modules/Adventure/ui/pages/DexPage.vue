@@ -87,6 +87,8 @@
         <div class="q-mt-md">
           <div class="text-caption text-muted text-weight-bold">棲息地</div>
           <div>{{ habitatsOf(selected.id).join('、') || '未知' }}</div>
+          <div class="text-caption text-muted text-weight-bold q-mt-sm">特性</div>
+          <TraitTag :trait="selected.trait" full />
           <div class="text-caption text-muted text-weight-bold q-mt-sm">介紹</div>
           <div v-if="store.isCaught(selected.id)">{{ selected.description }}</div>
           <div v-else class="text-muted">收服後才能看到介紹喔！</div>
@@ -198,6 +200,7 @@ import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureS
 import CreatureView from '../CreatureView.vue';
 import CreatureStyleToggle from '../creature/CreatureStyleToggle.vue';
 import ElementBadge from '../ElementBadge.vue';
+import TraitTag from '../TraitTag.vue';
 
 const store = useAdventureStore();
 

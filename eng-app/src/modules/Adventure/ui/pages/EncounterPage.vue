@@ -33,6 +33,7 @@
               已收服過
             </q-chip>
           </div>
+          <TraitTag :trait="wild.species.trait" full class="q-mt-sm" />
         </div>
         <div class="actions q-mt-md">
           <q-btn
@@ -184,6 +185,7 @@ import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
+import TraitTag from '../TraitTag.vue';
 import CapturePanel from '../encounter/CapturePanel.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 

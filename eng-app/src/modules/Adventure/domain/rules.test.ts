@@ -108,7 +108,7 @@ describe('element matchups', () => {
         crit: false,
       });
     expect(hit(3).effectiveness).toBe(2); // 草
-    expect(hit(3).damage).toBe(hit(4).damage * 2); // 土：沒有相剋
+    expect(hit(3).damage).toBe(hit(6).damage * 2); // 雷：沒有相剋
   });
 });
 
