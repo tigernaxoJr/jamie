@@ -14,6 +14,9 @@
         <div class="app-card q-pa-md q-mt-md text-center">
           <div v-if="wild.shiny" class="shiny-banner">✨ 是很少見的色違字靈！</div>
           <div v-if="radarFound" class="radar-banner">📡 雷達找到了！就是牠！</div>
+          <div v-else-if="night && lovesNight(wild.species)" class="night-banner">
+            🌙 喜歡夜晚的字靈，晚上比較常出來！
+          </div>
           <div class="text-h6">
             野生的
             <span class="text-primary">{{ wild.species.name }}</span>
@@ -180,7 +183,7 @@ import { WordPronunciation } from 'src/modules/Vocabulary';
 import { trackQuest } from 'src/modules/Quests';
 import { randomInt } from 'src/modules/Games/shared';
 import { getArea } from '../../domain/areas';
-import { type Rarity, type Species, RARITY_NAME, getSpecies } from '../../domain/species';
+import { type Species, RARITY_NAME, getSpecies } from '../../domain/species';
 import { BATTLE_WIN_ENERGY, CAPTURE_XP } from '../../domain/rules';
 import { RELEASE_CANDY } from '../../domain/candy';
 import { rollShiny } from '../../domain/shiny';
@@ -195,6 +198,7 @@ import RadarCard from '../RadarCard.vue';
 import TraitTag from '../TraitTag.vue';
 import CapturePanel from '../encounter/CapturePanel.vue';
 import AreaScene from '../AreaScene.vue';
+import { isNight, lovesNight, wildWeight } from '../../domain/daytime';
 import BattlePanel from '../encounter/BattlePanel.vue';
 
 const route = useRoute();
@@ -228,16 +232,17 @@ const subtitle = computed(() =>
   area.value ? `已收服 ${store.caughtInArea(area.value)} / ${area.value.species.length} 種` : '',
 );
 
-const WEIGHT: Record<Rarity, number> = { common: 6, uncommon: 3, rare: 1, legendary: 0.5 };
+/** 晚上喜歡夜晚的字靈比較常出現（進頁面時決定） */
+const night = isNight();
 
-/** 依稀有度權重抽出野生字靈；雷達有鎖定時，先看這次會不會直接遇到目標 */
+/** 依稀有度權重抽出野生字靈（晚上喜歡夜晚的字靈權重較高）；雷達有鎖定時，先看這次會不會直接遇到目標 */
 const rollWild = () => {
   if (!area.value) return;
   const pool = area.value.species.map(getSpecies).filter(canAppearInWild);
   const byRarity = () => {
-    const total = pool.reduce((sum, s) => sum + WEIGHT[s.rarity], 0);
+    const total = pool.reduce((sum, s) => sum + wildWeight(s, night), 0);
     let r = Math.random() * total;
-    return pool.find((s) => (r -= WEIGHT[s.rarity]) < 0) ?? pool[0]!;
+    return pool.find((s) => (r -= wildWeight(s, night)) < 0) ?? pool[0]!;
   };
   const targetId = store.radarTargetIn(area.value);
   const target = targetId === null ? null : getSpecies(targetId);
@@ -310,6 +315,10 @@ rollWild();
 .appear {
   position: relative;
   animation: appear 0.6s ease-out;
+}
+.night-banner {
+  font-weight: 700;
+  color: #4338ca;
 }
 .radar-banner {
   font-weight: 700;

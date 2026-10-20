@@ -10,9 +10,25 @@
     preserveAspectRatio="xMidYMax slice"
     aria-hidden="true"
   >
+    <!-- 夜晚：天空變暗、出現星星和月亮（星空城堡本來就是夜景） -->
+    <g v-if="night">
+      <rect x="-100" y="-100" width="600" height="400" fill="#0b1033" opacity="0.55" />
+      <circle
+        v-for="(p, i) in PARTICLES"
+        :key="`n${i}`"
+        :cx="p.x"
+        :cy="60 + ((i * 29) % 50)"
+        r="1.2"
+        fill="#fff"
+        class="twinkle"
+        :style="p.style"
+      />
+      <circle cx="74" cy="80" r="12" fill="#fef9c3" opacity="0.25" />
+      <circle cx="74" cy="80" r="8" fill="#fef9c3" />
+    </g>
     <!-- 微風草原：太陽、雲、山丘、小花、飄落的花瓣 -->
     <g v-if="scene === 'meadow'">
-      <circle cx="330" cy="100" r="12" fill="#fde047" class="pulse" />
+      <circle v-if="!night" cx="330" cy="100" r="12" fill="#fde047" class="pulse" />
       <g class="drift" style="--dur: 38s">
         <ellipse cx="90" cy="84" rx="24" ry="8" fill="#fff" opacity="0.85" />
         <ellipse cx="104" cy="78" rx="14" ry="8" fill="#fff" opacity="0.85" />
@@ -419,16 +435,22 @@
       </g>
       <path d="M0 156 Q100 148 200 154 T400 152 V200 H0Z" fill="#9a3412" />
     </g>
+    <rect v-if="night" x="-100" y="-100" width="600" height="400" fill="#0b1033" opacity="0.28" />
   </svg>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { isNight } from '../domain/daytime';
 /** 地區 id（`areas.ts`）；沒有對應的場景就不畫，只剩漸層 */
-defineProps<{
+const props = defineProps<{
   scene: string;
   /** 不要動畫（地圖上的小卡片） */
   still?: boolean;
 }>();
+
+/** 依裝置時間決定要不要畫夜景 */
+const night = computed(() => props.scene !== 'castle' && isNight());
 
 /** 粒子（花瓣、雨、星星…）的位置與動畫節奏，固定值，畫面不會每次都不一樣 */
 const PARTICLES = Array.from({ length: 12 }, (_, i) => ({
