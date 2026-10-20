@@ -361,6 +361,7 @@ const onAnswered = (correct: boolean) => {
   });
 
   combo.value = move === 'ultimate' || !correct ? 0 : combo.value + 1;
+  store.recordCombo(combo.value);
   const moveName = moves.value.find((m) => m.kind === move)?.name ?? '';
 
   if (damage > 0) {
@@ -549,6 +550,7 @@ const win = () => {
   const summary = `打贏了！隊伍得到 ${total} 經驗值${levelUps.length ? `，${levelUps.join('、')}！` : ''}`;
   message.value = summary;
   trackQuest({ type: 'win' });
+  store.recordBattleWin();
   sfx.win();
   timers.later(() => emit('won', summary), 1500);
 };

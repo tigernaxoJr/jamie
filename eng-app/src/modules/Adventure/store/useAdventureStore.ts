@@ -16,6 +16,7 @@ import {
 } from '../domain/rules';
 import { CANDY_XP, RELEASE_CANDY } from '../domain/candy';
 import { AREA_COMPLETE_CANDY, EGG_COST, hatchEgg } from '../domain/egg';
+import { type AdventureStats, emptyStats, stickerStates } from '../domain/stickers';
 import { getSpecies } from '../domain/species';
 import { rollShiny } from '../domain/shiny';
 import { addLostWord } from '../domain/lost';
@@ -54,6 +55,10 @@ interface AdventureSave {
   completedAreas: string[];
   /** 字靈雷達鎖定的字靈；收服後清掉 */
   radar: RadarTarget | null;
+  /** 貼紙用的累計數字 */
+  stats: AdventureStats;
+  /** 已經在貼紙簿看過的貼紙 id（其他拿到的貼紙顯示「新！」） */
+  seenStickers: string[];
 }
 
 const RECENT_SIZE = 10;
@@ -68,6 +73,8 @@ const emptySave = (): AdventureSave => ({
   lostWords: [],
   completedAreas: [],
   radar: null,
+  stats: emptyStats(),
+  seenStickers: [],
 });
 
 const STORAGE_KEY = 'adventure-save';
@@ -278,7 +285,37 @@ export const useAdventureStore = defineStore('adventure', () => {
     if (r.length > RECENT_SIZE) r.splice(0, r.length - RECENT_SIZE);
     recordWordAnswer(word.english, correct, 'adventure');
     if (!correct) save.value.lostWords = addLostWord(save.value.lostWords, word);
-    else if (spelled) trackQuest({ type: 'spell' });
+    else if (spelled) {
+      trackQuest({ type: 'spell' });
+      stats().spelled++;
+    }
+  };
+
+  /** 舊存檔的 stats 可能缺欄位，補上 0 */
+  const stats = () => (save.value.stats = { ...emptyStats(), ...save.value.stats });
+
+  const recordBattleWin = () => {
+    stats().battlesWon++;
+  };
+  const recordCombo = (combo: number) => {
+    const st = stats();
+    if (combo > st.bestCombo) st.bestCombo = combo;
+  };
+
+  const stickers = computed(() =>
+    stickerStates({
+      creatures: save.value.creatures,
+      badges: badgeCount.value,
+      completedAreas: save.value.completedAreas.length,
+      stats: { ...emptyStats(), ...save.value.stats },
+    }),
+  );
+  /** 拿到了但還沒在貼紙簿看過的貼紙 */
+  const newStickers = computed(() =>
+    stickers.value.filter((x) => x.earned && !save.value.seenStickers.includes(x.sticker.id)),
+  );
+  const markStickersSeen = () => {
+    save.value.seenStickers = stickers.value.filter((x) => x.earned).map((x) => x.sticker.id);
   };
 
   const lostWords = computed(() => save.value.lostWords);
@@ -286,7 +323,9 @@ export const useAdventureStore = defineStore('adventure', () => {
   const findLostWord = (english: string): boolean => {
     const before = save.value.lostWords.length;
     save.value.lostWords = save.value.lostWords.filter((w) => w.english !== english);
-    return save.value.lostWords.length < before;
+    const found = save.value.lostWords.length < before;
+    if (found) stats().rescued++;
+    return found;
   };
 
   const caughtInArea = (area: Area) => area.species.filter((id) => isCaught(id)).length;
@@ -337,6 +376,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     const result = hatchEgg(candidates, isCaught);
     if (!result || !spendCandies(EGG_COST)) return null;
     const isNew = !isCaught(result.speciesId);
+    stats().hatched++;
     return { creature: catchCreature(result.speciesId, result.level, rollShiny()), isNew };
   };
   const badgeCount = computed(() => save.value.badges.filter((id) => getArea(id)).length);
@@ -379,5 +419,10 @@ export const useAdventureStore = defineStore('adventure', () => {
     canChallengeGym,
     isAreaUnlocked,
     hatch,
+    recordBattleWin,
+    recordCombo,
+    stickers,
+    newStickers,
+    markStickersSeen,
   };
 });

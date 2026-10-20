@@ -4,6 +4,15 @@
       <PageTitle emoji="🧭" title="字靈探險隊" subtitle="答對單字，收服各地的字靈！" back="/games">
         <template #actions>
           <q-btn
+            class="btn-3d q-mr-sm"
+            color="white"
+            text-color="dark"
+            :label="`📒 貼紙 ${earnedStickers}/${store.stickers.length}`"
+            to="/adventure/stickers"
+          >
+            <q-badge v-if="store.newStickers.length" color="red" floating rounded>新！</q-badge>
+          </q-btn>
+          <q-btn
             class="btn-3d"
             color="accent"
             text-color="dark"
@@ -231,6 +240,7 @@ import EggCard from '../EggCard.vue';
 const store = useAdventureStore();
 
 const caughtCount = computed(() => SPECIES.filter((s) => store.isCaught(s.id)).length);
+const earnedStickers = computed(() => store.stickers.filter((x) => x.earned).length);
 
 const starters = STARTER_IDS.map(getSpecies);
 const picked = ref<number | null>(null);
