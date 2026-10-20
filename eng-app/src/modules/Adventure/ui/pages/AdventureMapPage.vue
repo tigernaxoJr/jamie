@@ -148,6 +148,9 @@
                 <span class="pill">第 {{ i + 1 }} 級單字</span>
               </div>
               <div class="text-muted">{{ area.description }}</div>
+              <div v-if="store.radarTargetIn(area) !== null" class="radar-tag q-mt-xs">
+                📡 雷達正在找「{{ getSpecies(store.radarTargetIn(area)!).meaning }}」
+              </div>
               <div class="row items-center q-mt-sm text-caption text-weight-bold">
                 <span>字靈 Lv {{ area.levels[0] }}～{{ area.levels[1] }}</span>
                 <q-space />
@@ -271,6 +274,11 @@ const claim = (area: Area) => {
 }
 .complete-tag {
   color: #b45309;
+}
+.radar-tag {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4f46e5;
 }
 .legend-card {
   display: flex;

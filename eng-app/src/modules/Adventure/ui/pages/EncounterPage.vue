@@ -12,6 +12,7 @@
         </div>
         <div class="app-card q-pa-md q-mt-md text-center">
           <div v-if="wild.shiny" class="shiny-banner">✨ 是很少見的色違字靈！</div>
+          <div v-if="radarFound" class="radar-banner">📡 雷達找到了！就是牠！</div>
           <div class="text-h6">
             野生的
             <span class="text-primary">{{ wild.species.name }}</span>
@@ -60,6 +61,7 @@
         <div class="text-center q-mt-xs">
           <q-btn flat color="grey-7" icon="directions_run" label="逃跑" @click="nextEncounter" />
         </div>
+        <RadarCard :area="area" class="q-mt-md" />
       </template>
 
       <CapturePanel
@@ -180,11 +182,13 @@ import { BATTLE_WIN_ENERGY, CAPTURE_XP } from '../../domain/rules';
 import { RELEASE_CANDY } from '../../domain/candy';
 import { rollShiny } from '../../domain/shiny';
 import { canAppearInWild } from '../../domain/legend';
+import { pickWithRadar } from '../../domain/radar';
 import { candyCount } from '../../store/candy';
 import { wordsForArea } from '../../domain/words';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
+import RadarCard from '../RadarCard.vue';
 import TraitTag from '../TraitTag.vue';
 import CapturePanel from '../encounter/CapturePanel.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
@@ -213,6 +217,8 @@ const caughtUid = ref<string | null>(null);
 const releasedCandies = ref<number | null>(null);
 const releaseReward = computed(() => (wild.value ? RELEASE_CANDY[wild.value.species.rarity] : 0));
 const encounterId = ref(0);
+/** 這次遇到的是雷達鎖定的字靈 */
+const radarFound = ref(false);
 
 const subtitle = computed(() =>
   area.value ? `已收服 ${store.caughtInArea(area.value)} / ${area.value.species.length} 種` : '',
@@ -220,13 +226,19 @@ const subtitle = computed(() =>
 
 const WEIGHT: Record<Rarity, number> = { common: 6, uncommon: 3, rare: 1, legendary: 0.5 };
 
-/** 依稀有度權重抽出野生字靈 */
+/** 依稀有度權重抽出野生字靈；雷達有鎖定時，先看這次會不會直接遇到目標 */
 const rollWild = () => {
   if (!area.value) return;
   const pool = area.value.species.map(getSpecies).filter(canAppearInWild);
-  const total = pool.reduce((sum, s) => sum + WEIGHT[s.rarity], 0);
-  let r = Math.random() * total;
-  const species = pool.find((s) => (r -= WEIGHT[s.rarity]) < 0) ?? pool[0]!;
+  const byRarity = () => {
+    const total = pool.reduce((sum, s) => sum + WEIGHT[s.rarity], 0);
+    let r = Math.random() * total;
+    return pool.find((s) => (r -= WEIGHT[s.rarity]) < 0) ?? pool[0]!;
+  };
+  const targetId = store.radarTargetIn(area.value);
+  const target = targetId === null ? null : getSpecies(targetId);
+  const species = pickWithRadar(target, byRarity);
+  radarFound.value = species === target;
   const [min, max] = area.value.levels;
   wild.value = { species, level: min + randomInt(max - min + 1), shiny: rollShiny() };
   store.markSeen(species.id);
@@ -292,6 +304,10 @@ rollWild();
 }
 .appear {
   animation: appear 0.6s ease-out;
+}
+.radar-banner {
+  font-weight: 700;
+  color: #4f46e5;
 }
 .shiny-banner {
   font-weight: 700;

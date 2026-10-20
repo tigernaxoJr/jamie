@@ -20,6 +20,7 @@ import { getSpecies } from '../domain/species';
 import { rollShiny } from '../domain/shiny';
 import { addLostWord } from '../domain/lost';
 import { canAppearInWild } from '../domain/legend';
+import { RADAR_COST, type RadarTarget, radarCandidates } from '../domain/radar';
 import { trackQuest } from 'src/modules/Quests';
 import { grantBonusCandies, spendCandies } from './candy';
 
@@ -51,6 +52,8 @@ interface AdventureSave {
   lostWords: GameWord[];
   /** 已經領過全收集獎勵的地區 id */
   completedAreas: string[];
+  /** 字靈雷達鎖定的字靈；收服後清掉 */
+  radar: RadarTarget | null;
 }
 
 const RECENT_SIZE = 10;
@@ -64,6 +67,7 @@ const emptySave = (): AdventureSave => ({
   recentAnswers: [],
   lostWords: [],
   completedAreas: [],
+  radar: null,
 });
 
 const STORAGE_KEY = 'adventure-save';
@@ -194,6 +198,7 @@ export const useAdventureStore = defineStore('adventure', () => {
     };
     save.value.creatures.push(c);
     markSeen(speciesId);
+    if (save.value.radar?.speciesId === speciesId) save.value.radar = null;
     // 隊伍還沒滿就自動加入
     if (team.value.length < TEAM_SIZE) addToTeam(c.uid);
     return c;
@@ -297,6 +302,19 @@ export const useAdventureStore = defineStore('adventure', () => {
     return AREA_COMPLETE_CANDY;
   };
 
+  /** 雷達在這一區鎖定的字靈；沒有鎖定、在別區或已經收服就是 null */
+  const radarTargetIn = (area: Area): number | null => {
+    const r = save.value.radar;
+    return r && r.areaId === area.id && !isCaught(r.speciesId) ? r.speciesId : null;
+  };
+  /** 花糖果讓雷達鎖定這一區的某隻字靈（換目標也要再付）；不能找或糖果不夠回傳 false */
+  const lockRadar = (area: Area, speciesId: number): boolean => {
+    if (!radarCandidates(area, isCaught).includes(speciesId)) return false;
+    if (!spendCandies(RADAR_COST)) return false;
+    save.value.radar = { areaId: area.id, speciesId };
+    return true;
+  };
+
   const hasBadge = (areaId: string) => save.value.badges.includes(areaId);
   const earnBadge = (areaId: string) => {
     if (!hasBadge(areaId)) save.value.badges.push(areaId);
@@ -354,6 +372,8 @@ export const useAdventureStore = defineStore('adventure', () => {
     isAreaComplete,
     hasClaimedArea,
     claimAreaReward,
+    radarTargetIn,
+    lockRadar,
     hasBadge,
     earnBadge,
     canChallengeGym,
