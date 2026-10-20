@@ -79,9 +79,7 @@
       <div class="text-center text-weight-bold q-mb-sm">
         第 {{ round + 1 }} / {{ CAPTURE_ROUNDS }} 題：選擇挑戰難度
       </div>
-      <div v-if="isNameRound" class="name-round q-mb-sm">
-        ✨ {{ energy >= MAX_ENERGY ? '能量滿了！' : '' }}最後一題考{{ species.name }}自己的英文名字！
-      </div>
+      <div v-if="isNameRound" class="name-round q-mb-sm">✨ {{ nameRoundHint }}</div>
       <div class="difficulties">
         <q-btn
           v-for="d in difficulties"
@@ -198,6 +196,11 @@ const difficulties: { key: CaptureDifficulty; label: string; desc: string; color
 const nameInBank = bankWordFor(props.species.english);
 const nameWord = nameWordOf(props.species, nameInBank);
 const isNameRound = computed(() => round.value === CAPTURE_ROUNDS - 1);
+/** 能量先滿了會直接跳到名字題，提示裡說明原因 */
+const nameRoundHint = computed(
+  () =>
+    `${energy.value >= MAX_ENERGY ? '能量滿了！' : ''}最後一題考${props.species.name}自己的英文名字！`,
+);
 
 const ask = (d: CaptureDifficulty) => {
   difficulty = d;

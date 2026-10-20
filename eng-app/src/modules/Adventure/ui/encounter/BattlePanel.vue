@@ -120,7 +120,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { type GameWord, WordDeck, sfx, useTimers } from 'src/modules/Games/shared';
-import { getCorrectStreak } from 'src/modules/Vocabulary';
+import { WordPronunciation, getCorrectStreak } from 'src/modules/Vocabulary';
 import {
   ELEMENTS,
   battleMatchups,
@@ -150,6 +150,7 @@ import {
   MOVE_KIND,
   type Question,
   isSpelling,
+  isSpellingCorrect,
   makeQuestion,
 } from '../../domain/questions';
 import { trackQuest } from 'src/modules/Quests';
@@ -207,6 +208,8 @@ const enemyIdx = ref(0);
 const enemy = computed(() => props.enemies[enemyIdx.value]!);
 const enemyMax = computed(() => maxHp(enemy.value.species, enemy.value.level));
 const enemyHp = ref(enemyMax.value);
+// 字靈上場時會喊自己的英文名字（像叫聲），先從第一隻對手開始
+WordPronunciation(enemy.value.species.english);
 /** 館主字靈的狀態：上回合蓄力了、這隻補過血了 */
 const enemyCharged = ref(false);
 const enemyHealed = ref(false);
@@ -299,6 +302,9 @@ const showPopup = (
 const useMove = (kind: Action) => {
   currentMove = kind;
   const word = deck.draw();
+  // 放必殺技時喊自己的英文名字；這題剛好考這個名字就不喊，免得洩漏答案
+  const name = activeSpecies.value.english;
+  if (kind === 'ultimate' && !isSpellingCorrect(name, word)) WordPronunciation(name);
   // 必殺技不給提示；屬性技依熟練度給提示
   const streak = kind === 'ultimate' || props.hard ? null : getCorrectStreak(word.english);
   const qKind = props.hard ? 'zh-spell' : kind === 'guard' ? GUARD_KIND : MOVE_KIND[kind];
@@ -384,6 +390,7 @@ const enemyFainted = () => {
   sfx.correct();
   timers.later(() => {
     enemyIdx.value = next;
+    WordPronunciation(enemy.value.species.english);
     enemyHp.value = enemyMax.value;
     enemyCharged.value = false;
     enemyHealed.value = false;
@@ -465,6 +472,7 @@ const openSwitch = (forced: boolean) => {
 const switchTo = (uid: string) => {
   const wasForced = forcedSwitch.value;
   activeUid.value = uid;
+  WordPronunciation(activeSpecies.value.english);
   participated.add(uid);
   combo.value = 0;
   guarded.value = false;

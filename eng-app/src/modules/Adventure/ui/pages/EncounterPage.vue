@@ -228,6 +228,8 @@ const rollWild = () => {
   const [min, max] = area.value.levels;
   wild.value = { species, level: min + randomInt(max - min + 1), shiny: rollShiny() };
   store.markSeen(species.id);
+  // 出現時喊自己的英文名字
+  WordPronunciation(species.english);
 };
 
 const nextEncounter = () => {
