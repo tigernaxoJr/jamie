@@ -1,5 +1,5 @@
 <template>
-  <div class="page-title row items-center no-wrap q-mb-lg">
+  <div class="page-title row items-center q-mb-lg">
     <q-btn
       v-if="back"
       flat
@@ -11,11 +11,13 @@
       aria-label="返回"
     />
     <div v-if="emoji" class="page-title__emoji">{{ emoji }}</div>
-    <div class="col">
+    <div class="col page-title__main">
       <h1 class="page-title__text">{{ title }}</h1>
       <div v-if="subtitle" class="text-muted">{{ subtitle }}</div>
     </div>
-    <slot name="actions" />
+    <div v-if="$slots.actions" class="page-title__actions row items-center no-wrap">
+      <slot name="actions" />
+    </div>
   </div>
 </template>
 
@@ -42,7 +44,17 @@ defineProps<{ title: string; subtitle?: string; emoji?: string; back?: string }>
   line-height: 1.2;
   margin: 0;
 }
+.page-title__main {
+  min-width: 9rem;
+}
 @media (max-width: 599px) {
+  .page-title__actions {
+    flex: 1 0 100%;
+    margin-top: 10px;
+  }
+  .page-title__actions > :deep(.q-btn:last-child) {
+    margin-right: 0;
+  }
   .page-title__text {
     font-size: 1.4rem;
   }
