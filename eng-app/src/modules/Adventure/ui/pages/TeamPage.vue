@@ -72,12 +72,14 @@
           <span v-if="store.partner?.uid === c.uid" class="tag tag--leader">隊長</span>
           <span v-else-if="store.isInTeam(c.uid)" class="tag tag--team">隊伍中</span>
           <span v-if="store.evolveStatus(c).canEvolve" class="tag tag--evolve">可以進化！</span>
-          <CreatureView
+          <PetCreature
+            :ref="(el) => setPet(c.uid, el)"
             :species="getSpecies(c.speciesId)"
+            :stage="c.stage ?? 1"
             :size="72"
             :animated="false"
-            :evolved="(c.stage ?? 1) >= 2"
             :shiny="c.shiny"
+            :tappable="false"
           />
           <span class="card__name ellipsis">{{ nameOf(c) }}</span>
           <span class="row items-center no-wrap q-gutter-x-xs">
@@ -105,6 +107,7 @@ import { creatureName, getSpecies } from '../../domain/species';
 import { TEAM_SIZE } from '../../domain/rules';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 import CreatureView from '../CreatureView.vue';
+import PetCreature from '../team/PetCreature.vue';
 import ElementBadge from '../ElementBadge.vue';
 import TraitTag from '../TraitTag.vue';
 import CreatureFilterBar from '../team/CreatureFilterBar.vue';
@@ -150,10 +153,17 @@ const selectedUid = ref<string | null>(null);
 const selected = computed(() => store.creatures.find((c) => c.uid === selectedUid.value));
 const swapping = ref(false);
 
+/** 卡片上的字靈：選到時跳一下、唸出名字 */
+const pets: Record<string, { greet: () => void } | undefined> = {};
+const setPet = (uid: string, el: unknown) => {
+  pets[uid] = (el as { greet: () => void } | null) ?? undefined;
+};
+
 const tapCard = (c: OwnedCreature) => {
   swapping.value = false;
   selectedUid.value = selectedUid.value === c.uid ? null : c.uid;
   sfx.click();
+  if (selectedUid.value) pets[c.uid]?.greet();
 };
 
 const tapSlot = (c: OwnedCreature) => {

@@ -11,10 +11,11 @@
         <template v-if="c">
           <span v-if="i === 0" class="member__leader">隊長</span>
           <span v-if="store.evolveStatus(c).canEvolve" class="member__evolve">可以進化！</span>
-          <CreatureView
+          <PetCreature
+            :ref="(el) => setPet(c.uid, el)"
             :species="getSpecies(c.speciesId)"
+            :stage="c.stage ?? 1"
             :size="80"
-            :evolved="(c.stage ?? 1) >= 2"
             :shiny="c.shiny"
           />
           <div class="text-weight-bold ellipsis full-width text-center">
@@ -67,7 +68,7 @@ import { MAX_LEVEL, TEAM_SIZE, xpToNext } from '../domain/rules';
 import { CANDY_XP } from '../domain/candy';
 import { candyCount } from '../store/candy';
 import { useAdventureStore } from '../store/useAdventureStore';
-import CreatureView from './CreatureView.vue';
+import PetCreature from './team/PetCreature.vue';
 import ElementBadge from './ElementBadge.vue';
 
 const store = useAdventureStore();
@@ -76,9 +77,16 @@ const slots = computed(() => Array.from({ length: TEAM_SIZE }, (_, i) => store.t
 const timers = useTimers();
 const leveledUid = ref<string | null>(null);
 
+/** 每隻隊員的互動元件（點牠會有反應，餵糖果時吃東西） */
+const pets: Record<string, { feed: () => void } | undefined> = {};
+const setPet = (uid: string, el: unknown) => {
+  pets[uid] = (el as { feed: () => void } | null) ?? undefined;
+};
+
 const feed = (uid: string) => {
   const levels = store.feedCandy(uid);
   if (levels === null) return;
+  pets[uid]?.feed();
   if (levels === 0) return sfx.correct();
   sfx.win();
   leveledUid.value = uid;
