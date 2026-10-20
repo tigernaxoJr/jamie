@@ -1,21 +1,25 @@
 <template>
-  <div class="fighter" :class="{ hit: fx === 'hit', lunge: fx === 'lunge', faint: fainted }">
-    <CreatureView
-      :key="creatureKey"
-      :species="species"
-      :size="120"
-      :evolved="evolved"
-      :shiny="shiny"
-      :flip="flip"
-    />
-    <span
-      v-if="popup"
-      :key="popup.id"
-      class="popup"
-      :class="{ 'popup--heal': popup.heal }"
-      :style="{ fontSize: `${1.4 * (popup.scale ?? 1)}rem` }"
-      >{{ popup.text }}</span
-    >
+  <div class="slot">
+    <!-- 字靈站的台座，倒下時也留著 -->
+    <div class="pedestal" />
+    <div class="fighter" :class="{ hit: fx === 'hit', lunge: fx === 'lunge', faint: fainted }">
+      <CreatureView
+        :key="creatureKey"
+        :species="species"
+        :size="120"
+        :evolved="evolved"
+        :shiny="shiny"
+        :flip="flip"
+      />
+      <span
+        v-if="popup"
+        :key="popup.id"
+        class="popup"
+        :class="{ 'popup--heal': popup.heal }"
+        :style="{ fontSize: `${1.4 * (popup.scale ?? 1)}rem` }"
+        >{{ popup.text }}</span
+      >
+    </div>
   </div>
 </template>
 
@@ -43,6 +47,25 @@ withDefaults(
 </script>
 
 <style scoped lang="scss">
+.slot {
+  position: relative;
+}
+.pedestal {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 130px;
+  height: 26px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.45) 55%,
+    rgba(0, 0, 0, 0.2) 68%,
+    transparent 71%
+  );
+}
 .fighter {
   position: relative;
   transition:

@@ -126,6 +126,7 @@
             }"
           >
             <div class="area__scene" :style="{ background: area.background }">
+              <AreaScene :scene="area.id" still />
               <span class="area__emoji">{{ area.emoji }}</span>
               <div class="area__peek">
                 <CreatureView
@@ -221,6 +222,7 @@ import { SPECIES, STARTER_IDS, getSpecies } from '../../domain/species';
 import { GYM_REQUIRED_CAUGHT, STARTER_LEVEL } from '../../domain/rules';
 import { useAdventureStore } from '../../store/useAdventureStore';
 import CreatureView from '../CreatureView.vue';
+import AreaScene from '../AreaScene.vue';
 import CreatureStyleToggle from '../creature/CreatureStyleToggle.vue';
 import ElementBadge from '../ElementBadge.vue';
 import TeamCard from '../TeamCard.vue';
@@ -347,6 +349,7 @@ const claim = (area: Area) => {
   font-size: 2.2rem;
 }
 .area__peek {
+  position: relative;
   display: flex;
   gap: 4px;
   padding-bottom: 6px;

@@ -30,7 +30,8 @@ Adventure/
     ├── creature/         # 部件：身體後方 / 前方的配件、共用幾何資料、顯示方式設定
     │   └── three/        # 即時 3D（共用一個 WebGL renderer，動態載入 three.js）、色違換色
     ├── QuestionCard.vue  # 捕捉、對戰共用的答題卡
-    ├── encounter/        # 捕捉面板、對戰面板
+    ├── AreaScene.vue     # 地區場景（SVG 遠景、中景、地面和會動的小東西）
+    ├── encounter/        # 捕捉面板、字靈網動畫、對戰面板
     ├── MatchupTag.vue    # 屬性相剋提示標籤
     ├── TraitTag.vue      # 特性標籤
     └── pages/            # 地圖、遭遇、圖鑑、隊伍管理、館主
@@ -98,4 +99,6 @@ Adventure/
 1. 在 `domain/species.ts` 的 `SPECIES` 加一筆（外觀用 `look` 組合部件，`trait` 依英文名字的意思挑）。
    需要新部件時，在 `CreaturePart` 加型別，並在 `ui/creature/` 的前方或後方部件元件畫出來。
 2. 把字靈編號加到 `domain/areas.ts` 某個地區的 `species`；新地區加在 `AREAS` 並設定 `wordLevel`。
+   新地區也要在 `ui/AreaScene.vue` 用地區 id 畫場景（沒畫就只有 `background` 漸層）；
+   viewBox 400×200、對齊底部裁切，重要的東西放在 x 50～350、y 60 以下，寬螢幕和手機都看得到。
 3. 數值平衡都在 `domain/rules.ts` 調整。

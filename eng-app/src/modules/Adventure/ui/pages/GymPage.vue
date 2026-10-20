@@ -93,6 +93,7 @@
         :words="battleWords"
         :choice-pool="words"
         :background="area.background"
+        :scene="area.id"
         @won="onWon"
         @lost="phase = 'lost'"
         @leave="phase = 'lost'"

@@ -2,6 +2,7 @@
   <div>
     <!-- 場景 -->
     <div class="scene app-card" :style="{ background }">
+      <AreaScene v-if="scene" :scene="scene" />
       <div class="scene__creature" :class="netStage && `creature--${netStage}`">
         <CreatureView :species="species" :size="150" :shiny="shiny" />
       </div>
@@ -139,12 +140,15 @@ import CreatureView from '../CreatureView.vue';
 import ElementBadge from '../ElementBadge.vue';
 import QuestionCard from '../QuestionCard.vue';
 import CaptureNet from './CaptureNet.vue';
+import AreaScene from '../AreaScene.vue';
 
 const props = defineProps<{
   species: Species;
   level: number;
   words: GameWord[];
   background: string;
+  /** 地區場景（`AreaScene`），沒有就只有漸層 */
+  scene?: string | undefined;
   /** 打贏對戰後的額外能量 */
   bonusEnergy: number;
   shiny?: boolean | undefined;
@@ -303,6 +307,9 @@ const restart = () => {
 .scene :deep(svg.creature) {
   width: min(150px, 22vh);
   height: min(150px, 22vh);
+}
+.scene__creature {
+  position: relative;
 }
 /* 字靈被吸進網裡、掙脫時跳出來甩頭 */
 .creature--wrap {

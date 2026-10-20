@@ -6,6 +6,7 @@
       <!-- 遇到字靈 -->
       <template v-if="phase === 'intro'">
         <div class="scene app-card" :style="{ background: area.background }">
+          <AreaScene :scene="area.id" />
           <div class="appear">
             <CreatureView :species="wild.species" :size="160" :shiny="wild.shiny" />
           </div>
@@ -71,6 +72,7 @@
         :level="wild.level"
         :words="words"
         :background="area.background"
+        :scene="area.id"
         :bonus-energy="bonusEnergy"
         :shiny="wild.shiny"
         @caught="onCaught"
@@ -86,6 +88,7 @@
         :intro="`野生的${wild.species.name}出現了！要用什麼招式？`"
         :words="words"
         :background="area.background"
+        :scene="area.id"
         @won="onWon"
         @lost="phase = 'lost'"
         @leave="nextEncounter"
@@ -191,6 +194,7 @@ import ElementBadge from '../ElementBadge.vue';
 import RadarCard from '../RadarCard.vue';
 import TraitTag from '../TraitTag.vue';
 import CapturePanel from '../encounter/CapturePanel.vue';
+import AreaScene from '../AreaScene.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 
 const route = useRoute();
@@ -291,6 +295,7 @@ rollWild();
   margin: 0 auto;
 }
 .scene {
+  position: relative;
   height: clamp(160px, 30vh, 230px);
   display: flex;
   align-items: flex-end;
@@ -303,6 +308,7 @@ rollWild();
   height: min(150px, 22vh);
 }
 .appear {
+  position: relative;
   animation: appear 0.6s ease-out;
 }
 .radar-banner {

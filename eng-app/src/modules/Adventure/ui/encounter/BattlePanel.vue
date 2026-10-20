@@ -2,6 +2,7 @@
   <div>
     <!-- 戰場 -->
     <div class="arena app-card" :class="{ 'arena--shake': shake }" :style="{ background }">
+      <AreaScene v-if="scene" :scene="scene" />
       <div class="side side--enemy">
         <FighterStatus
           :name="enemy.species.name"
@@ -162,6 +163,7 @@ import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureS
 import MatchupTag from '../MatchupTag.vue';
 import QuestionCard from '../QuestionCard.vue';
 import BattleFighter from './BattleFighter.vue';
+import AreaScene from '../AreaScene.vue';
 import FighterStatus from './FighterStatus.vue';
 import SwitchBench from './SwitchBench.vue';
 
@@ -173,6 +175,8 @@ const props = defineProps<{
   /** 選擇題的干擾選項從這裡挑；沒給就用 words（words 很少時要另外給） */
   choicePool?: GameWord[] | undefined;
   background: string;
+  /** 地區場景（`AreaScene`），沒有就只有漸層 */
+  scene?: string | undefined;
   mode: 'wild' | 'gym';
   /** 困難模式：所有招式都是看中文拼英文、沒有提示（傳說挑戰） */
   hard?: boolean | undefined;
