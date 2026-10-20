@@ -59,7 +59,8 @@ export type CreaturePart =
   | 'helmet'
   | 'crescent'
   | 'bow'
-  | 'halo';
+  | 'halo'
+  | 'flower';
 
 export interface Species {
   /** 圖鑑編號 */
@@ -77,6 +78,19 @@ export interface Species {
   baseHp: number;
   baseAtk: number;
   look: CreatureLook;
+  /** 專屬進化（初始夥伴）：進化後換成新的名字和單字，外觀多幾個部件；進化時要拼出新名字 */
+  evolution?: Evolution;
+}
+
+export interface Evolution {
+  name: string;
+  /** 新的英文名字，是一個題庫外的新單字 */
+  english: string;
+  meaning: string;
+  /** 進化後多出來的部件 */
+  parts: CreaturePart[];
+  /** 配件顏色（新部件用） */
+  accent?: string;
 }
 
 /** 所有字靈；新增字靈只要在這裡加一筆並放進 areas.ts 的棲息地 */
@@ -101,6 +115,13 @@ export const SPECIES: readonly Species[] = [
       parts: ['flame'],
       cheeks: true,
     },
+    evolution: {
+      name: '焰焰',
+      english: 'Blaze',
+      meaning: '火焰',
+      parts: ['wings'],
+      accent: '#f97316',
+    },
   },
   {
     id: 2,
@@ -122,6 +143,7 @@ export const SPECIES: readonly Species[] = [
       parts: ['bubbles'],
       cheeks: true,
     },
+    evolution: { name: '浪浪', english: 'Wave', meaning: '海浪', parts: ['fins', 'swirl'] },
   },
   {
     id: 3,
@@ -143,6 +165,7 @@ export const SPECIES: readonly Species[] = [
       parts: ['ears', 'moss'],
       cheeks: true,
     },
+    evolution: { name: '花花', english: 'Bloom', meaning: '開花', parts: ['flower'] },
   },
   {
     id: 4,
@@ -1208,10 +1231,30 @@ export const SPECIES: readonly Species[] = [
   },
 ];
 
-/** 顯示用名字：進化後加上「超級」 */
-export const creatureName = (s: Species, stage = 1) => (stage >= 2 ? `超級${s.name}` : s.name);
+/** 顯示用名字：進化後換成專屬的進化名字，沒有的加上「超級」 */
+export const creatureName = (s: Species, stage = 1) =>
+  stage >= 2 ? (s.evolution?.name ?? `超級${s.name}`) : s.name;
+
+/** 英文名字（喊名字、拼字用）：有專屬進化的字靈進化後換成新單字，其他的不變 */
 export const creatureEnglish = (s: Species, stage = 1) =>
-  stage >= 2 ? `Super ${s.english}` : s.english;
+  stage >= 2 && s.evolution ? s.evolution.english : s.english;
+
+/** 畫面上顯示的樣子：有專屬進化的字靈進化後換名字、多部件；其他的不變（進化光環另外畫） */
+export const evolvedForm = (s: Species): Species => {
+  const evo = s.evolution;
+  if (!evo) return s;
+  return {
+    ...s,
+    name: evo.name,
+    english: evo.english,
+    meaning: evo.meaning,
+    look: {
+      ...s.look,
+      parts: [...s.look.parts, ...evo.parts],
+      ...(evo.accent ? { accent: evo.accent } : {}),
+    },
+  };
+};
 
 /** 一開始可以選的夥伴 */
 export const STARTER_IDS = [1, 2, 3] as const;

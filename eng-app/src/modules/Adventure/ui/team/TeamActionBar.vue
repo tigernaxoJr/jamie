@@ -55,8 +55,9 @@
       text-color="dark"
       icon="auto_awesome"
       label="進化"
-      @click="evolve(selected.uid)"
+      @click="evolve(selected)"
     />
+    <EvolveDialog v-model="evolving" />
   </div>
 
   <div v-else class="hint">點一隻字靈，可以加入隊伍、換上場或設為隊長</div>
@@ -66,6 +67,8 @@
 import { sfx } from 'src/modules/Games/shared';
 import { creatureName, getSpecies } from '../../domain/species';
 import { TEAM_SIZE } from '../../domain/rules';
+import { ref } from 'vue';
+import EvolveDialog from '../EvolveDialog.vue';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
 
 /** 隊伍列下方的操作：加入、移出、設為隊長、換上場、進化 */
@@ -86,8 +89,11 @@ const remove = (uid: string) => {
   sfx.click();
 };
 
-const evolve = (uid: string) => {
-  if (store.evolve(uid)) sfx.win();
+/** 有專屬進化的字靈（初始夥伴）要先拼出新名字，其他的直接進化 */
+const evolving = ref<OwnedCreature | null>(null);
+const evolve = (c: OwnedCreature) => {
+  if (getSpecies(c.speciesId).evolution) evolving.value = c;
+  else if (store.evolve(c.uid)) sfx.win();
 };
 </script>
 

@@ -20,7 +20,8 @@ node tools/blender/export_species.mjs
 
 ## 檔案
 
-- `export_species.mjs`：把 species.ts 轉成 `species.json`（含色違外觀與表面質感 `surface`）
+- `export_species.mjs`：把 species.ts 轉成 `species.json`（含色違外觀與表面質感 `surface`）；
+  有專屬進化（`evolution`）的字靈多輸出一筆進化後的樣子（例如 `blaze.webp`），質感沿用原本的。需要 Node 22.6 以上
 - `build_creatures.py`：建模、算圖、匯出；每個部件對照 `ui/creature/CreatureBackParts.vue`、`CreatureFrontParts.vue`
 - `assets/`：Poly Haven 的 CC0 貼圖與 HDRI（見 `assets/README.md`）
 - `out/`：中間檔（烘焙貼圖、紀錄），不進版控

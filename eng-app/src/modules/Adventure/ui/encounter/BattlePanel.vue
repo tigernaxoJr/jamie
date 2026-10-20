@@ -129,7 +129,7 @@ import {
   effectiveness,
   formatEffectiveness as times,
 } from '../../domain/elements';
-import { type Species, creatureName, getSpecies } from '../../domain/species';
+import { type Species, creatureEnglish, creatureName, getSpecies } from '../../domain/species';
 import {
   type MoveKind,
   type Opponent,
@@ -252,6 +252,8 @@ type Action = MoveKind | 'guard';
 let currentMove: Action = 'normal';
 
 const activeName = () => creatureName(activeSpecies.value, active.value.stage);
+/** 上場字靈喊的英文名字（初始夥伴進化後換成新單字） */
+const activeEnglish = () => creatureEnglish(activeSpecies.value, active.value.stage);
 
 /** 招式說明的題型；困難模式一律拼字 */
 const ask = (normal: string) => (props.hard ? '拼字（沒提示）' : normal);
@@ -317,7 +319,7 @@ const useMove = (kind: Action) => {
   currentMove = kind;
   const word = deck.draw();
   // 放必殺技時喊自己的英文名字；這題剛好考這個名字就不喊，免得洩漏答案
-  const name = activeSpecies.value.english;
+  const name = activeEnglish();
   if (kind === 'ultimate' && !isSpellingCorrect(name, word)) WordPronunciation(name);
   // 必殺技不給提示；屬性技依熟練度給提示
   const streak = kind === 'ultimate' || props.hard ? null : getCorrectStreak(word.english);
@@ -498,7 +500,7 @@ const openSwitch = (forced: boolean) => {
 const switchTo = (uid: string) => {
   const wasForced = forcedSwitch.value;
   activeUid.value = uid;
-  WordPronunciation(activeSpecies.value.english);
+  WordPronunciation(activeEnglish());
   participated.add(uid);
   combo.value = 0;
   guarded.value = false;

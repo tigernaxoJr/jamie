@@ -1,7 +1,7 @@
 <template>
   <CreatureSvg
     v-if="mode === 'svg'"
-    :species="species"
+    :species="shown"
     :size="size"
     :silhouette="silhouette"
     :animated="animated"
@@ -39,7 +39,7 @@
 
     <Creature3D
       v-if="mode === '3d'"
-      :url="creatureAsset(species.english, 'glb')"
+      :url="creatureAsset(shown.english, 'glb')"
       :shiny="!!shiny"
       :animated="animated"
       :flip="flip"
@@ -48,7 +48,7 @@
     />
     <img
       v-else
-      :src="creatureAsset(species.english, 'webp', !!shiny && !silhouette)"
+      :src="creatureAsset(shown.english, 'webp', !!shiny && !silhouette)"
       :alt="label"
       class="creature-view__img"
       draggable="false"
@@ -78,7 +78,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { Species } from '../domain/species';
+import { type Species, evolvedForm } from '../domain/species';
 import { ELEMENTS } from '../domain/elements';
 import CreatureSvg from './CreatureSvg.vue';
 import Creature3D from './creature/Creature3D.vue';
@@ -95,7 +95,7 @@ const props = withDefaults(
     animated?: boolean;
     /** 面向左邊（對戰時我方字靈） */
     flip?: boolean;
-    /** 進化後：加上屬性光環與星星 */
+    /** 進化後：加上屬性光環與星星；有專屬進化的字靈換成進化後的樣子 */
     evolved?: boolean;
     /** 色違：換顏色並加上閃光 */
     shiny?: boolean | undefined;
@@ -117,7 +117,8 @@ const mode = computed(() => {
   return want3d ? '3d' : 'image';
 });
 
-const label = computed(() => (props.silhouette ? '未知的字靈' : props.species.name));
+const shown = computed(() => (props.evolved ? evolvedForm(props.species) : props.species));
+const label = computed(() => (props.silhouette ? '未知的字靈' : shown.value.name));
 const cy = computed(() => GEOMETRY[props.species.look.body].cy);
 const elementColor = computed(() => ELEMENTS[props.species.element].color);
 </script>

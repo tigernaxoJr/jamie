@@ -168,6 +168,9 @@
               <div class="text-caption text-muted">
                 單字連續答對 3 次就算熟練，去單字測驗多練習吧！
               </div>
+              <div v-if="selected.evolution" class="text-caption text-weight-bold text-orange-9">
+                進化後會學到一個新單字！
+              </div>
               <q-btn
                 v-if="evolveOf(c).canEvolve"
                 class="btn-3d full-width q-mt-sm"
@@ -180,11 +183,26 @@
             </div>
             <div v-else class="text-caption text-weight-bold text-orange-9 q-mt-xs">
               ✨ 已經進化，能力提升 30%
+              <div v-if="selected.evolution">
+                進化：{{ selected.evolution.name }} {{ selected.evolution.english }}（{{
+                  selected.evolution.meaning
+                }}）
+                <q-btn
+                  flat
+                  round
+                  dense
+                  size="sm"
+                  icon="volume_up"
+                  aria-label="發音"
+                  @click="WordPronunciation(selected.evolution.english)"
+                />
+              </div>
             </div>
           </div>
         </div>
       </q-card>
     </q-dialog>
+    <EvolveDialog v-model="evolving" />
   </q-page>
 </template>
 
@@ -193,7 +211,7 @@ import { computed, ref } from 'vue';
 import PageTitle from 'src/components/PageTitle.vue';
 import { WordPronunciation } from 'src/modules/Vocabulary';
 import { habitatsOf } from '../../domain/areas';
-import { RARITY_NAME, SPECIES, type Species, creatureName } from '../../domain/species';
+import { RARITY_NAME, SPECIES, type Species, creatureName, getSpecies } from '../../domain/species';
 import { TEAM_SIZE } from '../../domain/rules';
 import { sfx } from 'src/modules/Games/shared';
 import { type OwnedCreature, useAdventureStore } from '../../store/useAdventureStore';
@@ -201,6 +219,7 @@ import CreatureView from '../CreatureView.vue';
 import CreatureStyleToggle from '../creature/CreatureStyleToggle.vue';
 import ElementBadge from '../ElementBadge.vue';
 import TraitTag from '../TraitTag.vue';
+import EvolveDialog from '../EvolveDialog.vue';
 
 const store = useAdventureStore();
 
@@ -222,8 +241,11 @@ const owned = computed(() =>
 
 const teamFull = computed(() => store.team.length >= TEAM_SIZE);
 const evolveOf = (c: OwnedCreature) => store.evolveStatus(c);
+/** 有專屬進化的字靈（初始夥伴）要先拼出新名字，其他的直接進化 */
+const evolving = ref<OwnedCreature | null>(null);
 const doEvolve = (c: OwnedCreature) => {
-  if (store.evolve(c.uid)) sfx.win();
+  if (getSpecies(c.speciesId).evolution) evolving.value = c;
+  else if (store.evolve(c.uid)) sfx.win();
 };
 
 const showShiny = ref(false);

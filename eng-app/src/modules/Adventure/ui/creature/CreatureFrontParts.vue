@@ -42,6 +42,23 @@
       <circle cx="67" :cy="g.top + 3" r="7" />
       <circle cx="78" :cy="g.top + 8" r="6" />
     </g>
+    <g v-if="has('flower')" :stroke="LINE" stroke-width="1.5">
+      <path
+        :d="`M60 ${g.top + 4} L60 ${g.top - 8}`"
+        fill="none"
+        stroke="#15803d"
+        stroke-width="3"
+      />
+      <circle
+        v-for="p in FLOWER_PETALS"
+        :key="p.x"
+        :cx="60 + p.x"
+        :cy="g.top - 14 + p.y"
+        r="5.5"
+        fill="#f472b6"
+      />
+      <circle cx="60" :cy="g.top - 14" r="4" fill="#fde047" />
+    </g>
     <template v-if="has('cap')">
       <path
         :d="`M20 ${g.top + 18} Q60 ${g.top - 30} 100 ${g.top + 18} Z`"
@@ -238,6 +255,12 @@ const SPOTS: [number, number | 'top'][] = [
   [62, 24],
   [58, 'top'],
 ];
+
+/** 花瓣：5 片圍著花心，相對花心的位置 */
+const FLOWER_PETALS = [0, 1, 2, 3, 4].map((i) => {
+  const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+  return { x: Math.round(Math.cos(a) * 65) / 10, y: Math.round(Math.sin(a) * 65) / 10 };
+});
 </script>
 
 <style scoped>

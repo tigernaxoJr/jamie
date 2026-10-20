@@ -28,6 +28,38 @@
     }
   },
   {
+    "id": 1,
+    "english": "Blaze",
+    "look": {
+      "body": "round",
+      "color": "#44403c",
+      "belly": "#78716c",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "flame",
+        "wings"
+      ],
+      "cheeks": true,
+      "accent": "#f97316",
+      "surface": "charcoal"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#c99e1d",
+      "belly": "#c99e1d",
+      "eyes": "big",
+      "mouth": "open",
+      "parts": [
+        "flame",
+        "wings"
+      ],
+      "cheeks": true,
+      "accent": "#16f9e5",
+      "surface": "charcoal"
+    }
+  },
+  {
     "id": 2,
     "english": "Bubble",
     "look": {
@@ -50,6 +82,38 @@
       "mouth": "smile",
       "parts": [
         "bubbles"
+      ],
+      "cheeks": true,
+      "surface": "jelly"
+    }
+  },
+  {
+    "id": 2,
+    "english": "Wave",
+    "look": {
+      "body": "drop",
+      "color": "#38bdf8",
+      "belly": "#bae6fd",
+      "eyes": "big",
+      "mouth": "smile",
+      "parts": [
+        "bubbles",
+        "fins",
+        "swirl"
+      ],
+      "cheeks": true,
+      "surface": "jelly"
+    },
+    "shiny": {
+      "body": "drop",
+      "color": "#f8385d",
+      "belly": "#fdbac5",
+      "eyes": "big",
+      "mouth": "smile",
+      "parts": [
+        "bubbles",
+        "fins",
+        "swirl"
       ],
       "cheeks": true,
       "surface": "jelly"
@@ -80,6 +144,38 @@
       "parts": [
         "ears",
         "moss"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    }
+  },
+  {
+    "id": 3,
+    "english": "Bloom",
+    "look": {
+      "body": "round",
+      "color": "#a16207",
+      "belly": "#fde68a",
+      "eyes": "dot",
+      "mouth": "cat",
+      "parts": [
+        "ears",
+        "moss",
+        "flower"
+      ],
+      "cheeks": true,
+      "surface": "fleece"
+    },
+    "shiny": {
+      "body": "round",
+      "color": "#0793a1",
+      "belly": "#8adbfd",
+      "eyes": "dot",
+      "mouth": "cat",
+      "parts": [
+        "ears",
+        "moss",
+        "flower"
       ],
       "cheeks": true,
       "surface": "fleece"

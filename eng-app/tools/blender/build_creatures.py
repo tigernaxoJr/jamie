@@ -852,6 +852,22 @@ def part_moss(c):
         outlined(o, '#4ade80', 0.014)
 
 
+def part_flower(c):
+    """頭上開一朵花（花花 Bloom）：莖、5 片花瓣圍著花心，和 CreatureFrontParts 的 flower 相同位置"""
+    t = c.g['top']
+    stem = material('stem', '#15803d', rough=0.5)
+    petal = material('petal', '#f472b6', rough=0.45, coat=0.3)
+    core = material('flower_core', '#fde047', rough=0.4, emission=0.4)
+    tube('flower_stem', [P(60, t + 4, -0.05), P(60, t - 3, -0.05), P(60, t - 8, -0.05)], 1.6 * S, stem)
+    for i in range(5):
+        a = i / 5 * math.pi * 2 - math.pi / 2
+        x, y = 60 + math.cos(a) * 6.5, t - 14 + math.sin(a) * 6.5
+        o = ellipsoid('petal', P(x, y, -0.05), (5.5 * S, 2.4 * S, 5.5 * S), petal)
+        outlined(o, '#f472b6', 0.014)
+    o = sphere('flower_core', P(60, t - 14, -0.05 - 1.6 * S), 4 * S, core)
+    outlined(o, '#fde047', 0.014)
+
+
 def part_antenna(c):
     t = c.g['top']
     for sx, cx, ex in ((52, 48, 42), (68, 72, 78)):
@@ -1140,6 +1156,7 @@ PARTS = {
     'crescent': part_crescent,
     'bow': part_bow,
     'halo': part_halo,
+    'flower': part_flower,
 }
 
 
