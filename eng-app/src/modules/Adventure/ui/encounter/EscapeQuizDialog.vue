@@ -15,7 +15,7 @@
           :key="quizKey"
           :question="question"
           :disabled="resolving"
-          @answer="handleAnswer"
+          @answered="handleAnswer"
         />
       </div>
 
@@ -87,14 +87,14 @@ const handleAnswer = (correct: boolean) => {
     setTimeout(() => {
       show.value = false;
       emit('escaped');
-    }, 700);
+    }, 400);
   } else {
     feedback.value = '❌ 煙霧彈熄火了！被字靈擋住了去路！';
     feedbackClass.value = 'text-negative';
     setTimeout(() => {
       show.value = false;
       emit('failed');
-    }, 1200);
+    }, 600);
   }
 };
 
