@@ -1,3 +1,11 @@
+interface ImportMetaEnv {
+  readonly BASE_URL: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string;

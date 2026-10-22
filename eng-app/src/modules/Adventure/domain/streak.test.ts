@@ -7,31 +7,14 @@ import {
   STREAK_TIER_MAX,
   STREAK_TIER_WARMUP,
 } from './streak';
-import { type Species } from './species';
+import { getSpecies, type Species } from './species';
 import { WILD_WEIGHT } from './daytime';
 import { SHINY_CHANCE } from './shiny';
 
 const mockSpecies = (rarity: Species['rarity'], english = 'Bird'): Species => ({
-  id: 1,
-  name: '測試靈',
-  english,
-  element: 'grass',
+  ...getSpecies(1),
   rarity,
-  description: '測試用',
-  look: {
-    color: '#000000',
-    belly: '#ffffff',
-    shape: 'round',
-    eye: 'round',
-    mouth: 'smile',
-    ears: 'none',
-    tail: 'none',
-  },
-  baseHp: 50,
-  baseAtk: 10,
-  baseDef: 10,
-  baseSpd: 10,
-  moves: [],
+  english,
 });
 
 describe('streak', () => {
