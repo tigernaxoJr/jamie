@@ -3,6 +3,20 @@
     <div v-if="area && wild && store.partner" class="encounter">
       <PageTitle :emoji="area.emoji" :title="area.name" :subtitle="subtitle" back="/adventure" />
 
+      <!-- 連續探索 Streak 提示條 -->
+      <div v-if="store.encounterStreak > 0" class="streak-bar q-mb-sm row items-center justify-between q-px-md q-py-xs">
+        <div class="row items-center q-gutter-xs">
+          <span class="text-subtitle2 text-weight-bolder text-deep-orange">🔥 連續探索 x{{ store.encounterStreak }}</span>
+          <q-badge v-if="store.encounterStreak >= 5" color="amber-9" text-color="dark">
+            ✨ 色違重骰 + 稀有 x2.5
+          </q-badge>
+          <q-badge v-else-if="store.encounterStreak >= 3" color="orange" text-color="white">
+            稀有率 x1.5 + 🍬 +1
+          </q-badge>
+        </div>
+        <span class="text-caption text-grey-7">不逃跑累積熱度</span>
+      </div>
+
       <!-- 遇到字靈 -->
       <template v-if="phase === 'intro'">
         <div class="scene app-card" :style="{ background: area.background }">
@@ -63,7 +77,7 @@
           小提示：先對戰打贏，捕捉時會多 {{ BATTLE_WIN_ENERGY }} 格能量
         </div>
         <div class="text-center q-mt-xs">
-          <q-btn flat color="grey-7" icon="directions_run" label="逃跑" @click="nextEncounter" />
+          <q-btn flat color="grey-7" icon="directions_run" label="逃跑" @click="requestEscape" />
         </div>
         <RadarCard :area="area" class="q-mt-md" />
       </template>
@@ -79,7 +93,7 @@
         :bonus-energy="bonusEnergy"
         :shiny="wild.shiny"
         @caught="onCaught"
-        @leave="nextEncounter"
+        @leave="requestEscape"
       />
 
       <BattlePanel
@@ -93,8 +107,8 @@
         :background="area.background"
         :scene="area.id"
         @won="onWon"
-        @lost="phase = 'lost'"
-        @leave="nextEncounter"
+        @lost="onBattleLost"
+        @leave="requestEscape"
       />
 
       <!-- 抓到了 -->
@@ -172,6 +186,14 @@
         </div>
       </div>
     </div>
+
+    <!-- 脫逃測驗彈窗 -->
+    <EscapeQuizDialog
+      v-model="showEscapeQuiz"
+      :words="words"
+      @escaped="onEscaped"
+      @failed="onEscapeFailed"
+    />
   </q-page>
 </template>
 
@@ -186,7 +208,6 @@ import { getArea } from '../../domain/areas';
 import { type Species, RARITY_NAME, getSpecies } from '../../domain/species';
 import { BATTLE_WIN_ENERGY, CAPTURE_XP } from '../../domain/rules';
 import { RELEASE_CANDY } from '../../domain/candy';
-import { rollShiny } from '../../domain/shiny';
 import { canAppearInWild } from '../../domain/legend';
 import { pickWithRadar } from '../../domain/radar';
 import { candyCount } from '../../store/candy';
@@ -198,7 +219,9 @@ import RadarCard from '../RadarCard.vue';
 import TraitTag from '../TraitTag.vue';
 import CapturePanel from '../encounter/CapturePanel.vue';
 import AreaScene from '../AreaScene.vue';
-import { isNight, lovesNight, wildWeight } from '../../domain/daytime';
+import { isNight, lovesNight } from '../../domain/daytime';
+import { dynamicWildWeight, rollShinyWithStreak, streakBonusCandy } from '../../domain/streak';
+import EscapeQuizDialog from '../encounter/EscapeQuizDialog.vue';
 import BattlePanel from '../encounter/BattlePanel.vue';
 
 const route = useRoute();
@@ -223,10 +246,16 @@ const joinedTeam = ref(false);
 const caughtUid = ref<string | null>(null);
 /** 放生拿到的糖果；還沒放生是 null */
 const releasedCandies = ref<number | null>(null);
-const releaseReward = computed(() => (wild.value ? RELEASE_CANDY[wild.value.species.rarity] : 0));
+const releaseReward = computed(() => {
+  if (!wild.value) return 0;
+  const base = RELEASE_CANDY[wild.value.species.rarity];
+  const bonus = streakBonusCandy(store.encounterStreak);
+  return base + bonus;
+});
 const encounterId = ref(0);
 /** 這次遇到的是雷達鎖定的字靈 */
 const radarFound = ref(false);
+const showEscapeQuiz = ref(false);
 
 const subtitle = computed(() =>
   area.value ? `已收服 ${store.caughtInArea(area.value)} / ${area.value.species.length} 種` : '',
@@ -235,21 +264,34 @@ const subtitle = computed(() =>
 /** 晚上喜歡夜晚的字靈比較常出現（進頁面時決定） */
 const night = isNight();
 
-/** 依稀有度權重抽出野生字靈（晚上喜歡夜晚的字靈權重較高）；雷達有鎖定時，先看這次會不會直接遇到目標 */
+/** 依稀有度權重抽出野生字靈（考量夜行性與 Streak 連勝熱度）；雷達有鎖定時，先看這次會不會直接遇到目標 */
 const rollWild = () => {
   if (!area.value) return;
   const pool = area.value.species.map(getSpecies).filter(canAppearInWild);
   const byRarity = () => {
-    const total = pool.reduce((sum, s) => sum + wildWeight(s, night), 0);
+    const total = pool.reduce(
+      (sum, s) => sum + dynamicWildWeight(s, night, store.encounterStreak),
+      0,
+    );
     let r = Math.random() * total;
-    return pool.find((s) => (r -= wildWeight(s, night)) < 0) ?? pool[0]!;
+    return (
+      pool.find(
+        (s) =>
+          (r -= dynamicWildWeight(s, night, store.encounterStreak)) < 0,
+      ) ?? pool[0]!
+    );
   };
   const targetId = store.radarTargetIn(area.value);
   const target = targetId === null ? null : getSpecies(targetId);
   const species = pickWithRadar(target, byRarity);
   radarFound.value = species === target;
+
   const [min, max] = area.value.levels;
-  wild.value = { species, level: min + randomInt(max - min + 1), shiny: rollShiny() };
+  wild.value = {
+    species,
+    level: min + randomInt(max - min + 1),
+    shiny: rollShinyWithStreak(store.encounterStreak),
+  };
   store.markSeen(species.id);
   // 出現時喊自己的英文名字
   WordPronunciation(species.english);
@@ -262,6 +304,19 @@ const nextEncounter = () => {
   rollWild();
 };
 
+const requestEscape = () => {
+  showEscapeQuiz.value = true;
+};
+
+const onEscaped = () => {
+  store.resetStreak();
+  nextEncounter();
+};
+
+const onEscapeFailed = () => {
+  // 逃跑失敗，留在原遭遇畫面繼續面對
+};
+
 const startBattle = () => {
   phase.value = 'battle';
 };
@@ -270,6 +325,11 @@ const onWon = () => {
   bonusEnergy.value = BATTLE_WIN_ENERGY;
   encounterId.value++;
   phase.value = 'capture';
+};
+
+const onBattleLost = () => {
+  store.resetStreak();
+  phase.value = 'lost';
 };
 
 const onCaught = () => {
@@ -282,6 +342,7 @@ const onCaught = () => {
   caughtUid.value = caught.uid;
   releasedCandies.value = null;
   store.gainXp(store.partner.uid, CAPTURE_XP);
+  store.incrementStreak();
   trackQuest({ type: 'catch' });
   phase.value = 'caught';
 };
@@ -315,6 +376,11 @@ rollWild();
 .appear {
   position: relative;
   animation: appear 0.6s ease-out;
+}
+.streak-bar {
+  background: rgba(255, 237, 213, 0.85);
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
 }
 .night-banner {
   font-weight: 700;

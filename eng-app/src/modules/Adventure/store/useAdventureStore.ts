@@ -59,6 +59,8 @@ interface AdventureSave {
   stats: AdventureStats;
   /** 已經在貼紙簿看過的貼紙 id（其他拿到的貼紙顯示「新！」） */
   seenStickers: string[];
+  /** 連續探索次數（未逃跑） */
+  encounterStreak?: number;
 }
 
 const RECENT_SIZE = 10;
@@ -75,6 +77,7 @@ const emptySave = (): AdventureSave => ({
   radar: null,
   stats: emptyStats(),
   seenStickers: [],
+  encounterStreak: 0,
 });
 
 const STORAGE_KEY = 'adventure-save';
@@ -381,7 +384,20 @@ export const useAdventureStore = defineStore('adventure', () => {
   };
   const badgeCount = computed(() => save.value.badges.filter((id) => getArea(id)).length);
 
+  const encounterStreak = computed(() => save.value.encounterStreak ?? 0);
+
+  const incrementStreak = () => {
+    save.value.encounterStreak = (save.value.encounterStreak ?? 0) + 1;
+  };
+
+  const resetStreak = () => {
+    save.value.encounterStreak = 0;
+  };
+
   return {
+    encounterStreak,
+    incrementStreak,
+    resetStreak,
     creatures,
     hasStarter,
     team,
